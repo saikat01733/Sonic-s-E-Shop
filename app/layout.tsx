@@ -23,8 +23,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="bn" className="dark-theme">
-      <body className="antialiased selection:bg-red-500 selection:text-white">
-        {children}
+      <body className="antialiased selection:bg-red-500 selection:text-white relative min-h-screen">
+        {/* Ambient Bioluminescent Mesh Lighting */}
+        <div className="ambient-glow-red" />
+        <div className="ambient-glow-cyan" />
+        <div className="ambient-glow-purple" />
+
+        {/* Page Content Container */}
+        <div className="relative z-10 flex flex-col min-h-screen">
+          {children}
+        </div>
       </body>
     </html>
   );
