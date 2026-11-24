@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'glass' | 'glass-sm' | 'pill';
+  variant?: 'glass' | 'glass-sm' | 'pill' | 'dock';
   hoverable?: boolean;
 }
 
@@ -11,6 +11,7 @@ export function Card({ className, variant = 'glass', hoverable = false, children
     glass: 'liquid-glass',
     'glass-sm': 'liquid-glass-sm',
     pill: 'liquid-glass-pill',
+    dock: 'liquid-glass-dock',
   }[variant];
 
   return (

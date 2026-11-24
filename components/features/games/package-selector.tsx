@@ -5,6 +5,7 @@ import { PackageItem } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { useLanguage } from '@/hooks/use-language';
 
 interface PackageSelectorProps {
   packages: PackageItem[];
@@ -14,6 +15,7 @@ interface PackageSelectorProps {
 
 export function PackageSelector({ packages, selectedPackages, onTogglePackage }: PackageSelectorProps) {
   const [search, setSearch] = useState('');
+  const { t } = useLanguage();
 
   const filtered = packages.filter(
     p =>
@@ -23,15 +25,15 @@ export function PackageSelector({ packages, selectedPackages, onTogglePackage }:
   );
 
   return (
-    <Card variant="glass" className="p-6 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+    <Card variant="glass" className="p-6 space-y-4 border-white/20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/15 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-xl bg-red-600 text-white font-black text-xs flex items-center justify-center shadow-md">
+          <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-red-600 to-rose-600 text-white font-black text-xs flex items-center justify-center shadow-lg shadow-red-600/30">
             ২
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-white">প্যাকেজ নির্বাচন করুন (Select Packages)</h3>
-            <p className="text-[11px] text-gray-400">একাধিক প্যাকেজ সিলেক্ট করতে পারেন</p>
+            <h3 className="text-sm font-extrabold text-white">{t('step2PackageSelection')}</h3>
+            <p className="text-[11px] text-gray-300">Choose your desired in-game amount</p>
           </div>
         </div>
 
@@ -41,8 +43,8 @@ export function PackageSelector({ packages, selectedPackages, onTogglePackage }:
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="প্যাকেজ খুঁজুন..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-red-500"
+            placeholder={t('searchPlaceholder')}
+            className="w-full pl-8 pr-3 py-1.5 rounded-2xl bg-white/[0.08] border border-white/20 text-xs text-white focus:outline-none focus:border-red-500/70 backdrop-blur-xl"
           />
         </div>
       </div>
@@ -56,20 +58,20 @@ export function PackageSelector({ packages, selectedPackages, onTogglePackage }:
               key={pkg.id}
               type="button"
               onClick={() => onTogglePackage(pkg)}
-              className={`p-3.5 rounded-2xl border text-left transition-all duration-200 relative group cursor-pointer ${
+              className={`p-3.5 rounded-2xl border text-left transition-all duration-300 relative group cursor-pointer backdrop-blur-2xl ${
                 isSelected
-                  ? 'bg-red-500/25 border-red-500 shadow-xl shadow-red-500/25 ring-2 ring-red-500/40 scale-102'
-                  : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10'
+                  ? 'bg-gradient-to-br from-red-600/30 to-amber-600/20 border-red-500/80 shadow-[0_0_20px_rgba(255,42,75,0.35)] ring-2 ring-red-500/50 scale-102'
+                  : 'bg-white/[0.06] border-white/15 hover:border-white/35 hover:bg-white/[0.12]'
               } ${!pkg.stock ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xl">{pkg.icon || '🪙'}</span>
                 <span
-                  className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
-                    pkg.stock ? 'text-emerald-400 bg-emerald-500/20' : 'text-red-400 bg-red-500/20'
+                  className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                    pkg.stock ? 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/30' : 'text-red-300 bg-red-500/20 border border-red-500/30'
                   }`}
                 >
-                  {pkg.stock ? 'ইন স্টক' : 'আউট'}
+                  {pkg.stock ? t('inStock') : t('outOfStock')}
                 </span>
               </div>
 
@@ -77,12 +79,12 @@ export function PackageSelector({ packages, selectedPackages, onTogglePackage }:
                 {pkg.name}
               </div>
 
-              <div className="text-sm font-black text-emerald-400 mt-1">
+              <div className="text-sm font-black text-emerald-300 mt-1">
                 {formatCurrency(pkg.price)}
               </div>
 
               {isSelected && (
-                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] shadow-md font-bold">
+                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] shadow-lg font-bold">
                   ✓
                 </div>
               )}

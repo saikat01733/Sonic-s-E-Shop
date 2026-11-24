@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateOrderStatus, getStoreData } from '@/lib/db';
+import { updateOrderStatus } from '@/lib/db';
+import { OrderStatusUpdateSchema, sanitizeString } from '@/lib/validations';
 
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, status, author } = body;
+    const parsed = OrderStatusUpdateSchema.safeParse(body);
 
-    if (!orderId || !status) {
-      return NextResponse.json({ success: false, error: 'Missing orderId or status' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: parsed.error.issues.map(i => i.message).join(', ') },
+        { status: 400 }
+      );
     }
 
+    const { orderId, status, author } = parsed.data;
     const updated = await updateOrderStatus(orderId, status, author || 'admin');
     return NextResponse.json({ success: true, order: updated });
   } catch (error: any) {

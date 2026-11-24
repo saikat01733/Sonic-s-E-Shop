@@ -252,14 +252,14 @@ export default function AdminPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#07090e] flex items-center justify-center p-4">
-        <Card variant="glass" className="w-full max-w-sm p-6 space-y-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card variant="glass" className="w-full max-w-sm p-6 space-y-4 border-white/25 shadow-2xl backdrop-blur-3xl">
           <div className="text-center">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center mx-auto text-white mb-2 shadow-lg shadow-red-500/30 font-black">
               ⚡
             </div>
             <h2 className="text-lg font-black text-white">Sonic’s E-Shop Admin</h2>
-            <p className="text-xs text-gray-400 mt-0.5">অ্যাডমিন প্যানেলে প্রবেশ করতে পিন দিন</p>
+            <p className="text-xs text-gray-300 mt-0.5">Enter Admin PIN to access Control Center</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-3">
@@ -267,23 +267,23 @@ export default function AdminPage() {
               type="password"
               value={pinInput}
               onChange={e => setPinInput(e.target.value)}
-              placeholder="অ্যাডমিন পিন (ডিফল্ট: sonic2026)"
+              placeholder="Admin PIN (Default: sonic2026)"
               className="text-center tracking-widest font-mono"
               autoFocus
             />
             {authError && (
-              <div className="text-xs text-red-400 text-center font-semibold bg-red-500/10 py-1.5 rounded-lg border border-red-500/20">
+              <div className="text-xs text-red-300 text-center font-semibold bg-red-500/20 py-1.5 rounded-xl border border-red-500/30">
                 {authError}
               </div>
             )}
             <Button variant="primary" size="md" className="w-full" type="submit">
-              প্রবেশ করুন →
+              Login to CMS →
             </Button>
           </form>
 
           <div className="text-center pt-2">
-            <Link href="/" className="text-xs text-gray-400 hover:text-white flex items-center justify-center gap-1">
-              <ArrowLeft className="w-3.5 h-3.5" /> হোম শপে ফিরুন
+            <Link href="/" className="text-xs text-gray-300 hover:text-white flex items-center justify-center gap-1 transition-colors">
+              <ArrowLeft className="w-3.5 h-3.5" /> Return to Storefront
             </Link>
           </div>
         </Card>
@@ -293,8 +293,8 @@ export default function AdminPage() {
 
   if (loading || !storeData) {
     return (
-      <div className="min-h-screen bg-[#07090e] flex items-center justify-center text-white text-xs">
-        <RefreshCw className="w-5 h-5 animate-spin mr-2 text-red-500" /> অ্যাডমিন ডেটা লোড হচ্ছে...
+      <div className="min-h-screen flex items-center justify-center text-white text-xs">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2 text-red-500" /> Loading Admin CMS Data...
       </div>
     );
   }
@@ -306,7 +306,7 @@ export default function AdminPage() {
     .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-gray-100 flex flex-col md:flex-row">
+    <div className="min-h-screen text-gray-100 flex flex-col md:flex-row p-2 sm:p-4 gap-4">
       {saveMessage && (
         <div
           className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl border text-xs font-bold shadow-xl flex items-center gap-2 ${

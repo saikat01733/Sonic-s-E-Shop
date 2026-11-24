@@ -410,6 +410,28 @@
   ],
   "orders": [
     {
+      "id": "SONIC-866670",
+      "gameId": "pubg",
+      "gameName": "PUBG Mobile UC",
+      "packages": [
+        {
+          "id": "uc_60",
+          "name": "60 UC",
+          "price": 115,
+          "inStock": true
+        }
+      ],
+      "totalAmount": 115,
+      "paymentMethod": "bKash",
+      "senderLastDigits": "4821",
+      "customData": {
+        "uid": "5123456789"
+      },
+      "status": "Pending",
+      "date": "Nov 24, 2026, 06:16 PM",
+      "timestamp": 1795522569336
+    },
+    {
       "id": "SONIC-882310",
       "gameId": "efootball",
       "gameName": "eFootball™ Coins",
@@ -434,6 +456,15 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1795522569337-88",
+      "action": "CREATED",
+      "entity": "Order: SONIC-866670",
+      "details": "New order submitted for PUBG Mobile UC (৳115) via bKash",
+      "author": "Customer",
+      "timestamp": 1795522569337,
+      "dateStr": "২৪ নভেম্বর, ২০২৬ এ ০৬:১৬ PM"
+    },
     {
       "id": "log-1795520487762-193",
       "action": "STATUS_CHANGE",
