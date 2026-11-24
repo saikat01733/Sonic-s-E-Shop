@@ -78,23 +78,23 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="relative w-full max-w-xl rounded-3xl bg-[#071322]/90 border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.85)] backdrop-blur-3xl overflow-hidden z-10"
+            className="relative w-full max-w-xl rounded-3xl bg-[#071322]/95 [html.light-theme_&]:bg-white/95 border border-white/15 [html.light-theme_&]:border-black/10 shadow-[0_25px_70px_rgba(0,0,0,0.85)] backdrop-blur-3xl overflow-hidden z-10"
           >
             {/* Top Search Bar */}
-            <div className="relative flex items-center px-4 py-3.5 border-b border-white/10">
-              <Search className="w-5 h-5 text-[oklch(65%_0.19_13.697)] mr-3 flex-shrink-0" />
+            <div className="relative flex items-center px-4 py-3.5 border-b border-white/10 [html.light-theme_&]:border-black/10">
+              <Search className="w-5 h-5 text-rose-400 mr-3 flex-shrink-0" />
               <input
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder={t('searchPlaceholder')}
-                className="w-full bg-transparent text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none"
+                className="w-full bg-transparent text-sm sm:text-base text-white [html.light-theme_&]:text-slate-900 placeholder-gray-400 [html.light-theme_&]:placeholder-slate-400 focus:outline-none"
               />
               {query ? (
                 <button
                   onClick={() => setQuery('')}
-                  className="p-1 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-1 rounded-full text-gray-400 hover:text-white [html.light-theme_&]:hover:text-black hover:bg-white/10 transition-colors"
                   aria-label="Clear search"
                 >
                   <X className="w-4 h-4" />
@@ -108,9 +108,9 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
 
             {/* Results / Suggestions Area */}
             <div className="max-h-[60vh] sm:max-h-[380px] overflow-y-auto p-3 space-y-2">
-              <div className="flex items-center justify-between px-2 py-1 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                <span className="flex items-center gap-1.5 text-[oklch(65%_0.19_13.697)]">
-                  <Gamepad2 className="w-3.5 h-3.5 text-[oklch(65%_0.19_13.697)]" />
+              <div className="flex items-center justify-between px-2 py-1 text-[11px] font-bold text-gray-400 [html.light-theme_&]:text-slate-500 uppercase tracking-wider">
+                <span className="flex items-center gap-1.5 text-rose-400">
+                  <Gamepad2 className="w-3.5 h-3.5 text-rose-400" />
                   {q ? `${filteredGames.length} ${t('navGames')}` : t('popularGames')}
                 </span>
                 <span className="text-[10px] text-gray-500 font-normal">Instant Top-Up</span>
@@ -121,7 +121,7 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
                   <div className="w-12 h-12 rounded-2xl bg-white/5 mx-auto flex items-center justify-center text-gray-500">
                     <Search className="w-6 h-6" />
                   </div>
-                  <p className="text-sm font-semibold text-gray-300">{t('noResults')}</p>
+                  <p className="text-sm font-semibold text-gray-300 [html.light-theme_&]:text-slate-700">{t('noResults')}</p>
                   <p className="text-xs text-gray-500">Try searching for PUBG, eFootball, or Roblox</p>
                 </div>
               ) : (
@@ -129,7 +129,7 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
                   <button
                     key={game.id}
                     onClick={() => handleSelectGame(game.slug)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-transparent hover:border-[oklch(45.5%_0.188_13.697_/_0.4)] transition-all text-left group cursor-pointer"
+                    className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] [html.light-theme_&]:bg-black/[0.03] [html.light-theme_&]:hover:bg-black/[0.06] border border-transparent hover:border-rose-500/40 transition-all text-left group cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <img
@@ -139,7 +139,7 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
                         onError={(e: any) => (e.target.src = '/assets/pubg.jpg')}
                       />
                       <div>
-                        <div className="text-xs sm:text-sm font-bold text-white group-hover:text-[oklch(65%_0.19_13.697)] transition-colors">
+                        <div className="text-xs sm:text-sm font-bold text-white [html.light-theme_&]:text-slate-900 group-hover:text-rose-400 [html.light-theme_&]:group-hover:text-rose-600 transition-colors">
                           {locale === 'bn' && game.name_bn ? game.name_bn : game.name}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
@@ -147,16 +147,16 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
                             <Zap className="w-2.5 h-2.5" /> {game.delivery_time}
                           </span>
                           <span className="text-[10px] text-gray-400">•</span>
-                          <span className="text-[10px] text-gray-300">{game.category_name}</span>
+                          <span className="text-[10px] text-gray-300 [html.light-theme_&]:text-slate-500">{game.category_name}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-[oklch(45.5%_0.188_13.697_/_0.2)] border border-[oklch(45.5%_0.188_13.697_/_0.4)] text-[oklch(65%_0.19_13.697)]">
+                      <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-600/20 border border-rose-500/40 text-rose-400">
                         {game.badge}
                       </span>
-                      <div className="w-7 h-7 rounded-full bg-white/5 group-hover:bg-[oklch(45.5%_0.188_13.697_/_0.2)] text-gray-400 group-hover:text-[oklch(65%_0.19_13.697)] flex items-center justify-center transition-colors">
+                      <div className="w-7 h-7 rounded-full bg-white/5 group-hover:bg-rose-600/20 text-gray-400 group-hover:text-rose-400 flex items-center justify-center transition-colors">
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </div>

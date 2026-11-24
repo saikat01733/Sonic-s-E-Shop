@@ -33,8 +33,10 @@ import {
 import { StoreData, GameItem, PackageItem, CouponItem, OrderItem, HeroSlide, TrustBadge, UserProfile } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { ImageUploader } from '@/components/common/ImageUploader';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AdminPage() {
+  const { user, isAuthenticated: isUserAuth, isAdmin } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [authError, setAuthError] = useState('');
@@ -59,7 +61,7 @@ export default function AdminPage() {
   useEffect(() => {
     const token = localStorage.getItem('sonic_admin_token');
     const params = new URLSearchParams(window.location.search);
-    if (token || params.get('auth') === '1') {
+    if (token || params.get('auth') === '1' || isAdmin || user?.role === 'admin') {
       setIsAuthenticated(true);
     }
     const tabParam = params.get('tab') as AdminTab;
@@ -67,7 +69,7 @@ export default function AdminPage() {
       setActiveTab(tabParam);
     }
     fetchStoreData();
-  }, []);
+  }, [isAdmin, user]);
 
   const fetchStoreData = async () => {
     try {
@@ -374,39 +376,31 @@ export default function AdminPage() {
     }
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <Card variant="glass" className="w-full max-w-sm p-6 space-y-4 border-white/25 shadow-2xl backdrop-blur-3xl">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center mx-auto text-white mb-2 shadow-lg shadow-red-500/30 font-black">
-              ⚡
-            </div>
-            <h2 className="text-lg font-black text-white">Sonic’s E-Shop Admin</h2>
-            <p className="text-xs text-gray-300 mt-0.5">Enter Admin PIN to access Control Center</p>
+        <Card variant="glass" className="w-full max-w-sm p-6 text-center space-y-4 border-white/20 [html.light-theme_&]:border-black/10 shadow-2xl backdrop-blur-3xl">
+          <div className="w-12 h-12 rounded-2xl bg-rose-600 flex items-center justify-center mx-auto text-white mb-2 shadow-lg shadow-rose-950/40 font-black">
+            ⚡
           </div>
+          <h2 className="text-lg font-black text-white [html.light-theme_&]:text-slate-900">Sonic’s E-Shop Admin</h2>
+          <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 mt-0.5">
+            {isUserAuth 
+              ? `Signed in as ${user?.email || user?.name} (${user?.role}). Administrator role required to access Control Center.`
+              : 'Please log in with an Administrator account to access the Control Center.'
+            }
+          </p>
 
-          <form onSubmit={handleLogin} className="space-y-3">
-            <Input
-              type="password"
-              value={pinInput}
-              onChange={e => setPinInput(e.target.value)}
-              placeholder="Admin PIN (Default: sonic2026)"
-              className="text-center tracking-widest font-mono"
-              autoFocus
-            />
-            {authError && (
-              <div className="text-xs text-red-300 text-center font-semibold bg-red-500/20 py-1.5 rounded-xl border border-red-500/30">
-                {authError}
-              </div>
-            )}
-            <Button variant="primary" size="md" className="w-full" type="submit">
-              Login to CMS →
-            </Button>
-          </form>
+          <Link
+            href="/login?redirect=/admin"
+            className="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs inline-flex items-center justify-center gap-2 shadow-lg shadow-rose-950/40 transition-all cursor-pointer"
+          >
+            <User className="w-4 h-4" />
+            <span>{isUserAuth ? 'Switch to Admin Account' : 'Login with Admin Account'}</span>
+          </Link>
 
           <div className="text-center pt-2">
-            <Link href="/" className="text-xs text-gray-300 hover:text-white flex items-center justify-center gap-1 transition-colors">
+            <Link href="/" className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 hover:text-white [html.light-theme_&]:hover:text-slate-950 flex items-center justify-center gap-1 transition-colors">
               <ArrowLeft className="w-3.5 h-3.5" /> Return to Storefront
             </Link>
           </div>
@@ -1408,11 +1402,11 @@ export default function AdminPage() {
               <Card variant="glass" className="p-4 flex items-center justify-between">
                 <div>
                   <div className="text-xs text-gray-400 font-bold">সুপার অ্যাডমিন</div>
-                  <div className="text-2xl font-black text-white mt-1">
+                  <div className="text-2xl font-black text-white [html.light-theme_&]:text-slate-900 mt-1">
                     {(storeData.users || []).filter(u => u.role === 'admin').length}
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-2xl bg-[oklch(45.5%_0.188_13.697_/_0.2)] border border-[oklch(45.5%_0.188_13.697_/_0.4)] flex items-center justify-center text-[oklch(65%_0.20_13.697)]">
+                <div className="w-10 h-10 rounded-2xl bg-rose-600/20 border border-rose-500/40 flex items-center justify-center text-rose-400">
                   <Crown className="w-5 h-5" />
                 </div>
               </Card>
@@ -1451,8 +1445,8 @@ export default function AdminPage() {
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0 ${
                             isUserAdmin
-                              ? 'bg-[oklch(45.5%_0.188_13.697)] shadow-md shadow-[oklch(45.5%_0.188_13.697_/_0.35)]'
-                              : 'bg-white/10 text-white'
+                              ? 'bg-rose-600 shadow-md shadow-rose-950/40'
+                              : 'bg-white/10 [html.light-theme_&]:bg-black/10 text-white [html.light-theme_&]:text-slate-800'
                           }`}>
                             {isUserAdmin ? <Crown className="w-5 h-5 text-white" /> : user.name.charAt(0).toUpperCase()}
                           </div>
@@ -1468,8 +1462,8 @@ export default function AdminPage() {
 
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
                           isUserAdmin
-                            ? 'bg-[oklch(45.5%_0.188_13.697_/_0.2)] text-[oklch(65%_0.20_13.697)] border border-[oklch(45.5%_0.188_13.697_/_0.4)]'
-                            : 'bg-white/10 text-gray-300 [html.light-theme_&]:text-slate-700'
+                            ? 'bg-rose-600/20 text-rose-400 [html.light-theme_&]:text-rose-600 border border-rose-500/40'
+                            : 'bg-white/10 [html.light-theme_&]:bg-black/5 text-gray-300 [html.light-theme_&]:text-slate-700'
                         }`}>
                           {isUserAdmin ? <Crown className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
                           {user.role}
@@ -1525,7 +1519,7 @@ export default function AdminPage() {
                     <select
                       value={editingUser.role}
                       onChange={e => setEditingUser({ ...editingUser, role: e.target.value as 'user' | 'admin' })}
-                      className="w-full px-3 py-2 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/15 [html.light-theme_&]:border-black/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold focus:outline-none focus:border-[oklch(45.5%_0.188_13.697)]"
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/15 [html.light-theme_&]:border-black/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold focus:outline-none focus:border-rose-500"
                     >
                       <option value="user" className="bg-[#0b172a] text-white">Regular Gamer (ইউজার)</option>
                       <option value="admin" className="bg-[#0b172a] text-white">👑 Super Admin (সম্পূর্ণ নিয়ন্ত্রণ)</option>
@@ -1626,20 +1620,21 @@ export default function AdminPage() {
             </div>
 
             <Card variant="glass" className="p-5 space-y-4">
-              <Input
-                label="অ্যাডমিন পিন পরিবর্তন করুন"
-                value={storeData.settings.adminPin}
-                onChange={e =>
-                  setStoreData({
-                    ...storeData,
-                    settings: { ...storeData.settings, adminPin: e.target.value }
-                  })
-                }
-                className="font-mono"
-              />
-              <Button variant="primary" size="sm" onClick={handleSaveSettings}>
-                পিন আপডেট করুন
-              </Button>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">
+                  ভূমিকা ভিত্তিক অ্যাডমিন নিয়ন্ত্রণ (Role-Based Admin Access)
+                </h3>
+              </div>
+              <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 leading-relaxed">
+                কোনো ম্যানুয়াল পিনের প্রয়োজন নেই। অনুমোদিত জিমেইল / ইমেইল আইডি দিয়ে লগইন করলেই স্বয়ংক্রিয়ভাবে অ্যাডমিন এক্সেস সক্রিয় হয়।
+              </p>
+              <div className="p-3 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/10 [html.light-theme_&]:border-black/10 flex items-center justify-between text-xs">
+                <span className="text-gray-400 [html.light-theme_&]:text-slate-600">বর্তমান লগইন:</span>
+                <span className="font-extrabold text-emerald-400 [html.light-theme_&]:text-emerald-700">
+                  {user?.email || user?.name || 'Administrator'} (Role: {user?.role || 'admin'})
+                </span>
+              </div>
             </Card>
 
             <Card variant="glass" className="p-5 space-y-3">

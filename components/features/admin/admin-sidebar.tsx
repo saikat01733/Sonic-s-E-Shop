@@ -62,16 +62,16 @@ export function AdminSidebar({
   ];
 
   return (
-    <aside className="w-full md:w-64 liquid-glass bg-white/[0.08] border border-white/20 flex flex-col justify-between flex-shrink-0 rounded-3xl p-2 shadow-2xl backdrop-blur-3xl">
+    <aside className="w-full md:w-64 liquid-glass bg-white/[0.08] [html.light-theme_&]:bg-white/90 border border-white/20 [html.light-theme_&]:border-black/10 flex flex-col justify-between flex-shrink-0 rounded-3xl p-2 shadow-2xl backdrop-blur-3xl">
       <div>
-        <div className="p-3 border-b border-white/15 flex items-center justify-between">
+        <div className="p-3 border-b border-white/15 [html.light-theme_&]:border-black/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-2xl bg-[oklch(45.5%_0.188_13.697)] flex items-center justify-center text-white font-black text-sm shadow-lg shadow-[oklch(45.5%_0.188_13.697_/_0.35)]">
+            <div className="w-8 h-8 rounded-2xl bg-rose-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-rose-950/40">
               ⚡
             </div>
             <div>
-              <h1 className="text-sm font-black text-white">Sonic CMS</h1>
-              <div className="text-[10px] text-emerald-300 font-bold flex items-center gap-1">
+              <h1 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">Sonic CMS</h1>
+              <div className="text-[10px] text-emerald-400 [html.light-theme_&]:text-emerald-700 font-bold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Live Cloud Sync
               </div>
@@ -80,7 +80,7 @@ export function AdminSidebar({
           <Link
             href="/"
             target="_blank"
-            className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors"
+            className="p-1.5 rounded-xl bg-white/10 [html.light-theme_&]:bg-black/5 hover:bg-white/20 text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black transition-colors"
             title="View Live Store"
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -98,8 +98,8 @@ export function AdminSidebar({
                 onClick={() => onSelectTab(item.id)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   isActive
-                    ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/35 scale-102'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    ? 'bg-rose-600 text-white shadow-lg shadow-rose-950/40 scale-102'
+                    : 'text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -107,7 +107,7 @@ export function AdminSidebar({
                   <span>{item.label}</span>
                 </div>
                 {item.badge ? (
-                  <span className="px-2 py-0.5 rounded-full bg-[oklch(45.5%_0.188_13.697)] text-white font-extrabold text-[10px] shadow-sm">
+                  <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white font-extrabold text-[10px] shadow-sm">
                     {item.badge}
                   </span>
                 ) : null}

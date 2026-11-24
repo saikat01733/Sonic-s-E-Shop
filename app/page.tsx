@@ -57,19 +57,19 @@ export default function HomeShowcasePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen flex flex-col justify-between w-full max-w-full">
       {/* Floating Apple Liquid Glass Pill Navbar */}
       <Navbar settings={settings} games={games} />
 
-      <main className="flex-1 w-full space-y-10 pb-12 overflow-x-hidden max-w-full">
+      <main className="flex-1 w-full space-y-10 pb-12 max-w-full">
         {/* 1. HIGH-CONTRAST LIVE NOTICE TICKER */}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-3.5 sm:pt-4">
-          <div className="live-notice-capsule rounded-full py-1.5 px-3 sm:px-4 flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-1.5 font-extrabold text-[11px] sm:text-xs bg-[oklch(45.5%_0.188_13.697_/_0.20)] border border-[oklch(45.5%_0.188_13.697_/_0.45)] text-[oklch(68%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] px-2.5 py-0.5 rounded-full flex-shrink-0 uppercase shadow-sm">
-              <Zap className="w-3.5 h-3.5 text-[oklch(68%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] animate-pulse" />
+          <div className="live-notice-capsule rounded-full overflow-hidden py-1.5 px-3 sm:px-4 flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-1.5 font-extrabold text-[11px] sm:text-xs bg-rose-600/20 border border-rose-500/40 text-rose-400 [html.light-theme_&]:text-rose-600 px-2.5 py-0.5 rounded-full flex-shrink-0 uppercase shadow-sm">
+              <Zap className="w-3.5 h-3.5 text-rose-400 [html.light-theme_&]:text-rose-600 animate-pulse" />
               <span>{t('liveNotice')}:</span>
             </div>
-            <div className="overflow-hidden relative w-full text-xs font-bold text-white [html.light-theme_&]:text-slate-900 tracking-wide min-w-0">
+            <div className="overflow-hidden relative w-full text-xs font-bold text-white [html.light-theme_&]:text-slate-900 tracking-wide min-w-0 flex-1">
               <div className="animate-marquee">
                 <span className="mr-12">{settings.tickerText}</span>
                 <span className="mr-12">{settings.tickerText}</span>
@@ -85,23 +85,23 @@ export default function HomeShowcasePage() {
 
         {/* 3. TRENDING GAMES SHOWCASE (3 CORE GAMES) */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/15 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 [html.light-theme_&]:border-black/10 pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="p-1 rounded-lg bg-cyan-500/20 text-cyan-400">
+                <span className="p-1 rounded-lg bg-rose-500/20 text-rose-400 [html.light-theme_&]:text-rose-600">
                   <Trophy className="w-4 h-4" />
                 </span>
-                <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">
+                <h2 className="text-xl sm:text-2xl font-black text-white [html.light-theme_&]:text-slate-900 tracking-wide">
                   {t('trendingGames')}
                 </h2>
               </div>
-              <p className="text-xs text-gray-300 mt-0.5">
+              <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 mt-0.5">
                 Instant delivery with 100% account guarantee via bKash & Nagad
               </p>
             </div>
             <Link
               href="/games"
-              className="text-xs font-extrabold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 group transition-colors"
+              className="text-xs font-extrabold text-rose-400 hover:text-rose-300 [html.light-theme_&]:text-rose-600 flex items-center gap-1 group transition-colors"
             >
               <span>{t('navGames')} ({games.length})</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -118,23 +118,23 @@ export default function HomeShowcasePage() {
         {/* 3. PERFORATED LIQUID GLASS VOUCHERS */}
         {coupons.length > 0 && (
           <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
-            <div className="flex items-center justify-between border-b border-white/15 pb-4">
+            <div className="flex items-center justify-between border-b border-white/10 [html.light-theme_&]:border-black/10 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="p-1 rounded-lg bg-cyan-500/20 text-cyan-400">
+                  <span className="p-1 rounded-lg bg-rose-500/20 text-rose-400 [html.light-theme_&]:text-rose-600">
                     <Tag className="w-4 h-4" />
                   </span>
-                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">
+                  <h2 className="text-xl sm:text-2xl font-black text-white [html.light-theme_&]:text-slate-900 tracking-wide">
                     {t('couponTitle')}
                   </h2>
                 </div>
-                <p className="text-xs text-gray-300 mt-0.5">
+                <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 mt-0.5">
                   {t('couponSubtitle')}
                 </p>
               </div>
               <Link
                 href="/coupons"
-                className="text-xs font-extrabold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 group transition-colors"
+                className="text-xs font-extrabold text-rose-400 hover:text-rose-300 [html.light-theme_&]:text-rose-600 flex items-center gap-1 group transition-colors"
               >
                 <span>{t('viewOffers')}</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -155,11 +155,11 @@ export default function HomeShowcasePage() {
 
         {/* 4. APPLE-STYLE BENTO GRID: WHY CHOOSE US */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
-          <div className="border-b border-white/15 pb-4">
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">
+          <div className="border-b border-white/10 [html.light-theme_&]:border-black/10 pb-4">
+            <h2 className="text-xl sm:text-2xl font-black text-white [html.light-theme_&]:text-slate-900 tracking-wide">
               {t('whyChooseUs')}
             </h2>
-            <p className="text-xs text-gray-300 mt-0.5">
+            <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 mt-0.5">
               Built on transparency, speed, and dedicated gamer security
             </p>
           </div>
@@ -170,14 +170,14 @@ export default function HomeShowcasePage() {
                 key={badge.id || idx}
                 variant="glass"
                 hoverable
-                className="p-5 flex flex-col justify-between space-y-3 border-white/20"
+                className="p-5 flex flex-col justify-between space-y-3 border-white/20 [html.light-theme_&]:border-black/10"
               >
-                <div className="w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/20 flex items-center justify-center shadow-lg shadow-black/40">
+                <div className="w-10 h-10 rounded-2xl bg-white/[0.08] [html.light-theme_&]:bg-black/[0.05] border border-white/20 [html.light-theme_&]:border-black/10 flex items-center justify-center shadow-lg shadow-black/40">
                   {getTrustIcon(badge.icon)}
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white">{badge.title}</h3>
-                  <p className="text-xs text-gray-300 mt-1 leading-relaxed">{badge.sub}</p>
+                  <h3 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">{badge.title}</h3>
+                  <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 mt-1 leading-relaxed">{badge.sub}</p>
                 </div>
               </Card>
             ))}

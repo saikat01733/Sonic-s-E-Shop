@@ -60,31 +60,31 @@ export function PackageSelector({ packages, selectedPackages, onTogglePackage }:
               onClick={() => onTogglePackage(pkg)}
               className={`p-3.5 rounded-2xl border text-left transition-all duration-300 relative group cursor-pointer backdrop-blur-2xl ${
                 isSelected
-                  ? 'bg-[oklch(45.5%_0.188_13.697_/_0.25)] border-[oklch(45.5%_0.188_13.697)] shadow-[0_0_20px_oklch(45.5%_0.188_13.697_/_0.35)] ring-2 ring-[oklch(45.5%_0.188_13.697_/_0.50)] scale-102'
-                  : 'bg-white/[0.06] border-white/15 hover:border-white/35 hover:bg-white/[0.12]'
+                  ? 'bg-rose-600/20 border-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.35)] ring-2 ring-rose-500/50 scale-102'
+                  : 'bg-white/[0.06] [html.light-theme_&]:bg-black/[0.03] border-white/10 [html.light-theme_&]:border-black/10 hover:border-rose-400 hover:bg-white/[0.12]'
               } ${!pkg.stock ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xl">{pkg.icon || '🪙'}</span>
                 <span
                   className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                    pkg.stock ? 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/30' : 'text-red-300 bg-red-500/20 border border-red-500/30'
+                    pkg.stock ? 'text-emerald-400 [html.light-theme_&]:text-emerald-700 bg-emerald-500/20 border border-emerald-500/30' : 'text-rose-400 bg-rose-500/20 border border-rose-500/30'
                   }`}
                 >
                   {pkg.stock ? t('inStock') : t('outOfStock')}
                 </span>
               </div>
 
-              <div className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">
+              <div className="text-xs font-bold text-white [html.light-theme_&]:text-slate-900 group-hover:text-rose-400 [html.light-theme_&]:group-hover:text-rose-600 transition-colors">
                 {pkg.name}
               </div>
 
-              <div className="text-sm font-black text-emerald-300 mt-1">
+              <div className="text-sm font-black text-rose-400 [html.light-theme_&]:text-rose-600 mt-1">
                 {formatCurrency(pkg.price)}
               </div>
 
               {isSelected && (
-                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] shadow-lg font-bold">
+                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] shadow-lg font-bold">
                   ✓
                 </div>
               )}

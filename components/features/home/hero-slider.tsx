@@ -134,10 +134,10 @@ export function HeroSlider({ slides: propSlides }: HeroSliderProps = {}) {
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                 className="space-y-1.5 sm:space-y-2"
               >
-                <h1 className="text-base sm:text-2xl md:text-4xl lg:text-5xl font-black tracking-wide text-white uppercase drop-shadow-2xl font-display leading-snug [text-wrap:balance] hyphens-none px-2">
+                <h1 style={{ color: '#ffffff' }} className="text-base sm:text-2xl md:text-4xl lg:text-5xl font-black tracking-wide text-white text-white-force uppercase drop-shadow-2xl font-display leading-snug [text-wrap:balance] hyphens-none px-2">
                   {activeSlide.title}
                 </h1>
-                <p className="text-[11px] sm:text-xs md:text-sm text-gray-200 font-medium drop-shadow-lg max-w-xl mx-auto line-clamp-2 px-2">
+                <p style={{ color: '#e2e8f0' }} className="text-[11px] sm:text-xs md:text-sm text-gray-200 text-white-force font-medium drop-shadow-lg max-w-xl mx-auto line-clamp-2 px-2">
                   {activeSlide.subtitle}
                 </p>
                 <div className="pt-1.5 sm:pt-2 flex items-center justify-center gap-2 sm:gap-3 flex-wrap">

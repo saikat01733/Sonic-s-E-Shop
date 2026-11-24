@@ -62,7 +62,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
         />
       </head>
-      <body className="antialiased selection:bg-[oklch(45.5%_0.188_13.697)] selection:text-white relative min-h-screen">
+      <body className="antialiased selection:bg-rose-600 selection:text-white relative min-h-screen">
         <AuthProvider>
           <LanguageProvider>
             {/* Deep Ocean Blue Ambient Lighting Engine */}

@@ -28,29 +28,29 @@ export function CouponTicket({ coupon, onCopyNotice }: CouponTicketProps) {
     <Card
       variant="glass"
       hoverable
-      className="p-5 flex flex-col justify-between space-y-4 relative overflow-hidden border-white/20 hover:border-emerald-500/50"
+      className="p-5 flex flex-col justify-between space-y-4 relative overflow-hidden border-white/10 [html.light-theme_&]:border-black/10 hover:border-emerald-500/50"
     >
       <div className="coupon-notch-left" />
       <div className="coupon-notch-right" />
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/40">
+          <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 [html.light-theme_&]:text-emerald-700 border border-emerald-500/30">
             {formatCurrency(coupon.discount)} {t('discount')}
           </span>
-          <span className="text-[10px] text-gray-300 font-bold">
+          <span className="text-[10px] text-gray-300 [html.light-theme_&]:text-slate-600 font-bold">
             {t('minSpendText')} {formatCurrency(coupon.minSpend)}
           </span>
         </div>
 
-        <div className="text-lg font-black tracking-widest text-white font-mono bg-white/[0.08] py-2 px-3 rounded-2xl border border-white/20 text-center my-3 shadow-inner backdrop-blur-xl">
+        <div className="text-lg font-black tracking-widest text-white [html.light-theme_&]:text-slate-900 font-mono bg-white/[0.08] [html.light-theme_&]:bg-black/[0.05] py-2 px-3 rounded-2xl border border-white/20 [html.light-theme_&]:border-black/10 text-center my-3 shadow-inner backdrop-blur-xl">
           {coupon.code}
         </div>
 
-        <p className="text-xs text-gray-300 leading-relaxed">{coupon.description}</p>
+        <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 leading-relaxed">{coupon.description}</p>
       </div>
 
-      <div className="space-y-2 pt-2 border-t border-white/15">
+      <div className="space-y-2 pt-2 border-t border-white/10 [html.light-theme_&]:border-black/10">
         <Button
           variant={hasCopied ? 'success' : 'glass'}
           size="sm"
@@ -63,7 +63,7 @@ export function CouponTicket({ coupon, onCopyNotice }: CouponTicketProps) {
 
         <Link
           href="/games"
-          className="w-full py-1.5 rounded-xl text-[11px] font-bold text-gray-400 hover:text-white text-center block transition-colors"
+          className="w-full py-1.5 rounded-xl text-[11px] font-bold text-gray-400 [html.light-theme_&]:text-slate-600 hover:text-rose-400 [html.light-theme_&]:hover:text-rose-600 text-center block transition-colors"
         >
           {t('browseGames')} →
         </Link>

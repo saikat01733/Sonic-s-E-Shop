@@ -24,11 +24,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        'bg-[oklch(45.5%_0.188_13.697)] hover:bg-[oklch(52%_0.20_13.697)] text-white shadow-lg shadow-[oklch(45.5%_0.188_13.697_/_0.35)] border border-[oklch(60%_0.18_13.697_/_0.40)] hover:shadow-[oklch(45.5%_0.188_13.697_/_0.50)]',
+        'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-950/40 border border-rose-500/40 hover:shadow-rose-900/50',
       glass:
         'bg-white/[0.07] [html.light-theme_&]:bg-black/[0.05] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.1] text-white [html.light-theme_&]:text-slate-900 border border-white/20 [html.light-theme_&]:border-black/10 backdrop-blur-2xl shadow-md hover:border-white/40',
       pill:
-        'bg-white/[0.07] [html.light-theme_&]:bg-black/[0.05] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.1] text-white [html.light-theme_&]:text-slate-900 border border-white/20 [html.light-theme_&]:border-black/10 backdrop-blur-2xl shadow-lg rounded-full hover:border-[oklch(45.5%_0.188_13.697_/_0.5)]',
+        'bg-white/[0.07] [html.light-theme_&]:bg-black/[0.05] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.1] text-white [html.light-theme_&]:text-slate-900 border border-white/20 [html.light-theme_&]:border-black/10 backdrop-blur-2xl shadow-lg rounded-full hover:border-rose-500/50',
       danger:
         'bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/35 shadow-md shadow-red-500/20',
       success:
@@ -36,7 +36,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ghost:
         'bg-transparent hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-gray-200 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black',
       outline:
-        'border border-[oklch(45.5%_0.188_13.697_/_0.40)] hover:border-[oklch(45.5%_0.188_13.697)] text-white [html.light-theme_&]:text-slate-900 hover:bg-[oklch(45.5%_0.188_13.697_/_0.15)] backdrop-blur-md',
+        'border border-rose-500/40 hover:border-rose-500 text-white [html.light-theme_&]:text-slate-900 hover:bg-rose-600/15 backdrop-blur-md',
     };
 
     return (

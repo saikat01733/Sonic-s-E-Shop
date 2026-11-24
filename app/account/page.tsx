@@ -1,39 +1,28 @@
 'use client';
 
-import React from 'react';
-import Navbar from '@/components/common/Navbar';
-import Footer from '@/components/common/Footer';
-import { PullStringLamp } from '@/components/features/account/pull-string-lamp';
-import { useSiteData } from '@/hooks/use-site-data';
-import { useLanguage } from '@/hooks/use-language';
-import { User } from 'lucide-react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AccountPage() {
-  const { games, settings } = useSiteData();
-  const { t } = useLanguage();
+  const router = useRouter();
+  const { isAuthenticated, isAdmin } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (isAdmin) {
+        router.replace('/admin');
+      } else {
+        router.replace('/orders');
+      }
+    } else {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isAdmin, router]);
 
   return (
-    <div className="min-h-screen flex flex-col justify-between">
-      <Navbar settings={settings} games={games} />
-
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 mt-8 w-full space-y-6">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/35 text-red-300 font-bold text-xs backdrop-blur-md">
-            <User className="w-3.5 h-3.5" />
-            <span>{t('navAccount')}</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">
-            {t('accountTitle')}
-          </h1>
-          <p className="text-xs text-gray-300">
-            {t('pullLampTip')}
-          </p>
-        </div>
-
-        <PullStringLamp />
-      </main>
-
-      <Footer settings={settings} />
+    <div className="min-h-screen flex items-center justify-center text-white text-xs">
+      <div className="animate-pulse">Loading Profile...</div>
     </div>
   );
 }

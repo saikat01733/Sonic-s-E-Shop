@@ -12,23 +12,23 @@ export default function BottomDock() {
   const { t } = useLanguage();
   const { isAuthenticated, isAdmin } = useAuth();
 
-  const accountHref = isAuthenticated ? (isAdmin ? '/admin' : '/account') : '/login';
+  const accountHref = isAuthenticated ? (isAdmin ? '/admin' : '/orders') : '/login';
+  const accountLabel = !isAuthenticated ? 'Login' : (isAdmin ? 'Admin' : t('navOrders'));
 
   const navItems = [
     { href: '/', label: t('navHome'), icon: Home },
     { href: '/games', label: t('navGames'), icon: Gamepad2 },
     { href: '/coupons', label: t('navCoupons'), icon: Tag },
-    { href: '/orders', label: t('navOrders'), icon: Package },
     { href: '/wallet', label: t('navWallet'), icon: Wallet },
-    { href: accountHref, label: t('navAccount'), icon: User, isAccount: true },
+    { href: accountHref, label: accountLabel, icon: User, isAccount: true },
   ];
 
   return (
     <nav className="fixed bottom-2.5 inset-x-0 mx-auto z-40 max-w-lg px-1 sm:px-3 pointer-events-none">
-      <div className="liquid-glass-dock pointer-events-auto py-1 sm:py-1.5 px-1 sm:px-4 flex items-center justify-around gap-0 sm:gap-1 shadow-2xl border-[oklch(45.5%_0.188_13.697_/_0.25)]">
+      <div className="liquid-glass-dock pointer-events-auto py-1 sm:py-1.5 px-1 sm:px-4 flex items-center justify-around gap-0 sm:gap-1 shadow-2xl border-white/10 [html.light-theme_&]:border-black/10">
         {navItems.map((item) => {
           const isActive = item.isAccount
-            ? (pathname === '/account' || pathname === '/login' || (isAdmin && pathname === '/admin'))
+            ? (pathname === '/login' || pathname === '/orders' || (isAdmin && pathname === '/admin'))
             : pathname === item.href;
           const Icon = item.icon;
 
@@ -38,7 +38,7 @@ export default function BottomDock() {
               href={item.href}
               className={`flex flex-col items-center justify-center py-0.5 sm:py-1 px-1 sm:px-3 rounded-full transition-all duration-300 relative group cursor-pointer ${
                 isActive
-                  ? 'bg-[oklch(45.5%_0.188_13.697)] text-white shadow-lg shadow-[oklch(45.5%_0.188_13.697_/_0.35)] scale-105 border border-[oklch(55%_0.20_13.697_/_0.4)]'
+                  ? 'bg-rose-600 text-white shadow-lg shadow-rose-950/40 scale-105 border border-rose-500/40'
                   : 'text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-slate-950 hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 active:scale-95'
               }`}
             >
@@ -47,7 +47,7 @@ export default function BottomDock() {
                 {item.label}
               </span>
               {isActive && (
-                <span className="absolute -bottom-0.5 w-1.5 h-1.5 rounded-full bg-[oklch(65%_0.20_13.697)] shadow-sm shadow-[oklch(65%_0.20_13.697)]" />
+                <span className="absolute -bottom-0.5 w-1.5 h-1.5 rounded-full bg-rose-400 shadow-sm shadow-rose-400" />
               )}
             </Link>
           );

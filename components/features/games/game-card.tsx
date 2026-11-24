@@ -52,25 +52,25 @@ export function GameCard({ game }: GameCardProps) {
         {/* Card Body */}
         <div className="p-4 space-y-3">
           <div>
-            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest block">
+            <span className="text-[10px] font-bold text-gray-400 [html.light-theme_&]:text-slate-500 uppercase tracking-widest block">
               {game.category_name}
             </span>
-            <h3 className="text-base font-black text-white group-hover:text-cyan-300 transition-colors mt-0.5">
+            <h3 className="text-base font-black text-white [html.light-theme_&]:text-slate-900 group-hover:text-rose-400 [html.light-theme_&]:group-hover:text-rose-600 transition-colors mt-0.5">
               {locale === 'bn' && game.name_bn ? game.name_bn : game.name}
             </h3>
-            <p className="text-xs text-gray-300 line-clamp-2 mt-1 leading-relaxed">
+            <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 line-clamp-2 mt-1 leading-relaxed">
               {game.description}
             </p>
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-gray-300 border-t border-white/15 pt-2.5">
-            <span className="flex items-center gap-1 text-emerald-300 font-bold">
+          <div className="flex items-center justify-between text-[11px] text-gray-300 [html.light-theme_&]:text-slate-600 border-t border-white/10 [html.light-theme_&]:border-black/10 pt-2.5">
+            <span className="flex items-center gap-1 text-emerald-400 [html.light-theme_&]:text-emerald-700 font-bold">
               <ShieldCheck className="w-3.5 h-3.5" /> {t('secureGuaranteed')}
             </span>
             <span>{game.packages.length} {t('packagesAvailable')}</span>
           </div>
 
-          <div className="w-full py-2.5 rounded-2xl bg-[oklch(45.5%_0.188_13.697)] hover:bg-[oklch(52%_0.20_13.697)] text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-[oklch(45.5%_0.188_13.697_/_0.35)] transition-all">
+          <div className="w-full py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-950/40 border border-rose-500/40 transition-all">
             <span>{t('topUpBtn')}</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>

@@ -73,16 +73,24 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
 
   return (
     <>
-      <header className="sticky top-2 z-50 w-full px-2 sm:px-4 md:px-6 mb-2">
+      <header className="sticky top-0 z-50 w-full pt-2 pb-2 px-2 sm:px-4 md:px-6 backdrop-blur-xl bg-[#030712]/60 [html.light-theme_&]:bg-slate-50/70 border-b border-white/5 [html.light-theme_&]:border-black/5 transition-all">
         <div className="max-w-6xl mx-auto liquid-glass-pill py-1.5 sm:py-2 px-2.5 sm:px-5 flex items-center justify-between gap-1.5 sm:gap-4 shadow-2xl flex-nowrap min-h-[44px]">
           {/* Brand Logo - STRICT 1-LINE HORIZONTAL ALIGNMENT (320px-1440px) */}
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group flex-shrink-0">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[oklch(45.5%_0.188_13.697)] flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-md shadow-[oklch(45.5%_0.188_13.697_/_0.4)] group-hover:scale-105 transition-transform flex-shrink-0">
+            <img
+              src={settings?.logo || '/logo.png'}
+              alt={settings?.siteName || t('siteName')}
+              className="h-6 sm:h-7 md:h-8 w-auto max-w-[105px] sm:max-w-[130px] md:max-w-[160px] object-contain flex-shrink-0"
+              onError={(e: any) => {
+                e.target.style.display = 'none';
+                if (e.target.nextElementSibling) e.target.nextElementSibling.classList.remove('hidden');
+              }}
+            />
+            <div className="hidden w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-rose-600 flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-md shadow-rose-900/40 group-hover:scale-105 transition-transform flex-shrink-0">
               ⚡
             </div>
-            <span className="font-extrabold tracking-tight text-[11px] sm:text-sm text-white [html.light-theme_&]:text-slate-900 flex-shrink-0">
-              <span className="inline sm:hidden">Sonic&apos;s</span>
-              <span className="hidden sm:inline">{settings?.siteName || t('siteName')}</span>
+            <span className="font-extrabold tracking-tight text-xs sm:text-sm text-white [html.light-theme_&]:text-slate-900 whitespace-nowrap flex-shrink-0 hidden lg:inline">
+              {settings?.siteName || t('siteName')}
             </span>
           </Link>
 
@@ -98,7 +106,7 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                   href={link.href}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                     isActive
-                      ? 'bg-[oklch(45.5%_0.188_13.697)] text-white shadow-lg shadow-[oklch(45.5%_0.188_13.697_/_0.35)] border border-[oklch(55%_0.20_13.697_/_0.4)]'
+                      ? 'bg-rose-600 text-white shadow-lg shadow-rose-900/35 border border-rose-500/40'
                       : 'text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-slate-950 hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5'
                   }`}
                 >
@@ -114,7 +122,7 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
             {/* Compact Search Icon Trigger (Desktop + Mobile) */}
             <button
               onClick={() => setIsSearchModalOpen(true)}
-              className="p-1.5 sm:p-2 rounded-full bg-white/[0.08] [html.light-theme_&]:bg-black/[0.04] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.08] border border-white/10 [html.light-theme_&]:border-black/10 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] transition-all cursor-pointer flex-shrink-0 hover:scale-105 active:scale-95 shadow-sm"
+              className="p-1.5 sm:p-2 rounded-full bg-white/[0.08] [html.light-theme_&]:bg-black/[0.04] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.08] border border-white/10 [html.light-theme_&]:border-black/10 text-rose-400 [html.light-theme_&]:text-rose-600 transition-all cursor-pointer flex-shrink-0 hover:scale-105 active:scale-95 shadow-sm"
               title="Search Games (⌘K / Ctrl+K)"
               aria-label="Open Search Modal"
             >
@@ -127,10 +135,10 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
               className="hidden sm:flex items-center gap-0.5 px-2 py-1 rounded-full bg-white/[0.08] [html.light-theme_&]:bg-black/[0.04] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.08] border border-white/10 [html.light-theme_&]:border-black/10 text-white [html.light-theme_&]:text-slate-800 text-[9px] sm:text-[11px] font-extrabold transition-all cursor-pointer shadow-sm flex-shrink-0"
               title="Switch Language / ভাষা পরিবর্তন"
             >
-              <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] flex-shrink-0" />
-              <span className={locale === 'en' ? 'text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] font-black' : 'text-gray-400 [html.light-theme_&]:text-slate-500'}>EN</span>
+              <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-rose-400 [html.light-theme_&]:text-rose-600 flex-shrink-0" />
+              <span className={locale === 'en' ? 'text-rose-400 [html.light-theme_&]:text-rose-600 font-black' : 'text-gray-400 [html.light-theme_&]:text-slate-500'}>EN</span>
               <span className="text-gray-500 [html.light-theme_&]:text-slate-400 text-[8px] sm:text-[10px]">|</span>
-              <span className={locale === 'bn' ? 'text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] font-black' : 'text-gray-400 [html.light-theme_&]:text-slate-500'}>বাং</span>
+              <span className={locale === 'bn' ? 'text-rose-400 [html.light-theme_&]:text-rose-600 font-black' : 'text-gray-400 [html.light-theme_&]:text-slate-500'}>বাং</span>
             </button>
 
             {/* Theme Switcher - Desktop & Tablet */}
@@ -141,9 +149,9 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
               aria-label="Toggle Dark/Light Mode"
             >
               {theme === 'dark' ? (
-                <Sun className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[oklch(70%_0.18_13.697)]" />
+                <Sun className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-rose-300" />
               ) : (
-                <Moon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[oklch(45.5%_0.188_13.697)]" />
+                <Moon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-rose-600" />
               )}
             </button>
 
@@ -151,7 +159,7 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
             {!isAuthenticated ? (
               <Link
                 href="/login"
-                className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[oklch(45.5%_0.188_13.697)] hover:bg-[oklch(52%_0.20_13.697)] text-white text-[10px] sm:text-xs font-black transition-all cursor-pointer shadow-md shadow-[oklch(45.5%_0.188_13.697_/_0.35)] border border-[oklch(60%_0.18_13.697_/_0.4)] flex-shrink-0 hover:scale-105 active:scale-95"
+                className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[10px] sm:text-xs font-black transition-all cursor-pointer shadow-md shadow-rose-900/35 border border-rose-500/40 flex-shrink-0 hover:scale-105 active:scale-95"
                 title="Login / লগইন"
               >
                 <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -163,11 +171,11 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className={`flex items-center gap-1 sm:gap-1.5 py-1 px-2 sm:px-2.5 rounded-full border transition-all cursor-pointer flex-shrink-0 ${
                     isAdmin
-                      ? 'bg-[oklch(45.5%_0.188_13.697_/_0.2)] border-[oklch(45.5%_0.188_13.697_/_0.5)] text-[oklch(65%_0.20_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] shadow-md shadow-[oklch(45.5%_0.188_13.697_/_0.2)]'
+                      ? 'bg-rose-600/20 border-rose-500/50 text-rose-400 [html.light-theme_&]:text-rose-600 shadow-md shadow-rose-900/20'
                       : 'bg-white/[0.08] [html.light-theme_&]:bg-black/[0.05] border-white/15 [html.light-theme_&]:border-black/10 text-white [html.light-theme_&]:text-slate-900'
                   }`}
                 >
-                  <div className="w-5 h-5 rounded-full bg-[oklch(45.5%_0.188_13.697)] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-rose-600 flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
                     {isAdmin ? <Crown className="w-3 h-3 text-white" /> : user?.name.charAt(0).toUpperCase()}
                   </div>
                   <span className="text-[11px] font-extrabold hidden sm:inline-block max-w-[70px] truncate">
@@ -179,17 +187,17 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                 {/* Dynamic RBAC Dropdown Menu - Explicit absolute overlay so capsule never deforms */}
                 {isUserMenuOpen && (
                   <div
-                    className="!absolute top-full right-0 mt-2 w-56 rounded-2xl liquid-glass bg-[#08172e]/95 [html.light-theme_&]:bg-white/95 border border-[oklch(45.5%_0.188_13.697_/_0.35)] [html.light-theme_&]:border-black/10 p-2 shadow-2xl z-50 text-xs space-y-1 backdrop-blur-3xl animate-fadeIn"
+                    className="!absolute top-full right-0 mt-2 w-56 rounded-2xl liquid-glass bg-[#08172e]/95 [html.light-theme_&]:bg-white/95 border border-rose-500/30 [html.light-theme_&]:border-black/10 p-2 shadow-2xl z-50 text-xs space-y-1 backdrop-blur-3xl animate-fadeIn"
                     style={{ position: 'absolute' }}
                   >
                     {/* User Profile Header */}
                     <div className="p-2 border-b border-white/10 [html.light-theme_&]:border-black/10 mb-1">
                       <div className="font-bold text-white [html.light-theme_&]:text-slate-900 truncate">{user?.name}</div>
                       <div className="text-[10px] text-gray-400 [html.light-theme_&]:text-slate-500 flex items-center justify-between mt-0.5">
-                        <span>{user?.phone}</span>
+                        <span>{user?.phone || user?.email}</span>
                         <span
                           className={`px-1.5 py-0.2 rounded-full font-extrabold uppercase text-[9px] ${
-                            isAdmin ? 'bg-[oklch(45.5%_0.188_13.697_/_0.2)] text-[oklch(65%_0.20_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]' : 'bg-white/10 text-white [html.light-theme_&]:text-slate-800'
+                            isAdmin ? 'bg-rose-600/20 text-rose-400 [html.light-theme_&]:text-rose-600' : 'bg-white/10 text-white [html.light-theme_&]:text-slate-800'
                           }`}
                         >
                           {user?.role}
@@ -204,19 +212,19 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-white [html.light-theme_&]:text-slate-900 font-bold transition-colors"
                         >
-                          <LayoutDashboard className="w-4 h-4 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]" />
-                          <span>Admin CMS Dashboard</span>
+                          <LayoutDashboard className="w-4 h-4 text-rose-400 [html.light-theme_&]:text-rose-600" />
+                          <span>Admin Control Center</span>
                         </Link>
                         <Link
-                          href="/admin"
+                          href="/admin?tab=games"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black transition-colors"
                         >
-                          <Gamepad2 className="w-4 h-4 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]" />
+                          <Gamepad2 className="w-4 h-4 text-rose-400 [html.light-theme_&]:text-rose-600" />
                           <span>Manage Games & Packages</span>
                         </Link>
                         <Link
-                          href="/admin"
+                          href="/admin?tab=orders"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black transition-colors"
                         >
@@ -227,19 +235,11 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                     ) : (
                       <>
                         <Link
-                          href="/account"
+                          href="/orders"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-white [html.light-theme_&]:text-slate-900 font-bold transition-colors"
                         >
-                          <User className="w-4 h-4 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]" />
-                          <span>My Account Profile</span>
-                        </Link>
-                        <Link
-                          href="/orders"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black transition-colors"
-                        >
-                          <Package className="w-4 h-4 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]" />
+                          <Package className="w-4 h-4 text-rose-400 [html.light-theme_&]:text-rose-600" />
                           <span>My Orders & Invoices</span>
                         </Link>
                         <Link
