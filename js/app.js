@@ -32,9 +32,10 @@ function saveOrder(order) {
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     renderGameCatalogGrid();
-    selectGame(currentSelectedGameId);
+    selectGame(currentSelectedGameId, false, false);
     renderOrders();
     initNoticeTicker();
+    triggerFramerEntranceAnimations();
 });
 
 // ============================================================
@@ -140,18 +141,31 @@ function renderGameCatalogGrid(filterCategory = 'all') {
             </div>
         </div>
     `).join('');
+
+    initMagneticCardTilt();
 }
 
 function filterCategory(cat, btn) {
     document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-    if (btn) btn.classList.add('active');
+    if (btn) {
+        btn.classList.add('active');
+        if (window.Motion) {
+            window.Motion.animate(btn, { scale: [1, 0.92, 1.05, 1] }, { duration: 0.28, easing: window.Motion.spring({ stiffness: 220, damping: 15 }) });
+        }
+    }
     renderGameCatalogGrid(cat);
+    if (window.Motion) {
+        window.Motion.animate('#gameCatalogGrid .game-card', 
+            { opacity: [0, 1], scale: [0.94, 1], y: [16, 0] }, 
+            { delay: window.Motion.stagger(0.06), easing: window.Motion.spring({ stiffness: 140, damping: 15 }) }
+        );
+    }
 }
 
 // ============================================================
 // 3. DYNAMIC GAME SELECTION & STEP RENDERING
 // ============================================================
-function selectGame(gameId, scrollToView = false) {
+function selectGame(gameId, scrollToView = false, triggerAnimation = true) {
     const game = GAME_CATALOG.find(g => g.id === gameId);
     if (!game) return;
 
@@ -184,6 +198,20 @@ function selectGame(gameId, scrollToView = false) {
 
     // Update Price
     updateTotalPrice();
+
+    if (triggerAnimation && window.Motion) {
+        const topUpBox = document.getElementById('gameTopUpSection');
+        if (topUpBox) {
+            window.Motion.animate(topUpBox, 
+                { opacity: [0.75, 1], y: [14, 0] }, 
+                { duration: 0.35, easing: window.Motion.spring({ stiffness: 150, damping: 16 }) }
+            );
+        }
+        window.Motion.animate('#pkgGrid .pkg-card', 
+            { opacity: [0, 1], scale: [0.95, 1], y: [12, 0] }, 
+            { delay: window.Motion.stagger(0.035), easing: window.Motion.spring({ stiffness: 160, damping: 16 }) }
+        );
+    }
 
     if (scrollToView) {
         const topUpBox = document.getElementById('gameTopUpSection');
@@ -283,6 +311,13 @@ function togglePackageCard(el, id, name, price) {
     el.classList.add('soft-press');
     setTimeout(() => el.classList.remove('soft-press'), 300);
 
+    if (window.Motion) {
+        window.Motion.animate(el, 
+            { scale: [1, 0.93, 1.05, 1] }, 
+            { duration: 0.32, easing: window.Motion.spring({ stiffness: 260, damping: 15 }) }
+        );
+    }
+
     const index = selectedPackages.findIndex(p => p.id === id);
     if (index > -1) {
         selectedPackages.splice(index, 1);
@@ -338,7 +373,15 @@ function filterPackages() {
 function selectPay(el, method) {
     currentPaymentMethod = method;
     document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('active'));
-    if (el) el.classList.add('active');
+    if (el) {
+        el.classList.add('active');
+        if (window.Motion) {
+            window.Motion.animate(el, 
+                { scale: [1, 0.94, 1.04, 1] }, 
+                { duration: 0.28, easing: window.Motion.spring({ stiffness: 240, damping: 15 }) }
+            );
+        }
+    }
 
     const box = document.getElementById('payInstructionBox');
     const nameSpan = document.getElementById('payMethodName');
@@ -614,6 +657,12 @@ function switchTab(btn, tabId) {
     const target = document.getElementById(tabId);
     if (target) {
         target.classList.add('active-tab');
+        if (window.Motion) {
+            window.Motion.animate(target, 
+                { opacity: [0, 1], y: [18, 0], scale: [0.985, 1] }, 
+                { duration: 0.35, easing: window.Motion.spring({ stiffness: 140, damping: 16 }) }
+            );
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
@@ -705,3 +754,93 @@ document.addEventListener('click', function(e) {
         setTimeout(() => target.classList.remove('soft-press'), 300);
     }
 });
+
+// ============================================================
+// 9. FRAMER MOTION ENGINE & 3D MAGNETIC INTERACTIONS
+// ============================================================
+function initMagneticCardTilt() {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    const cards = document.querySelectorAll('.game-card');
+    cards.forEach(card => {
+        card.style.transformStyle = 'preserve-3d';
+        card.style.perspective = '1000px';
+
+        card.onmousemove = (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -6;
+            const rotateY = ((x - centerX) / centerX) * 6;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-5px)`;
+        };
+
+        card.onmouseleave = () => {
+            if (window.Motion) {
+                window.Motion.animate(card, 
+                    { transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)' }, 
+                    { duration: 0.4, easing: window.Motion.spring({ stiffness: 180, damping: 16 }) }
+                );
+            } else {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+            }
+        };
+    });
+}
+
+function triggerFramerEntranceAnimations() {
+    if (window.Motion) {
+        const { animate, stagger, spring } = window.Motion;
+
+        // 1. Top Navbar entrance
+        animate('.top-navbar', 
+            { opacity: [0, 1], y: [-24, 0] }, 
+            { duration: 0.55, easing: spring({ stiffness: 120, damping: 15 }) }
+        );
+
+        // 2. Announcement ticker entrance
+        animate('.announcement-bar', 
+            { opacity: [0, 1], y: [-10, 0] }, 
+            { delay: 0.05, duration: 0.45, easing: spring({ stiffness: 120, damping: 15 }) }
+        );
+
+        // 3. Hero Banner entrance
+        animate('.hero-banner-container', 
+            { opacity: [0, 1], scale: [0.95, 1], y: [20, 0] }, 
+            { delay: 0.08, duration: 0.6, easing: spring({ stiffness: 110, damping: 14 }) }
+        );
+
+        // 4. Trust Badges staggered cascade
+        animate('.trust-badge-card', 
+            { opacity: [0, 1], y: [18, 0], scale: [0.96, 1] }, 
+            { delay: stagger(0.06, { start: 0.16 }), easing: spring({ stiffness: 130, damping: 15 }) }
+        );
+
+        // 5. Section Header & Category Pills
+        animate('.section-head-box, .cat-pills-scroll', 
+            { opacity: [0, 1], y: [16, 0] }, 
+            { delay: 0.26, duration: 0.45, easing: spring({ stiffness: 120, damping: 15 }) }
+        );
+
+        // 6. Game Catalog Cards staggered entrance
+        animate('#gameCatalogGrid .game-card', 
+            { opacity: [0, 1], y: [28, 0], scale: [0.94, 1] }, 
+            { delay: stagger(0.08, { start: 0.32 }), easing: spring({ stiffness: 120, damping: 15 }) }
+        );
+
+        // 7. Top-Up Purchase Section
+        animate('#gameTopUpSection', 
+            { opacity: [0, 1], y: [24, 0] }, 
+            { delay: 0.5, duration: 0.5, easing: spring({ stiffness: 110, damping: 15 }) }
+        );
+
+        // 8. Bottom Navigation Dock
+        animate('.bottom-dock', 
+            { opacity: [0, 1], y: [30, 0] }, 
+            { delay: 0.4, duration: 0.55, easing: spring({ stiffness: 120, damping: 15 }) }
+        );
+    }
+    initMagneticCardTilt();
+}
