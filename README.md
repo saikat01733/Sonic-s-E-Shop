@@ -7,17 +7,18 @@
   <br/><br/>
 
   # ⚡ Sonic’s E-Shop
-  ### 🎮 Premier eFootball Coin Top-Up & Gaming Digital Marketplace
-  **Ultra-Responsive • Cyber-Glassmorphism UI • Instant 1–10 Min Automated Delivery**
+  ### 🎮 Enterprise Multi-Game Top-Up & Digital Gaming Platform
+  **Khela Store Architecture • eFootball, PUBG UC, Roblox Robux & Free Fire • 320px–1440px Responsive**
 
   <br/>
 
   <!-- Colorful Feature Badges -->
   <p align="center">
+    <a href="https://github.com/saikat01733/Sonic-s-E-Shop"><img src="https://img.shields.io/badge/Architecture-Khela_Store_Multi--Game-ff0055?style=for-the-badge&logo=firebase&logoColor=white" alt="Khela Store Architecture"></a>
     <a href="https://github.com/saikat01733/Sonic-s-E-Shop"><img src="https://img.shields.io/badge/Screen_Support-320px_⟷_1440px-00f2fe?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Screen Support 320px to 1440px"></a>
     <a href="https://github.com/saikat01733/Sonic-s-E-Shop"><img src="https://img.shields.io/badge/Theme-Dark_Neon_|_Frosted_Light-7928CA?style=for-the-badge&logo=color-scheme&logoColor=white" alt="Dual Theme"></a>
     <a href="https://github.com/saikat01733/Sonic-s-E-Shop"><img src="https://img.shields.io/badge/Speed-1--10_Mins_Delivery-ff007f?style=for-the-badge&logo=speedtest&logoColor=white" alt="Instant Speed"></a>
-    <a href="https://github.com/saikat01733/Sonic-s-E-Shop"><img src="https://img.shields.io/badge/Security-100%25_Safe_Guaranteed-00c853?style=for-the-badge&logo=shield&logoColor=white" alt="100% Safe"></a>
+    <a href="https://github.com/saikat01733/Sonic-s-E-Shop"><img src="https://img.shields.io/badge/Order_Tracker-Live_Lookup_|_Invoice-00c853?style=for-the-badge&logo=sparkpost&logoColor=white" alt="Order Tracking"></a>
     <a href="https://github.com/saikat01733/Sonic-s-E-Shop"><img src="https://img.shields.io/badge/Payment-bKash_|_Nagad-D12053?style=for-the-badge&logo=contactlesspayment&logoColor=white" alt="Local Payment"></a>
   </p>
 
@@ -43,10 +44,10 @@
   <p align="center">
     <b><a href="#-about-the-project">About</a></b> •
     <b><a href="#-key-features">Features</a></b> •
+    <b><a href="#-supported-games--catalog">Games Catalog</a></b> •
     <b><a href="#-responsive-design-matrix-320px---1440px">Responsiveness</a></b> •
-    <b><a href="#-coin-packages--pricing">Packages</a></b> •
     <b><a href="#-payment-methods">Payment</a></b> •
-    <b><a href="#-tech-stack">Tech Stack</a></b> •
+    <b><a href="#-tech-stack--architecture">Tech Stack</a></b> •
     <b><a href="#-installation--usage">Quick Start</a></b> •
     <b><a href="#-customer-support">Support</a></b>
   </p>
@@ -57,12 +58,14 @@
 
 ## 🌟 About The Project
 
-**Sonic’s E-Shop** is an ultra-modern, high-octane gaming top-up web application designed specifically for the eFootball gaming community in Bangladesh. Built with sleek **Cyber-Glassmorphism**, smooth tactile micro-animations, and full-spectrum responsive engineering, it gives gamers an unmatched, lightning-fast shopping experience across every device from a tiny **320px mobile screen** to a massive **1440px desktop display**.
+**Sonic’s E-Shop** is an enterprise-grade multi-game top-up platform engineered after Bangladesh's leading gaming store models (inspired by **Khela Store**). Built with sleek **Cyber-Glassmorphism**, modular architecture, and full-spectrum responsive engineering, it gives gamers an unmatched, lightning-fast shopping experience across every device from a tiny **320px mobile phone** to a massive **1440px desktop monitor**.
 
 > **Highlights:**
-> - 💎 **Transparent Logo Branding**: Seamlessly integrates into the glowing top navigation bar without borders or background artifacts.
-> - ⚡ **Fluid Scalability**: Zero horizontal scrollbar, intelligent flex/grid adaptations, and dynamic typography.
-> - 🛡️ **Konami ID Safety First**: Safe top-up process ensuring 100% account security with zero ban risk.
+> - 🎮 **Multi-Game Hub**: eFootball™ Coins, PUBG Mobile UC, Roblox Robux, and Free Fire Diamonds in one unified shop.
+> - ⚡ **Smart Product Type Engine**: Automatically switches between **UID Direct Top-Up** (no password required) and **Login Purchase** (Konami ID/Pass) based on game specification.
+> - 🧾 **Instant Digital Invoice**: Generates printable receipts with Order ID, detailed breakdown, and 1-click WhatsApp support links.
+> - 🔍 **Live Order Tracking**: Search orders anytime using Order ID or WhatsApp number.
+> - 💎 **Transparent Logo & Aspect-Ratio Banner**: Crystal-clear branding without solid container boxes across 320px to 1440px.
 
 ---
 
@@ -71,87 +74,77 @@
 <table>
   <tr>
     <td width="50%">
-      <h3>🌓 Dual Cyber-Glass Theme Engine</h3>
-      Toggle effortlessly between glowing <b>Cyber Dark</b> (deep space radial gradients with neon cyan/red accents) and <b>Frosted Light Glass</b> (crisp, elegant blur with rich contrast).
+      <h3>🎮 Khela Store Multi-Game Catalog</h3>
+      Filter by category (All, eFootball, PUBG Mobile, Roblox, Free Fire) with interactive pills, real-time stock indicators, and custom delivery tags.
     </td>
     <td width="50%">
-      <h3>📱 320px ⟷ 1440px Full Responsiveness</h3>
-      Engineered with custom media queries and <code>clamp()</code> scaling. Logo, search bar, package cards, and banner adapt automatically with pixel-perfect precision on all viewports.
+      <h3>🌓 Dual Cyber-Glass Theme Engine</h3>
+      Toggle effortlessly between glowing <b>Cyber Dark</b> (deep space radial gradients with neon cyan/red accents) and <b>Frosted Light Glass</b> (crisp, elegant blur with rich contrast).
     </td>
   </tr>
   <tr>
     <td width="50%">
+      <h3>⚙️ Dynamic Step 1 Form Adapter</h3>
+      Adapts automatically to the selected game: renders Android/iOS device selector & Konami login for eFootball; renders UID & Character Name for PUBG/Free Fire; renders Username for Roblox.
+    </td>
+    <td width="50%">
       <h3>🪙 Real-Time Multi-Package Cart</h3>
-      Select multiple coin packages and legendary player bundle cards in one go! Real-time dynamic price tally (৳) with instant stock status badges (🟢 In Stock / 🔴 Out of Stock).
+      Select multiple coin, UC, diamond, or Robux packages in one go! Real-time dynamic price tally (৳) with instant stock badges (🟢 In Stock / 🔴 Out of Stock).
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🎟️ Promo & Coupon Engine</h3>
+      Integrated discount vouchers (<code>SONIC10</code>, <code>EFOOTBALL</code>, <code>KHELA</code>) with 1-click copy-paste and real-time total price deductions.
     </td>
     <td width="50%">
       <h3>🚚 Animated Interactive Delivery Truck</h3>
-      Experience tactile checkout! Clicking <b>Buy Now</b> launches an animated 3D-styled delivery truck with active headlights driving across the road line before order completion.
+      Experience tactile checkout! Clicking <b>Order Confirm</b> launches an animated 3D-styled delivery truck driving across the road line before order completion.
     </td>
   </tr>
   <tr>
     <td width="50%">
       <h3>💳 1-Click Local Payment (bKash & Nagad)</h3>
-      Includes interactive payment panels with copy-to-clipboard account numbers and 4-digit sender verification inputs for hassle-free bKash and Nagad transactions.
+      Interactive payment panels with 1-click copy account number (<code>01733185830</code>) and 4-digit sender verification inputs for seamless transactions.
     </td>
     <td width="50%">
-      <h3>🔐 Firebase Multi-Auth with Retro Lamp</h3>
-      Interactive login experience: pull the retro lamp string to illuminate the stage! Supports <b>Google One-Tap OAuth</b>, <b>Email/Password</b>, and <b>Phone Number</b> registration.
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <h3>🧭 Floating Bottom Dock Navigation</h3>
-      Quick-switch tabs in one touch with the iOS-inspired magnified bottom dock: <b>Home</b>, <b>My Wallet</b>, <b>Orders</b>, and <b>Redeem Codes</b>.
-    </td>
-    <td width="50%">
-      <h3>💬 Multi-Channel Instant Support</h3>
-      Floating action button triggering a modal with direct 1-click links for <b>WhatsApp</b>, <b>Telegram</b>, <b>Gmail Support</b>, and direct phone call assistance.
+      <h3>🧾 Digital Invoices & Live Tracking</h3>
+      Full offline-persistent order history in <b>My Orders</b> tab with searchable Order ID lookup and printable digital receipt modal.
     </td>
   </tr>
 </table>
 
 ---
 
+## 🎮 Supported Games & Top-Up Catalog
+
+| Game Title | Product Type | Required Info | Packages Available | Delivery Speed |
+|:---|:---:|:---:|:---:|:---:|
+| ⚽ **eFootball™ 2026** | `Login Purchase` | Device (Android/iOS), Konami Mail & Password | 130 to 12,800 Coins + Player Packs | ⚡ 1–10 Minutes |
+| 🔫 **PUBG Mobile** | `In-Game ID (UID)` | Player ID (UID), Character Name (Optional) | 60 to 8,100 UC | ⚡ 1–5 Minutes |
+| 🧱 **Roblox** | `Username ID` | Roblox Username | 80 to 4,500 Robux | ⚡ 5–15 Minutes |
+| 💎 **Free Fire** | `In-Game ID (UID)` | Player ID (UID) | 115 to 2,230 Diamonds + Memberships | ⚡ 1–3 Minutes |
+
+---
+
 ## 📐 Responsive Design Matrix (320px - 1440px)
 
-Every single element—including typography, icons, card grids, banner artwork, and header navigation—is calibrated across 5 distinct viewport tiers:
+Every single element—typography, icons, catalog cards, package grids, banner artwork, and header navigation—is calibrated across 5 distinct viewport tiers:
 
 ```
 [320px Phone] ──> [480px Mobile] ──> [768px Tablet] ──> [1024px Laptop] ──> [1440px Desktop]
   28px Logo          34px Logo          40px Logo           44px Logo           48px Logo
-  16:9 Banner        16:9 Banner        2.2:1 Banner        2.5:1 Banner        2.7:1 Banner
-  2-Col Cards        2-Col Cards        3-Col Cards         4-Col Cards         4-Col Grid (Max)
+  2-Col Catalog      2-Col Catalog      3-Col Catalog       4-Col Catalog       4-Col Grid (Max)
+  2-Col Packages     2-Col Packages     3-Col Packages      4-Col Packages      4-Col Grid (Max)
 ```
 
-| Viewport Tier | Target Devices | Logo Scaling | Hero Banner | Card Layout | Navigation Behavior |
+| Viewport Tier | Target Devices | Logo Scaling | Hero Banner | Grid Layout | Navigation Behavior |
 |:---|:---|:---:|:---:|:---:|:---|
-| **320px – 399px** | iPhone SE, Galaxy Fold (outer), Mini devices | `28px` height (max 110px) | `16 : 9` ratio, 14px radius | 2 columns (compact padding) | Compact search (115px), 48px toggle, 28px menu, **Zero overflow** |
-| **400px – 599px** | iPhone 12/13/14/15/16, Galaxy S, Pixel | `34px` height (max 140px) | `16 : 9` ratio, 18px radius | 2 columns (standard) | Standard search box, fluid gaps |
-| **600px – 767px** | Phablets, iPads (portrait), Small tablets | `36px` height (max 155px) | `1.9 : 1` widescreen | 3 columns grid | Container widens to `680px`, comfortable spacing |
-| **768px – 1023px** | iPad Air, iPad Pro, Tablets (landscape) | `40px` height (max 170px) | `2.2 : 1` widescreen | 3 columns grid | Container expands to `780px`, 250px search bar |
-| **1024px – 1440px+**| MacBooks, Laptops, 1080p & 1440p Monitors | `44px–48px` (max 210px) | `2.7 : 1` ultra-wide | 4 columns desktop grid | Container scales smoothly to `1100px`, centered dock |
-
----
-
-## 🪙 Coin Packages & Live Pricing
-
-| 🎮 Coin Package / Special Deals | 💰 Official Price | 📦 Current Status | ⚡ Delivery Speed |
-|:---|:---:|:---:|:---:|
-| **130 eFootball Coins** | ৳ 170 | `🟢 In Stock` | Instant (1-10 Min) |
-| **260 eFootball Coins** | ৳ *** | `🔴 Out of Stock` | Restocking Soon |
-| **300 eFootball Coins** | ৳ 350 | `🟢 In Stock` | Instant (1-10 Min) |
-| **550 eFootball Coins** | ৳ 630 | `🟢 In Stock` | Instant (1-10 Min) |
-| **750 eFootball Coins** | ৳ 840 | `🟢 In Stock` | Instant (1-10 Min) |
-| **840 eFootball Coins** | ৳ *** | `🔴 Out of Stock` | Restocking Soon |
-| **1040 eFootball Coins** | ৳ 1,170 | `🟢 In Stock` | Instant (1-10 Min) |
-| **1630 eFootball Coins** | ৳ **** | `🔴 Out of Stock` | Restocking Soon |
-| **2130 eFootball Coins** | ৳ 2,300 | `🟢 In Stock` | Instant (1-10 Min) |
-| **3250 eFootball Coins** | ৳ 3,420 | `🟢 In Stock` | Instant (1-10 Min) |
-| **5700 eFootball Coins** | ৳ 5,600 | `🟢 In Stock` | Instant (1-10 Min) |
-| **12800 eFootball Coins** | ৳ 12,350 | `🟢 In Stock` | Instant (1-10 Min) |
-| **⭐ 50 Coins + LUIS SUÁREZ** | ৳ 110 | `🟢 In Stock` | Special Deal 🔥 |
-| **⭐ 100 Coins + IKER CASILLAS** | ৳ 300 | `🟢 In Stock` | Special Deal 🔥 |
+| **320px – 399px** | iPhone SE, Galaxy Fold, Mini phones | `28px` height (max 110px) | `1024:439` native ratio | 2 columns (compact padding) | Compact search (115px), 48px toggle, 28px menu, **Zero overflow** |
+| **400px – 599px** | iPhone 12/13/14/15/16, Galaxy S, Pixel | `34px` height (max 140px) | `1024:439` native ratio | 2 columns (standard) | Standard search box, fluid gaps |
+| **600px – 767px** | Phablets, iPads (portrait), Small tablets | `36px` height (max 155px) | `1024:439` widescreen | 3 columns grid | Container widens to `680px`, comfortable spacing |
+| **768px – 1023px** | iPad Air, iPad Pro, Tablets (landscape) | `40px` height (max 170px) | `1024:439` widescreen | 3 columns grid | Container expands to `780px`, 250px search bar |
+| **1024px – 1440px+**| MacBooks, Laptops, 1080p & 1440p Monitors | `44px–48px` (max 210px) | `1024:439` ultra-wide | 4 columns desktop grid | Container scales smoothly to `1100px`, centered dock |
 
 ---
 
@@ -167,10 +160,11 @@ Every single element—including typography, icons, card grids, banner artwork, 
 </div>
 
 ### 📝 Step-by-Step Order Guide:
-1. **Step 1:** Select your gaming device (`Android` or `iOS`) and enter your Konami Mail, Password, and WhatsApp Number.
-2. **Step 2:** Click to choose your desired eFootball Coin package(s).
-3. **Step 3:** Select your payment method (`bKash` or `Nagad`). Copy the number with one tap, send the exact total amount, and input your sender account's last 4 digits.
-4. **Step 4:** Hit the **Buy Now** truck button to place your order!
+1. **Step 1:** Click on your desired game from the **Gaming Top-Up Catalog** (eFootball, PUBG, Roblox, or Free Fire).
+2. **Step 2:** Fill in your required account information (UID or Konami login) and WhatsApp number.
+3. **Step 3:** Select your desired package(s) and apply any promo code (e.g. `SONIC10`).
+4. **Step 4:** Select payment method (`bKash` or `Nagad`), copy number, send payment, and enter your last 4 digits.
+5. **Step 5:** Click **অর্ডার কনফার্ম করুন**! The animated delivery truck dispatches, your digital invoice pops up, and order details are sent to WhatsApp.
 
 ---
 
@@ -178,30 +172,30 @@ Every single element—including typography, icons, card grids, banner artwork, 
 
 ```mermaid
 graph LR
-    subgraph Frontend [Modern Frontend]
-        HTML5[HTML5 Semantic] --> CSS3[CSS3 Cyber-Glassmorphism]
-        CSS3 --> Responsive[320px - 1440px Media Queries]
-        Responsive --> JS[Vanilla ES6+ Reactive DOM]
+    subgraph Frontend [Modern Frontend Architecture]
+        HTML5[index.html Semantic SPA] --> CSSModules[Modular CSS: variables, main, responsive]
+        CSSModules --> StyleBundle[style.css Production Bundle]
+        StyleBundle --> JSModules[Modular JS Engine: catalog.js & app.js]
     end
 
-    subgraph Assets [High-Performance Graphics]
-        PNG[Transparent logo.png]
-        WebP[Optimized logo.webp & banner.webp]
-        JPG[High-Def banner.jpg]
+    subgraph Data [Catalog & Storage]
+        Catalog[GAME_CATALOG Data Model]
+        LocalStorage[Client-Side Persistent Orders & Theme]
     end
 
-    subgraph Services [Cloud & Payments]
-        Firebase[Firebase Authentication]
-        Payments[bKash & Nagad Send Money]
+    subgraph Services [Cloud & Payment Gateways]
+        Firebase[Firebase Multi-Auth SDK]
+        Payment[bKash & Nagad Send Money]
+        WhatsApp[Automated WhatsApp Dispatch]
     end
 
-    Frontend --> Assets
+    Frontend --> Data
     Frontend --> Services
 ```
 
-- **🎨 CSS Architecture**: Modular structure (`variables.css`, `main.css`, `responsive.css`), CSS Variables (`:root`), Backdrop-filter Blur, Custom Glass Shadows, Flexbox & CSS Grid.
-- **⚡ JavaScript Logic**: Dynamic package calculation, search filter algorithm, theme toggle memory, animation state triggers.
-- **🖼️ Image Optimization**: Dual WebP + PNG/JPEG fallback pipeline using `<picture>` elements for maximum speed and zero layout shift.
+- **🎨 CSS Architecture**: Modular files (`variables.css`, `main.css`, `responsive.css`), CSS Variables (`:root`), Backdrop-filter Blur, Custom Glass Shadows, Flexbox & CSS Grid.
+- **⚡ JavaScript Logic**: Reactive game catalog rendering, dynamic form field generation, multi-package cart calculation, coupon validation, live order search, printable receipts.
+- **🖼️ Image Optimization**: WebP + PNG/JPEG fallback pipeline using `<picture>` elements for zero layout shift.
 
 ---
 
@@ -212,9 +206,17 @@ Sonic-s-E-Shop/
 ├── index.html          # Main single-page application & interactive UI
 ├── css/
 │   ├── variables.css   # Design tokens, color schemes & dark/light theme variables
-│   ├── main.css        # Core layout, components, announcement ticker & badges
+│   ├── main.css        # Core layout, catalog grid, receipt modal & badges
 │   ├── responsive.css  # Dedicated 320px to 1440px+ device media queries
-│   └── style.css       # Master modular stylesheet
+│   └── style.css       # Master modular stylesheet with @import
+├── js/
+│   ├── catalog.js      # Multi-game catalog data model (eFootball, PUBG, Roblox, FF)
+│   └── app.js          # Core application engine, order tracker & dynamic UI
+├── assets/
+│   ├── efootball.jpg   # eFootball poster graphic
+│   ├── pubg.jpg        # PUBG Mobile poster graphic
+│   ├── roblox.jpg      # Roblox Robux poster graphic
+│   └── freefire.jpg    # Free Fire poster graphic
 ├── style.css           # Production bundled stylesheet
 ├── logo.png            # Transparent brand logo (WebP/PNG)
 ├── logo.webp           # Optimized WebP logo asset
@@ -239,8 +241,6 @@ cd Sonic-s-E-Shop
 ```
 
 ### 3. Open in Browser:
-You can simply double-click `index.html` to launch it in any modern web browser, or serve it using your preferred tool:
-
 ```bash
 # Using Python 3:
 python3 -m http.server 3000
@@ -254,8 +254,6 @@ Visit `http://localhost:3000` to preview the shop live!
 ---
 
 ## 📞 Customer Support & Community
-
-Need quick assistance, custom coin packages, or top-up confirmation? Reach out instantly:
 
 <div align="center">
 
@@ -274,7 +272,7 @@ Need quick assistance, custom coin packages, or top-up confirmation? Reach out i
 
 <div align="center">
   <br/>
-  <sub>⚡ Designed and engineered with passion for eFootball gamers. All product names, logos, and brands are property of their respective owners.</sub>
+  <sub>⚡ Designed and engineered with passion for gamers. All product names, logos, and brands are property of their respective owners.</sub>
   <br/>
   <b>© 2026 Sonic’s E-Shop. All Rights Reserved.</b>
 </div>

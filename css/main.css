@@ -1333,3 +1333,392 @@ input:focus, select:focus {
     color: var(--text-muted);
     font-size: 14px;
 }
+
+
+/* ============================================================
+   14. KHELA STORE GAME CATALOG CARDS & CATEGORY PILLS
+   ============================================================ */
+.cat-pills-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.cat-pills-row::-webkit-scrollbar {
+    display: none;
+}
+
+.cat-pill {
+    padding: 8px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--glass-shadow);
+}
+
+.cat-pill:hover {
+    border-color: var(--accent-red);
+    color: var(--text-main);
+}
+
+.cat-pill.active {
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+/* Game Catalog Grid */
+.game-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.game-card {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.game-card.active {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.45);
+}
+
+.game-card-poster {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #000;
+}
+
+.game-card-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.game-card:hover .game-card-poster img {
+    transform: scale(1.08);
+}
+
+.game-card-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #ffffff;
+    padding: 3px 8px;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.game-card-info {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+}
+
+.game-card-cat {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--accent-red);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.game-card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.game-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.game-card-speed {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.game-card-btn {
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(239, 68, 68, 0.3);
+}
+
+.game-card.active .game-card-btn {
+    background: var(--success-green);
+    box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Selected Game Detail Header in Top-Up Container */
+.game-detail-header {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(244, 63, 94, 0.05));
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 20px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.game-detail-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.game-detail-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Security Banner */
+.security-banner {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.security-banner svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+/* Package Card Improvements */
+.pkg-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.pkg-icon {
+    font-size: 16px;
+}
+
+.pkg-badge-pill {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+/* Digital Invoice & Receipt */
+.receipt-box {
+    background: var(--bg-surface);
+    border-radius: 18px;
+    padding: 20px;
+    color: var(--text-main);
+}
+
+.receipt-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.receipt-header h4 {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 4px 0;
+}
+
+.receipt-order-id {
+    font-size: 13px;
+    color: var(--accent-red);
+    margin-top: 4px;
+}
+
+.receipt-date {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.receipt-divider {
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--glass-border), var(--glass-border) 6px, transparent 6px, transparent 10px);
+    margin: 14px 0;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.receipt-row span {
+    color: var(--text-muted);
+}
+
+.receipt-row b {
+    color: var(--text-main);
+    text-align: right;
+    max-width: 65%;
+}
+
+.receipt-total {
+    padding-top: 6px;
+}
+
+.receipt-footer {
+    text-align: center;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--glass-border);
+}
+
+.receipt-footer p {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.whatsapp-support-pill {
+    display: inline-block;
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #22c55e;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.whatsapp-support-pill:hover {
+    background: rgba(34, 197, 94, 0.25);
+}
+
+/* Order History Cards */
+.order-card-item {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--glass-shadow);
+}
+
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 8px;
+}
+
+.order-id-badge {
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--text-main);
+    margin-right: 6px;
+}
+
+.order-game-tag {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--accent-red);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.order-status-badge {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+}
+
+.status-pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-completed {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.order-card-body {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.order-date-text {
+    font-size: 11px;
+    margin-top: 4px;
+    color: var(--text-dim);
+}
+
+.order-card-actions {
+    margin-top: 12px;
+    text-align: right;
+}
