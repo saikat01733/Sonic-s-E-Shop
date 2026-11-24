@@ -1,0 +1,95 @@
+'use client';
+
+import React, { useState } from 'react';
+import { PackageItem } from '@/lib/types';
+import { Card } from '@/components/ui/card';
+import { Search } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
+
+interface PackageSelectorProps {
+  packages: PackageItem[];
+  selectedPackages: PackageItem[];
+  onTogglePackage: (pkg: PackageItem) => void;
+}
+
+export function PackageSelector({ packages, selectedPackages, onTogglePackage }: PackageSelectorProps) {
+  const [search, setSearch] = useState('');
+
+  const filtered = packages.filter(
+    p =>
+      !search ||
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      (p.price && String(p.price).includes(search))
+  );
+
+  return (
+    <Card variant="glass" className="p-6 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-xl bg-red-600 text-white font-black text-xs flex items-center justify-center shadow-md">
+            ২
+          </div>
+          <div>
+            <h3 className="text-sm font-extrabold text-white">প্যাকেজ নির্বাচন করুন (Select Packages)</h3>
+            <p className="text-[11px] text-gray-400">একাধিক প্যাকেজ সিলেক্ট করতে পারেন</p>
+          </div>
+        </div>
+
+        <div className="relative w-full sm:w-56">
+          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-2.5" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="প্যাকেজ খুঁজুন..."
+            className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-red-500"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {filtered.map(pkg => {
+          const isSelected = Boolean(selectedPackages.find(p => p.id === pkg.id));
+
+          return (
+            <button
+              key={pkg.id}
+              type="button"
+              onClick={() => onTogglePackage(pkg)}
+              className={`p-3.5 rounded-2xl border text-left transition-all duration-200 relative group cursor-pointer ${
+                isSelected
+                  ? 'bg-red-500/25 border-red-500 shadow-xl shadow-red-500/25 ring-2 ring-red-500/40 scale-102'
+                  : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10'
+              } ${!pkg.stock ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xl">{pkg.icon || '🪙'}</span>
+                <span
+                  className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+                    pkg.stock ? 'text-emerald-400 bg-emerald-500/20' : 'text-red-400 bg-red-500/20'
+                  }`}
+                >
+                  {pkg.stock ? 'ইন স্টক' : 'আউট'}
+                </span>
+              </div>
+
+              <div className="text-xs font-bold text-white group-hover:text-red-400 transition-colors">
+                {pkg.name}
+              </div>
+
+              <div className="text-sm font-black text-emerald-400 mt-1">
+                {formatCurrency(pkg.price)}
+              </div>
+
+              {isSelected && (
+                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] shadow-md font-bold">
+                  ✓
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}

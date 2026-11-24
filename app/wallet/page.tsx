@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Navbar from '@/components/storefront/Navbar';
-import Footer from '@/components/storefront/Footer';
-import FloatingToast, { ToastMessage } from '@/components/storefront/FloatingToast';
+import Navbar from '@/components/common/Navbar';
+import Footer from '@/components/common/Footer';
+import FloatingToast, { ToastMessage } from '@/components/common/FloatingToast';
 import { SiteSettings, GameItem } from '@/lib/types';
 import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, ShieldCheck, CreditCard, RefreshCw, Copy, Check } from 'lucide-react';
 
