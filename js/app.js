@@ -350,20 +350,225 @@ function updateTotalPrice() {
     }
 }
 
-// Filter Packages Live Search
-function filterPackages() {
-    const input = document.getElementById('pkgSearchInput');
-    const query = input ? input.value.toLowerCase().trim() : '';
+// Filter Packages Live Search (Inside Step 2 on Home tab)
+function filterPackagesLive(query) {
+    const q = (query || '').toLowerCase().trim();
     const cards = document.querySelectorAll('#pkgGrid .pkg-card');
-
     cards.forEach(card => {
         const name = card.querySelector('.pkg-name')?.innerText.toLowerCase() || '';
         const price = card.querySelector('.pkg-price')?.innerText.toLowerCase() || '';
-        if (name.includes(query) || price.includes(query)) {
+        if (!q || name.includes(q) || price.includes(q)) {
             card.style.display = 'flex';
         } else {
             card.style.display = 'none';
         }
+    });
+}
+
+function filterPackages() {
+    const input = document.getElementById('pkgSearchInput');
+    handleGlobalSearch(input ? input.value : '');
+}
+
+// ============================================================
+// 4. KHELA STORE GLOBAL LIVE SEARCH & AUTO-SUGGEST
+// ============================================================
+function handleGlobalSearch(rawQuery) {
+    const dropdown = document.getElementById('searchResultsDropdown');
+    const clearBtn = document.getElementById('searchClearBtn');
+    if (!dropdown) return;
+
+    const query = (rawQuery || '').trim().toLowerCase();
+    if (clearBtn) clearBtn.style.display = query ? 'flex' : 'none';
+
+    // Also filter step 2 package cards if currently viewing
+    filterPackagesLive(query);
+
+    if (!query) {
+        // Show Popular Searches / Quick Suggestions
+        dropdown.innerHTML = `
+            <div class="search-dropdown-header">
+                <span>🔥 জনপ্রিয় গেম ও প্যাকেজ</span>
+            </div>
+            <div class="search-suggestions-grid">
+                ${GAME_CATALOG.map(g => `
+                    <div class="search-quick-game" onclick="selectGameFromSearch('${g.id}')">
+                        <img src="${g.poster}" alt="${g.name}">
+                        <div>
+                            <div class="quick-game-name">${g.name}</div>
+                            <div class="quick-game-badge" style="color: ${g.badge_color};">${g.badge} • ⚡ ${g.delivery_time}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="search-tags-label">দ্রুত সার্চ করুন:</div>
+            <div class="search-tags-row">
+                <span class="search-tag" onclick="quickFillSearch('PUBG')">PUBG Mobile</span>
+                <span class="search-tag" onclick="quickFillSearch('eFootball')">eFootball</span>
+                <span class="search-tag" onclick="quickFillSearch('Roblox')">Roblox</span>
+                <span class="search-tag" onclick="quickFillSearch('660 UC')">660 UC</span>
+                <span class="search-tag" onclick="quickFillSearch('300 Coins')">300 Coins</span>
+            </div>
+        `;
+        dropdown.classList.add('active');
+        return;
+    }
+
+    // 1. Search Matching Games
+    const matchedGames = GAME_CATALOG.filter(g => 
+        g.name.toLowerCase().includes(query) ||
+        (g.name_bn && g.name_bn.toLowerCase().includes(query)) ||
+        g.category.toLowerCase().includes(query) ||
+        g.category_name.toLowerCase().includes(query) ||
+        (g.description && g.description.toLowerCase().includes(query))
+    );
+
+    // 2. Search Matching Packages across all games
+    const matchedPackages = [];
+    GAME_CATALOG.forEach(game => {
+        game.packages.forEach(pkg => {
+            const pkgName = pkg.name.toLowerCase();
+            const gameName = game.name.toLowerCase();
+            const combined = `${pkgName} ${gameName}`;
+            if (pkgName.includes(query) || combined.includes(query) || (pkg.price && String(pkg.price).includes(query))) {
+                matchedPackages.push({ game, pkg });
+            }
+        });
+    });
+
+    if (matchedGames.length === 0 && matchedPackages.length === 0) {
+        dropdown.innerHTML = `
+            <div class="search-empty-state">
+                <div class="search-empty-icon">🔍</div>
+                <div class="search-empty-title">কোনো ফলাফল পাওয়া যায়নি</div>
+                <div class="search-empty-desc">"${escapeHtml(rawQuery)}" দিয়ে কোনো গেম বা প্যাকেজ পাওয়া যায়নি।</div>
+                <div class="search-tags-label">জনপ্রিয় সার্চ:</div>
+                <div class="search-tags-row">
+                    <span class="search-tag" onclick="quickFillSearch('PUBG')">PUBG Mobile</span>
+                    <span class="search-tag" onclick="quickFillSearch('eFootball')">eFootball</span>
+                    <span class="search-tag" onclick="quickFillSearch('Roblox')">Roblox</span>
+                </div>
+            </div>
+        `;
+        dropdown.classList.add('active');
+        return;
+    }
+
+    let html = '';
+
+    // Render Matching Games
+    if (matchedGames.length > 0) {
+        html += `
+            <div class="search-dropdown-header">
+                <span>🎮 গেমসমূহ (${matchedGames.length})</span>
+            </div>
+            <div class="search-items-list">
+                ${matchedGames.map(game => `
+                    <div class="search-result-item" onclick="selectGameFromSearch('${game.id}')">
+                        <img src="${game.poster}" class="search-result-thumb" alt="${game.name}">
+                        <div class="search-result-info">
+                            <div class="search-result-title">${highlightMatch(game.name, query)}</div>
+                            <div class="search-result-meta">
+                                <span class="search-result-badge" style="background: ${game.badge_color};">${game.badge}</span>
+                                <span class="search-result-speed">⚡ ${game.delivery_time}</span>
+                            </div>
+                        </div>
+                        <button class="search-action-btn" onclick="event.stopPropagation(); selectGameFromSearch('${game.id}')">টপ-আপ করুন</button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // Render Matching Packages
+    if (matchedPackages.length > 0) {
+        html += `
+            <div class="search-dropdown-header" style="${matchedGames.length > 0 ? 'margin-top: 10px; border-top: 1px solid var(--glass-border); padding-top: 8px;' : ''}">
+                <span>📦 প্যাকেজসমূহ (${matchedPackages.length})</span>
+            </div>
+            <div class="search-items-list">
+                ${matchedPackages.slice(0, 8).map(({ game, pkg }) => `
+                    <div class="search-result-item" onclick="selectPackageFromSearch('${game.id}', '${pkg.id}', '${pkg.name}', ${pkg.price || 0})">
+                        <div class="search-pkg-icon">${pkg.icon || '🪙'}</div>
+                        <div class="search-result-info">
+                            <div class="search-result-title">${highlightMatch(pkg.name, query)} <span class="search-pkg-game-badge">• ${game.name}</span></div>
+                            <div class="search-result-meta">
+                                <span class="search-result-price">${pkg.price ? '৳' + pkg.price : '৳***'}</span>
+                                <span class="search-result-stock" style="color: ${pkg.stock ? 'var(--success-green)' : '#ef4444'}">${pkg.stock ? '🟢 In Stock' : '🔴 Out of Stock'}</span>
+                            </div>
+                        </div>
+                        <button class="search-action-btn" onclick="event.stopPropagation(); selectPackageFromSearch('${game.id}', '${pkg.id}', '${pkg.name}', ${pkg.price || 0})">${pkg.stock ? 'সিলেক্ট' : 'স্টক শেষ'}</button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    dropdown.innerHTML = html;
+    dropdown.classList.add('active');
+}
+
+function selectGameFromSearch(gameId) {
+    switchTabDirect('tab-home');
+    selectGame(gameId, true, true);
+    closeGlobalSearch();
+}
+
+function selectPackageFromSearch(gameId, pkgId, pkgName, pkgPrice) {
+    switchTabDirect('tab-home');
+    selectGame(gameId, false, false);
+    
+    // Auto-select this package
+    const pkgEl = document.querySelector(`#pkgGrid .pkg-card[onclick*="${pkgId}"]`);
+    if (pkgEl) {
+        togglePackageCard(pkgEl, pkgId, pkgName, pkgPrice);
+    } else {
+        selectedPackages = [{ id: pkgId, name: pkgName, price: pkgPrice }];
+        updateTotalPrice();
+        const game = GAME_CATALOG.find(g => g.id === gameId);
+        if (game) renderStep2Packages(game);
+    }
+    
+    closeGlobalSearch();
+    const topUpSection = document.getElementById('gameTopUpSection');
+    if (topUpSection) {
+        topUpSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function quickFillSearch(term) {
+    const input = document.getElementById('pkgSearchInput');
+    if (input) {
+        input.value = term;
+        input.focus();
+        handleGlobalSearch(term);
+    }
+}
+
+function clearGlobalSearch() {
+    const input = document.getElementById('pkgSearchInput');
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
+    handleGlobalSearch('');
+}
+
+function closeGlobalSearch() {
+    const dropdown = document.getElementById('searchResultsDropdown');
+    if (dropdown) dropdown.classList.remove('active');
+}
+
+function highlightMatch(text, query) {
+    if (!query) return text;
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escaped})`, 'gi');
+    return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+}
+
+function escapeHtml(str) {
+    return (str || '').replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
     });
 }
 
@@ -396,19 +601,12 @@ function selectPay(el, method) {
 
 function copyNumber() {
     const num = "01733185830";
-    navigator.clipboard.writeText(num).then(() => {
-        showGlassAlert("সফল!", `সেন্ড মানি নম্বরটি (${num}) কপি করা হয়েছে!`);
-    }).catch(() => {
-        showGlassAlert("নম্বর", num);
-    });
+    executeClipboardCopy(num);
+    showGlassToast("নম্বর কপি হয়েছে!", `পার্সোনাল সেন্ড মানি নম্বর (${num}) ক্লিপবোর্ডে কপি করা হয়েছে!`, { icon: '📋', duration: 3000 });
 }
 
 function copyPromoCode(code) {
-    navigator.clipboard.writeText(code).then(() => {
-        const input = document.getElementById('couponInput');
-        if (input) input.value = code;
-        showGlassAlert("কুপন কপি হয়েছে!", `প্রমো কোড '${code}' কপি করা হয়েছে। চেকআউট বক্সে পেস্ট করে Apply করুন!`);
-    });
+    copyAndApplyPromoCode(null, code);
 }
 
 // ============================================================
@@ -632,11 +830,140 @@ function applyCouponCode() {
 
     if (validCoupons[code]) {
         appliedCoupon = { code, ...validCoupons[code] };
-        showGlassAlert("কুপন সফল!", `'${code}' কুপন সক্রিয় করা হয়েছে! আপনি ৳${appliedCoupon.discount} ছাড় পেয়েছেন।`);
+        showGlassToast("কুপন সফল!", `'${code}' কুপন সক্রিয় করা হয়েছে! আপনি ৳${appliedCoupon.discount} ছাড় পেয়েছেন।`, { icon: '🎉', duration: 3500 });
         updateTotalPrice();
     } else {
         showGlassAlert("অবৈধ কুপন", "এই কুপন কোডটি সঠিক নয় অথবা মেয়াদ শেষ!");
     }
+}
+
+// ============================================================
+// 7.1 FLOATING GLASS TOAST & COUPON ONE-CLICK ENGINE
+// ============================================================
+let toastTimeout = null;
+function showGlassToast(title, message, options = {}) {
+    let toast = document.getElementById('glassToastContainer');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'glassToastContainer';
+        toast.className = 'glass-toast-container';
+        document.body.appendChild(toast);
+    }
+
+    const icon = options.icon || '🎟️';
+    const actionHtml = options.actionText 
+        ? `<button class="toast-action-btn" onclick="${options.actionClick}">${options.actionText}</button>` 
+        : '';
+
+    toast.innerHTML = `
+        <div class="glass-toast-content">
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-text-box">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            ${actionHtml}
+            <button class="toast-close-btn" onclick="hideGlassToast()">&times;</button>
+        </div>
+        <div class="toast-progress-bar"></div>
+    `;
+
+    toast.classList.add('active');
+
+    if (window.Motion) {
+        window.Motion.animate(toast, 
+            { opacity: [0, 1], y: [-20, 0], scale: [0.95, 1] }, 
+            { duration: 0.35, easing: window.Motion.spring({ stiffness: 220, damping: 16 }) }
+        );
+    }
+
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        hideGlassToast();
+    }, options.duration || 3500);
+}
+
+function hideGlassToast() {
+    const toast = document.getElementById('glassToastContainer');
+    if (!toast) return;
+    if (window.Motion) {
+        window.Motion.animate(toast, 
+            { opacity: [1, 0], y: [0, -15], scale: [1, 0.95] }, 
+            { duration: 0.25 }
+        ).finished.then(() => toast.classList.remove('active'));
+    } else {
+        toast.classList.remove('active');
+    }
+}
+
+function executeClipboardCopy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).catch(() => {
+            return fallbackClipboardCopy(text);
+        });
+    }
+    return Promise.resolve(fallbackClipboardCopy(text));
+}
+
+function fallbackClipboardCopy(text) {
+    try {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+    } catch (e) {
+        return false;
+    }
+}
+
+function copyAndApplyPromoCode(btn, code, discount = 10, minSpend = 100) {
+    executeClipboardCopy(code);
+
+    // Auto-fill into the promo code input in checkout section
+    const input = document.getElementById('couponInput');
+    if (input) input.value = code;
+
+    // Auto-apply into application state
+    appliedCoupon = { code, discount, min: minSpend };
+    updateTotalPrice();
+
+    // Professional button visual transformation
+    if (btn) {
+        btn.classList.add('copied');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `
+            <svg class="copy-svg check-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span class="btn-text">✓ কপি হয়েছে!</span>
+        `;
+
+        if (window.Motion) {
+            window.Motion.animate(btn, { scale: [1, 0.92, 1.08, 1] }, { duration: 0.32, easing: window.Motion.spring({ stiffness: 260, damping: 15 }) });
+        }
+
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = originalHtml;
+        }, 2500);
+    }
+
+    // Show floating non-intrusive glass toast notification
+    showGlassToast(
+        `কুপন '${code}' সফলভাবে কপি হয়েছে!`, 
+        `৳${discount} ছাড় আপনার চেকআউট বক্সে স্বয়ংক্রিয়ভাবে বসানো হয়েছে।`, 
+        {
+            icon: '🎟️',
+            actionText: 'হোম শপে যান →',
+            actionClick: 'switchTabDirect("tab-home"); document.getElementById("gameTopUpSection")?.scrollIntoView({behavior: "smooth", block: "start"}); hideGlassToast();',
+            duration: 4000
+        }
+    );
 }
 
 // ============================================================
@@ -670,7 +997,10 @@ function switchTab(btn, tabId) {
 function switchTabDirect(tabId) {
     const dockBtn = document.getElementById('dock-' + tabId);
     switchTab(dockBtn, tabId);
-    toggleSideDrawer();
+    const overlay = document.getElementById('sideDrawerOverlay');
+    if (overlay && overlay.classList.contains('active')) {
+        overlay.classList.remove('active');
+    }
 }
 
 function toggleSideDrawer() {
@@ -738,12 +1068,25 @@ function navigateToAuthTab() {
     switchTabDirect('tab-account');
 }
 
-// Global modal outside-click listener
+// Global modal & search dropdown outside-click listener
 window.addEventListener('click', function(event) {
     const contactModal = document.getElementById('contactModal');
     const invoiceModal = document.getElementById('invoiceModal');
     if (event.target === contactModal) { contactModal.style.display = 'none'; }
     if (event.target === invoiceModal) { invoiceModal.style.display = 'none'; }
+
+    const searchBox = document.getElementById('globalSearchBox');
+    if (searchBox && !searchBox.contains(event.target)) {
+        closeGlobalSearch();
+    }
+});
+
+// Escape key listener to close search dropdown & toast
+window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeGlobalSearch();
+        hideGlassToast();
+    }
 });
 
 // Soft-press button micro-interaction

@@ -29,10 +29,14 @@
             <img src="logo.png" alt="Sonic's E-Shop Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='logo.jpg';">
         </div>
         
-        <!-- Live Search Bar -->
-        <div class="search-box">
-            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-            <input type="text" id="pkgSearchInput" placeholder="Search package..." onkeyup="filterPackages()">
+        <!-- Live Search Bar (Khela Store Dynamic Search) -->
+        <div class="search-box" id="globalSearchBox">
+            <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="pkgSearchInput" placeholder="গেম বা প্যাকেজ খুঁজুন..." oninput="handleGlobalSearch(this.value)" onfocus="handleGlobalSearch(this.value)" autocomplete="off">
+            <button type="button" class="search-clear-btn" id="searchClearBtn" onclick="clearGlobalSearch()" title="সার্চ মুছুন" style="display: none;">&times;</button>
+            
+            <!-- Professional Live Search Results Dropdown -->
+            <div class="search-results-dropdown" id="searchResultsDropdown"></div>
         </div>
 
         <!-- Theme Toggle Switch -->
@@ -319,30 +323,90 @@
     <div id="tab-codes" class="tab-content">
         <div class="section">
             <div class="section-title">Redeem Codes & Offers / বিশেষ কুপন</div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: -6px; margin-bottom: 14px;">
+                যেকোনো কুপন কোড 'কপি ও ব্যবহার' বাটনে ক্লিক করে এক ক্লিকে চেকআউটে স্বয়ংক্রিয়ভাবে ডিসকাউন্ট পান!
+            </p>
             
-            <div style="display: grid; gap: 12px; margin-top: 10px;">
-                <div style="background: var(--card-bg); border: 1px dashed var(--accent-red); border-radius: 16px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-weight: 800; font-size: 16px; color: var(--accent-red);">SONIC10</div>
-                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">৳১০০+ অর্ডারে পাচ্ছেন ১০ টাকা ফ্ল্যাট ছাড়!</div>
+            <div class="coupon-grid">
+                <!-- Coupon 1: SONIC10 -->
+                <div class="coupon-ticket-card coupon-red">
+                    <div class="coupon-ticket-left">
+                        <div class="coupon-discount-tag">৳১০ ফ্ল্যাট ছাড়</div>
+                        <div class="coupon-code-badge" onclick="copyAndApplyPromoCode(this.closest('.coupon-ticket-card').querySelector('.coupon-action-btn'), 'SONIC10', 10, 100)" title="ক্লিক করে কোড কপি করুন">
+                            <span>SONIC10</span>
+                            <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                        </div>
+                        <div class="coupon-desc">৳১০০ বা তার বেশি যেকোনো গেম টপ-আপ অর্ডারে পাচ্ছেন ১০ টাকা ফ্ল্যাট ছাড়!</div>
+                        <div class="coupon-meta-row">
+                            <span class="coupon-validity">🟢 সক্রিয় কুপন</span>
+                            <span class="coupon-min-order">মিনিমাম অর্ডার: ৳১০০</span>
+                        </div>
                     </div>
-                    <button class="copy-btn" style="position: static;" onclick="copyPromoCode('SONIC10')">Copy Code</button>
+                    <div class="coupon-ticket-divider">
+                        <span class="ticket-notch top"></span>
+                        <span class="ticket-line"></span>
+                        <span class="ticket-notch bottom"></span>
+                    </div>
+                    <div class="coupon-ticket-right">
+                        <button class="coupon-action-btn" id="btn-coupon-SONIC10" onclick="copyAndApplyPromoCode(this, 'SONIC10', 10, 100)">
+                            <svg class="copy-svg" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            <span class="btn-text">কপি ও ব্যবহার</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div style="background: var(--card-bg); border: 1px dashed #38bdf8; border-radius: 16px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-weight: 800; font-size: 16px; color: #38bdf8;">EFOOTBALL</div>
-                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">ই-ফুটবল কয়েন ৩০০+ অর্ডারে ২০ টাকা ছাড়!</div>
+                <!-- Coupon 2: EFOOTBALL -->
+                <div class="coupon-ticket-card coupon-blue">
+                    <div class="coupon-ticket-left">
+                        <div class="coupon-discount-tag tag-blue">৳২০ স্পেশাল ছাড়</div>
+                        <div class="coupon-code-badge badge-blue" onclick="copyAndApplyPromoCode(this.closest('.coupon-ticket-card').querySelector('.coupon-action-btn'), 'EFOOTBALL', 20, 300)" title="ক্লিক করে কোড কপি করুন">
+                            <span>EFOOTBALL</span>
+                            <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                        </div>
+                        <div class="coupon-desc">ই-ফুটবল কয়েন ৩০০+ অর্ডারে পাচ্ছেন ২০ টাকা স্পেশাল ইনস্ট্যান্ট ক্যাশ ডিসকাউন্ট!</div>
+                        <div class="coupon-meta-row">
+                            <span class="coupon-validity">🟢 সক্রিয় কুপন</span>
+                            <span class="coupon-min-order">মিনিমাম অর্ডার: ৳৩০০</span>
+                        </div>
                     </div>
-                    <button class="copy-btn" style="position: static;" onclick="copyPromoCode('EFOOTBALL')">Copy Code</button>
+                    <div class="coupon-ticket-divider">
+                        <span class="ticket-notch top"></span>
+                        <span class="ticket-line"></span>
+                        <span class="ticket-notch bottom"></span>
+                    </div>
+                    <div class="coupon-ticket-right">
+                        <button class="coupon-action-btn btn-blue" id="btn-coupon-EFOOTBALL" onclick="copyAndApplyPromoCode(this, 'EFOOTBALL', 20, 300)">
+                            <svg class="copy-svg" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            <span class="btn-text">কপি ও ব্যবহার</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div style="background: var(--card-bg); border: 1px dashed #10b981; border-radius: 16px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-weight: 800; font-size: 16px; color: #10b981;">KHELA</div>
-                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">যেকোনো গেম টপ-আপে ১৫ টাকা স্পেশাল ক্যাশব্যাক!</div>
+                <!-- Coupon 3: KHELA -->
+                <div class="coupon-ticket-card coupon-green">
+                    <div class="coupon-ticket-left">
+                        <div class="coupon-discount-tag tag-green">৳১৫ ক্যাশব্যাক</div>
+                        <div class="coupon-code-badge badge-green" onclick="copyAndApplyPromoCode(this.closest('.coupon-ticket-card').querySelector('.coupon-action-btn'), 'KHELA', 15, 200)" title="ক্লিক করে কোড কপি করুন">
+                            <span>KHELA</span>
+                            <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                        </div>
+                        <div class="coupon-desc">যেকোনো গেম টপ-আপে ২০০ টাকা বা তার বেশি অর্ডারে পাচ্ছেন ১৫ টাকা ইনস্ট্যান্ট ছাড়!</div>
+                        <div class="coupon-meta-row">
+                            <span class="coupon-validity">🟢 সক্রিয় কুপন</span>
+                            <span class="coupon-min-order">মিনিমাম অর্ডার: ৳২০০</span>
+                        </div>
                     </div>
-                    <button class="copy-btn" style="position: static;" onclick="copyPromoCode('KHELA')">Copy Code</button>
+                    <div class="coupon-ticket-divider">
+                        <span class="ticket-notch top"></span>
+                        <span class="ticket-line"></span>
+                        <span class="ticket-notch bottom"></span>
+                    </div>
+                    <div class="coupon-ticket-right">
+                        <button class="coupon-action-btn btn-green" id="btn-coupon-KHELA" onclick="copyAndApplyPromoCode(this, 'KHELA', 15, 200)">
+                            <svg class="copy-svg" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            <span class="btn-text">কপি ও ব্যবহার</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

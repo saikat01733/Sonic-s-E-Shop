@@ -271,17 +271,17 @@ html.light-theme .brand-logo-img {
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25)) contrast(1.15) brightness(0.95);
 }
 
-/* Search Bar */
+/* Search Bar (Khela Store Live Auto-suggest) */
 .search-box {
     position: relative;
     flex: 1;
-    max-width: 170px;
+    max-width: 220px;
     min-width: 0;
 }
 
 .search-box input {
     width: 100%;
-    padding: 8px 12px 8px 30px;
+    padding: 8px 26px 8px 30px;
     font-size: 12px;
     font-family: inherit;
     border-radius: 20px;
@@ -289,16 +289,16 @@ html.light-theme .brand-logo-img {
     border: 1px solid var(--glass-border);
     color: var(--text-main);
     outline: none;
-    transition: all 0.25s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .search-box input:focus {
     border-color: var(--accent-red);
     background: var(--input-focus-bg);
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
 }
 
-.search-box svg {
+.search-box .search-icon {
     position: absolute;
     left: 10px;
     top: 50%;
@@ -307,6 +307,292 @@ html.light-theme .brand-logo-img {
     height: 14px;
     fill: var(--text-muted);
     pointer-events: none;
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.12);
+    border: none;
+    color: var(--text-muted);
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    padding: 0;
+    line-height: 1;
+    z-index: 2;
+}
+
+.search-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.4);
+    color: #fff;
+}
+
+/* Professional Live Search Results Dropdown */
+.search-results-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 320px;
+    background: #0d111a !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    padding: 12px;
+    z-index: 1000;
+    display: none;
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.light-theme .search-results-dropdown {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.18) !important;
+}
+
+.search-results-dropdown.active {
+    display: block;
+    animation: dropdownSpringIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes dropdownSpringIn {
+    0% { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.search-dropdown-header {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+}
+
+.search-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.search-result-item:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.35);
+    transform: translateX(3px);
+}
+
+.search-result-thumb {
+    width: 44px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.search-pkg-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.search-result-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-result-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-pkg-game-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
+.search-result-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.search-result-badge {
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.search-result-speed, .search-result-stock {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.search-result-price {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent-red);
+}
+
+.search-action-btn {
+    padding: 4px 10px;
+    font-size: 10.5px;
+    font-weight: 700;
+    border-radius: 8px;
+    background: var(--accent-red);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.search-action-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.04);
+}
+
+.search-highlight {
+    background: rgba(239, 68, 68, 0.28);
+    color: #ff8585;
+    padding: 0 2px;
+    border-radius: 3px;
+}
+
+.search-empty-state {
+    text-align: center;
+    padding: 16px 8px;
+}
+
+.search-empty-icon {
+    font-size: 26px;
+    margin-bottom: 6px;
+    opacity: 0.7;
+}
+
+.search-empty-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.search-empty-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    margin-bottom: 10px;
+}
+
+.search-tags-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.search-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+}
+
+.search-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.search-tag:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+    transform: translateY(-1px);
+}
+
+.search-suggestions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.search-quick-game {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.search-quick-game:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.search-quick-game img {
+    width: 36px;
+    height: 24px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.quick-game-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.quick-game-badge {
+    font-size: 9px;
+    font-weight: 800;
 }
 
 /* Theme Toggle Button */
@@ -2263,6 +2549,346 @@ input:focus, select:focus {
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
+/* ============================================================
+   21. PROFESSIONAL COUPON TICKET CARDS & FLOATING GLASS TOAST
+   ============================================================ */
+.coupon-grid {
+    display: grid;
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.coupon-ticket-card {
+    position: relative;
+    display: flex;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.coupon-ticket-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.coupon-red { border-left: 4px solid var(--accent-red); }
+.coupon-blue { border-left: 4px solid #38bdf8; }
+.coupon-green { border-left: 4px solid #10b981; }
+
+.coupon-ticket-left {
+    flex: 1;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.coupon-discount-tag {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--accent-red);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.tag-blue {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.3);
+}
+
+.tag-green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.coupon-code-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px dashed var(--accent-red);
+    padding: 6px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', monospace;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+}
+
+.badge-blue { border-color: #38bdf8; }
+.badge-green { border-color: #10b981; }
+
+.coupon-code-badge:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: scale(1.02);
+}
+
+.coupon-code-badge svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    opacity: 0.7;
+}
+
+.coupon-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.coupon-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+.coupon-validity {
+    color: var(--success-green);
+    font-weight: 700;
+}
+
+/* Perforated Ticket Divider with Notches */
+.coupon-ticket-divider {
+    position: relative;
+    width: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ticket-line {
+    width: 0;
+    height: calc(100% - 28px);
+    border-left: 2px dashed rgba(255, 255, 255, 0.15);
+}
+
+.ticket-notch {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: var(--bg-color);
+    border-radius: 50%;
+}
+
+.ticket-notch.top { top: -7px; }
+.ticket-notch.bottom { bottom: -7px; }
+
+.coupon-ticket-right {
+    width: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.coupon-action-btn {
+    width: 100%;
+    padding: 10px 8px;
+    border-radius: 12px;
+    background: var(--accent-red);
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.coupon-action-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+.coupon-action-btn .copy-svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.coupon-action-btn.btn-blue {
+    background: #0284c7;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+.coupon-action-btn.btn-blue:hover {
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+}
+
+.coupon-action-btn.btn-green {
+    background: #059669;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+}
+
+.coupon-action-btn.btn-green:hover {
+    box-shadow: 0 6px 20px rgba(5, 150, 105, 0.5);
+}
+
+.coupon-action-btn.copied {
+    background: #10b981 !important;
+    box-shadow: 0 6px 22px rgba(16, 185, 129, 0.5) !important;
+    transform: scale(1.05);
+}
+
+.coupon-action-btn .check-icon {
+    width: 16px;
+    height: 16px;
+    stroke: #fff;
+    stroke-width: 3;
+    fill: none;
+}
+
+@media (max-width: 480px) {
+    .coupon-ticket-card {
+        flex-direction: column;
+    }
+    .coupon-ticket-divider {
+        width: 100%;
+        height: 14px;
+    }
+    .ticket-line {
+        width: calc(100% - 28px);
+        height: 0;
+        border-left: none;
+        border-top: 2px dashed rgba(255, 255, 255, 0.15);
+    }
+    .ticket-notch.top { left: -7px; top: 0; }
+    .ticket-notch.bottom { right: -7px; top: 0; bottom: auto; }
+    .coupon-ticket-right {
+        width: 100%;
+        padding: 10px 16px 14px 16px;
+    }
+    .coupon-action-btn {
+        flex-direction: row;
+        justify-content: center;
+        padding: 9px 16px;
+    }
+}
+
+/* Floating Glass Toast Notification */
+.glass-toast-container {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-25px);
+    z-index: 2500;
+    width: min(92vw, 420px);
+    background: var(--card-bg);
+    backdrop-filter: blur(25px) saturate(190%);
+    -webkit-backdrop-filter: blur(25px) saturate(190%);
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.5), 0 0 25px rgba(16, 185, 129, 0.2);
+    border-radius: 18px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-toast-container.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+.glass-toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+}
+
+.toast-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.toast-text-box {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #10b981;
+    line-height: 1.3;
+}
+
+.toast-message {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+.toast-action-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    background: #10b981;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.toast-action-btn:hover {
+    background: #059669;
+    transform: scale(1.04);
+}
+
+.toast-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 2px 4px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.toast-close-btn:hover {
+    color: var(--text-main);
+}
+
+.toast-progress-bar {
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    width: 100%;
+    animation: toastProgress 3.5s linear forwards;
+}
+
+@keyframes toastProgress {
+    0% { width: 100%; }
+    100% { width: 0%; }
+}
+
+
 /**
  * Sonic's E-Shop - Responsive Media Queries
  * Perfectly calibrated across 320px to 1440px+
@@ -2280,23 +2906,32 @@ input:focus, select:focus {
     }
     .nav-content {
         gap: 6px;
+        position: relative;
     }
     .brand-logo-img {
         height: 28px;
         max-width: 110px;
     }
     .search-box {
-        max-width: 115px;
+        position: static;
+        max-width: 130px;
         min-width: 0;
     }
     .search-box input {
-        padding: 6px 8px 6px 24px;
+        padding: 6px 22px 6px 24px;
         font-size: 11px;
     }
-    .search-box svg {
+    .search-box .search-icon {
         width: 12px;
         height: 12px;
         left: 7px;
+    }
+    .search-results-dropdown {
+        left: 8px;
+        right: 8px;
+        width: auto;
+        max-width: none;
+        top: calc(100% + 4px);
     }
     .theme-toggle-btn {
         width: 48px;
@@ -2441,6 +3076,20 @@ input:focus, select:focus {
    2. STANDARD MOBILE (400px to 599px)
    ============================================================ */
 @media screen and (min-width: 400px) and (max-width: 599px) {
+    .nav-content {
+        position: relative;
+    }
+    .search-box {
+        position: static;
+        max-width: 180px;
+    }
+    .search-results-dropdown {
+        left: 12px;
+        right: 12px;
+        width: auto;
+        max-width: none;
+        top: calc(100% + 6px);
+    }
     .brand-logo-img {
         height: 34px;
         max-width: 140px;
