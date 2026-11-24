@@ -24,9 +24,13 @@ import {
   Save,
   RefreshCw,
   Flame,
-  ArrowLeft
+  ArrowLeft,
+  Crown,
+  User,
+  Users,
+  Shield
 } from 'lucide-react';
-import { StoreData, GameItem, PackageItem, CouponItem, OrderItem, HeroSlide, TrustBadge } from '@/lib/types';
+import { StoreData, GameItem, PackageItem, CouponItem, OrderItem, HeroSlide, TrustBadge, UserProfile } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { ImageUploader } from '@/components/common/ImageUploader';
 
@@ -46,6 +50,8 @@ export default function AdminPage() {
   const [editingCoupon, setEditingCoupon] = useState<CouponItem | null>(null);
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
   const [editingTrustBadge, setEditingTrustBadge] = useState<TrustBadge | null>(null);
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [userSearch, setUserSearch] = useState('');
   const [orderSearch, setOrderSearch] = useState('');
   const [orderFilter, setOrderFilter] = useState<string>('all');
   const [historySearch, setHistorySearch] = useState('');
@@ -216,6 +222,28 @@ export default function AdminPage() {
         showNotice(`কুপন '${coupon.code}' সংরক্ষিত হয়েছে!`);
         setEditingCoupon(null);
         fetchStoreData();
+      } else {
+        showNotice(json.error || 'কুপন সেভ করতে ব্যর্থ হয়েছে', 'error');
+      }
+    } catch (e: any) {
+      showNotice(e.message, 'error');
+    }
+  };
+
+  const handleSaveUser = async (user: UserProfile) => {
+    try {
+      const res = await fetch('/api/admin/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_user', payload: user, author: 'Admin' })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showNotice(`ইউজার '${user.name}' সফলভাবে আপডেট হয়েছে!`);
+        setEditingUser(null);
+        fetchStoreData();
+      } else {
+        showNotice(json.error || 'ইউজার আপডেট করতে ব্যর্থ হয়েছে', 'error');
       }
     } catch (e: any) {
       showNotice(e.message, 'error');
@@ -1340,6 +1368,191 @@ export default function AdminPage() {
                   </Card>
                 ))}
             </div>
+          </div>
+        )}
+
+        {/* USERS & ROLES TAB */}
+        {activeTab === 'users' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-white">ইউজার ও রোল ম্যানেজমেন্ট (Users & RBAC)</h2>
+                <p className="text-xs text-gray-400">সকল নিবন্ধিত গেমার ও অ্যাডমিনদের তালিকা এবং রোল নিয়ন্ত্রণ করুন</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="ইউজার বা রোল খুঁজুন..."
+                    value={userSearch}
+                    onChange={e => setUserSearch(e.target.value)}
+                    className="pl-8 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Quick KPI Stats for Users */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Card variant="glass" className="p-4 flex items-center justify-between">
+                <div>
+                  <div className="text-xs text-gray-400 font-bold">মোট নিবন্ধিত ইউজার</div>
+                  <div className="text-2xl font-black text-white mt-1">{(storeData.users || []).length}</div>
+                </div>
+                <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                  <Users className="w-5 h-5" />
+                </div>
+              </Card>
+              <Card variant="glass" className="p-4 flex items-center justify-between">
+                <div>
+                  <div className="text-xs text-gray-400 font-bold">সুপার অ্যাডমিন</div>
+                  <div className="text-2xl font-black text-white mt-1">
+                    {(storeData.users || []).filter(u => u.role === 'admin').length}
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-2xl bg-[oklch(45.5%_0.188_13.697_/_0.2)] border border-[oklch(45.5%_0.188_13.697_/_0.4)] flex items-center justify-center text-[oklch(65%_0.20_13.697)]">
+                  <Crown className="w-5 h-5" />
+                </div>
+              </Card>
+              <Card variant="glass" className="p-4 flex items-center justify-between">
+                <div>
+                  <div className="text-xs text-gray-400 font-bold">সাধারণ গেমার</div>
+                  <div className="text-2xl font-black text-white mt-1">
+                    {(storeData.users || []).filter(u => u.role !== 'admin').length}
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <User className="w-5 h-5" />
+                </div>
+              </Card>
+            </div>
+
+            {/* Users Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(storeData.users || [])
+                .filter(u =>
+                  !userSearch ||
+                  u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+                  (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase())) ||
+                  (u.phone && u.phone.includes(userSearch)) ||
+                  u.role.toLowerCase().includes(userSearch.toLowerCase())
+                )
+                .map(user => {
+                  const isUserAdmin = user.role === 'admin';
+                  return (
+                    <Card
+                      key={user.id}
+                      variant="glass"
+                      className="p-4 flex flex-col justify-between space-y-3 relative overflow-hidden"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0 ${
+                            isUserAdmin
+                              ? 'bg-[oklch(45.5%_0.188_13.697)] shadow-md shadow-[oklch(45.5%_0.188_13.697_/_0.35)]'
+                              : 'bg-white/10 text-white'
+                          }`}>
+                            {isUserAdmin ? <Crown className="w-5 h-5 text-white" /> : user.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="font-extrabold text-white [html.light-theme_&]:text-slate-900 text-sm truncate">
+                              {user.name}
+                            </h4>
+                            <p className="text-[11px] text-gray-400 [html.light-theme_&]:text-slate-500 truncate">
+                              {user.email || user.phone || 'No email/phone'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
+                          isUserAdmin
+                            ? 'bg-[oklch(45.5%_0.188_13.697_/_0.2)] text-[oklch(65%_0.20_13.697)] border border-[oklch(45.5%_0.188_13.697_/_0.4)]'
+                            : 'bg-white/10 text-gray-300 [html.light-theme_&]:text-slate-700'
+                        }`}>
+                          {isUserAdmin ? <Crown className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
+                          {user.role}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10 [html.light-theme_&]:border-black/10">
+                        <div className="text-gray-400 [html.light-theme_&]:text-slate-600">
+                          ওয়ালেট ব্যালেন্স: <span className="font-extrabold text-emerald-400">৳{user.walletBalance || 0}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={<Edit2 className="w-3.5 h-3.5" />}
+                          onClick={() => setEditingUser({ ...user })}
+                        >
+                          রোল / এডিট
+                        </Button>
+                      </div>
+                    </Card>
+                  );
+                })}
+            </div>
+
+            {/* Edit User Modal */}
+            <Modal isOpen={Boolean(editingUser)} onClose={() => setEditingUser(null)} title="ইউজার প্রোফাইল ও রোল পরিবর্তন">
+              {editingUser && (
+                <div className="space-y-4">
+                  <Input
+                    label="নাম (User Name)"
+                    value={editingUser.name}
+                    onChange={e => setEditingUser({ ...editingUser, name: e.target.value })}
+                  />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label="ইমেইল (Email)"
+                      type="email"
+                      value={editingUser.email || ''}
+                      onChange={e => setEditingUser({ ...editingUser, email: e.target.value })}
+                    />
+                    <Input
+                      label="ফোন নম্বর (Phone)"
+                      value={editingUser.phone || ''}
+                      onChange={e => setEditingUser({ ...editingUser, phone: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-300 [html.light-theme_&]:text-slate-800">
+                      সিস্টেম রোল (Role / Privilege) *
+                    </label>
+                    <select
+                      value={editingUser.role}
+                      onChange={e => setEditingUser({ ...editingUser, role: e.target.value as 'user' | 'admin' })}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/15 [html.light-theme_&]:border-black/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold focus:outline-none focus:border-[oklch(45.5%_0.188_13.697)]"
+                    >
+                      <option value="user" className="bg-[#0b172a] text-white">Regular Gamer (ইউজার)</option>
+                      <option value="admin" className="bg-[#0b172a] text-white">👑 Super Admin (সম্পূর্ণ নিয়ন্ত্রণ)</option>
+                    </select>
+                    <p className="text-[10px] text-gray-400">
+                      অ্যাডমিন রোল দিলে এই ইউজার সিএমএস ড্যাশবোর্ড এবং সকল ডাটাবেজ এডিট করতে পারবেন।
+                    </p>
+                  </div>
+
+                  <Input
+                    label="ওয়ালেট ব্যালেন্স (৳ BDT)"
+                    type="number"
+                    value={editingUser.walletBalance || 0}
+                    onChange={e => setEditingUser({ ...editingUser, walletBalance: Number(e.target.value) })}
+                  />
+
+                  <div className="flex justify-end gap-2 pt-3 border-t border-white/10 [html.light-theme_&]:border-black/10">
+                    <Button variant="ghost" size="sm" onClick={() => setEditingUser(null)}>
+                      বাতিল
+                    </Button>
+                    <Button variant="primary" size="sm" onClick={() => handleSaveUser(editingUser)}>
+                      সংরক্ষণ ও রোল পরিবর্তন
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Modal>
           </div>
         )}
 

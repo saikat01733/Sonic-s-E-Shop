@@ -547,5 +547,16 @@
       "timestamp": 1795515600000,
       "dateStr": "২৪ নভেম্বর ২০২৬, ০৫:০০ অপরাহ্ন"
     }
+  ],
+  "users": [
+    {
+      "id": "0kLORbWzqSg90YNRnnVWpb7ZJoY2",
+      "name": "Saikat Ahmmad",
+      "email": "saikatahmmad77@gmail.com",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJPwaOLKv8I87bBcs0W8r011b7X0Hh33Xl7je-tMbJs_0pdbQ=s96-c",
+      "role": "admin",
+      "walletBalance": 25000,
+      "createdAt": 1795529405305
+    }
   ]
 }

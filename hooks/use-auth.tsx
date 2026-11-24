@@ -51,7 +51,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem('sonic_auth_user');
       if (saved) {
-        setUser(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setUser(parsed);
+        // Background sync to ensure role changes made by admin in DB are reflected
+        fetch('/api/auth/sync-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(parsed),
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success && data.user) {
+              const updated: AuthUser = {
+                ...parsed,
+                role: data.user.role || parsed.role,
+                walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : parsed.walletBalance,
+                name: data.user.name || parsed.name,
+              };
+              saveUserSession(updated);
+            }
+          })
+          .catch(() => {});
       }
     } catch (e) {
       console.error('Failed to parse auth user', e);
@@ -87,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const isAdmin = isRoleAdmin(clean, pass);
-    const authUser: AuthUser = {
+    let authUser: AuthUser = {
       id: isAdmin ? 'usr-admin-1' : 'usr-' + Math.floor(1000 + Math.random() * 9000),
       name: isAdmin ? 'Sonic Admin' : (clean.includes('@') ? clean.split('@')[0] : 'Gamer User'),
       email: clean.includes('@') ? clean : undefined,
@@ -95,6 +115,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: isAdmin ? 'admin' : 'user',
       walletBalance: isAdmin ? 25000 : 1250,
     };
+
+    try {
+      const res = await fetch('/api/auth/sync-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(authUser),
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        authUser = {
+          ...authUser,
+          role: data.user.role || authUser.role,
+          walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : authUser.walletBalance,
+          name: data.user.name || authUser.name,
+        };
+      }
+    } catch (e) {
+      console.warn('[Auth] syncUser error:', e);
+    }
 
     saveUserSession(authUser);
     return { success: true, role: authUser.role };
@@ -107,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const isAdmin = isRoleAdmin(clean, pass);
-    const authUser: AuthUser = {
+    let authUser: AuthUser = {
       id: 'usr-' + Math.floor(1000 + Math.random() * 9000),
       name: name.trim() || 'Gamer User',
       email: clean.includes('@') ? clean : undefined,
@@ -115,6 +154,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: isAdmin ? 'admin' : 'user',
       walletBalance: 100, // ৳100 Welcome Bonus
     };
+
+    try {
+      const res = await fetch('/api/auth/sync-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(authUser),
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        authUser = {
+          ...authUser,
+          role: data.user.role || authUser.role,
+          walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : authUser.walletBalance,
+          name: data.user.name || authUser.name,
+        };
+      }
+    } catch (e) {
+      console.warn('[Auth] syncUser signup error:', e);
+    }
 
     saveUserSession(authUser);
     return { success: true };
@@ -131,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isAdmin = isRoleAdmin(email);
       const assignedRole: 'user' | 'admin' = isAdmin ? 'admin' : 'user';
 
-      const authUser: AuthUser = {
+      let authUser: AuthUser = {
         id: googleUser.uid || 'usr-' + Date.now(),
         name: googleUser.displayName || email.split('@')[0] || 'Google Gamer',
         email,
@@ -140,21 +198,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         walletBalance: isAdmin ? 25000 : 500,
       };
 
+      try {
+        const res = await fetch('/api/auth/sync-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(authUser),
+        });
+        const data = await res.json();
+        if (data.success && data.user) {
+          authUser = {
+            ...authUser,
+            role: data.user.role || authUser.role,
+            walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : authUser.walletBalance,
+            name: data.user.name || authUser.name,
+          };
+        }
+      } catch (e) {
+        console.warn('[Auth] syncUser Google error:', e);
+      }
+
       saveUserSession(authUser);
-      return { success: true, role: assignedRole };
+      return { success: true, role: authUser.role };
     } catch (err: any) {
       console.warn('[Google Auth] Popup error, falling back to simulated Google session:', err.message);
       // Fallback for sandboxed preview environments where Google popups might be blocked
       const simulatedEmail = 'gamer@gmail.com';
-      const authUser: AuthUser = {
+      let authUser: AuthUser = {
         id: 'usr-google-' + Date.now(),
         name: 'Gamer User',
         email: simulatedEmail,
         role: 'user',
         walletBalance: 250,
       };
+
+      try {
+        const res = await fetch('/api/auth/sync-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(authUser),
+        });
+        const data = await res.json();
+        if (data.success && data.user) {
+          authUser = {
+            ...authUser,
+            role: data.user.role || authUser.role,
+          };
+        }
+      } catch (e) {
+        console.warn('[Auth] syncUser fallback error:', e);
+      }
+
       saveUserSession(authUser);
-      return { success: true, role: 'user' as const };
+      return { success: true, role: authUser.role };
     }
   };
 

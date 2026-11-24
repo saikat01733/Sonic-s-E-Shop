@@ -5,10 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Gamepad2, Tag, Package, Wallet, User } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function BottomDock() {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const { isAuthenticated, isAdmin } = useAuth();
+
+  const accountHref = isAuthenticated ? (isAdmin ? '/admin' : '/account') : '/login';
 
   const navItems = [
     { href: '/', label: t('navHome'), icon: Home },
@@ -16,14 +20,16 @@ export default function BottomDock() {
     { href: '/coupons', label: t('navCoupons'), icon: Tag },
     { href: '/orders', label: t('navOrders'), icon: Package },
     { href: '/wallet', label: t('navWallet'), icon: Wallet },
-    { href: '/account', label: t('navAccount'), icon: User },
+    { href: accountHref, label: t('navAccount'), icon: User, isAccount: true },
   ];
 
   return (
     <nav className="fixed bottom-2.5 inset-x-0 mx-auto z-40 max-w-lg px-1 sm:px-3 pointer-events-none">
       <div className="liquid-glass-dock pointer-events-auto py-1 sm:py-1.5 px-1 sm:px-4 flex items-center justify-around gap-0 sm:gap-1 shadow-2xl border-[oklch(45.5%_0.188_13.697_/_0.25)]">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = item.isAccount
+            ? (pathname === '/account' || pathname === '/login' || (isAdmin && pathname === '/admin'))
+            : pathname === item.href;
           const Icon = item.icon;
 
           return (

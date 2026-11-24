@@ -60,7 +60,6 @@ body {
     0 24px 60px -12px rgba(0, 0, 0, 0.70),
     0 0 0 1px rgba(56, 189, 248, 0.08);
   border-radius: 28px;
-  position: relative;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -242,6 +241,55 @@ body {
 
 .light-theme .live-notice-capsule span {
   color: #0f172a !important;
+}
+
+/* Light Theme Global Text Contrast Rules */
+.light-theme body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.light-theme h1:not([class*="text-[oklch"]):not([class*="text-emerald"]):not([class*="text-red"]):not(.text-white-force),
+.light-theme h2:not([class*="text-[oklch"]):not([class*="text-emerald"]):not([class*="text-red"]):not(.text-white-force),
+.light-theme h3:not([class*="text-[oklch"]):not([class*="text-emerald"]):not([class*="text-red"]):not(.text-white-force),
+.light-theme h4:not([class*="text-[oklch"]):not([class*="text-emerald"]):not([class*="text-red"]):not(.text-white-force),
+.light-theme p:not([class*="text-[oklch"]):not([class*="text-emerald"]):not([class*="text-red"]):not(.text-white-force) {
+  color: #0f172a;
+}
+
+.light-theme .liquid-glass h1,
+.light-theme .liquid-glass h2,
+.light-theme .liquid-glass h3,
+.light-theme .liquid-glass h4,
+.light-theme .liquid-glass h5,
+.light-theme .liquid-glass .text-white:not([class*="bg-[oklch"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-blue"]) {
+  color: #0f172a !important;
+}
+
+.light-theme .liquid-glass .text-gray-300,
+.light-theme .liquid-glass .text-gray-400,
+.light-theme .liquid-glass .text-slate-300,
+.light-theme .liquid-glass .text-slate-400 {
+  color: #334155 !important;
+}
+
+.light-theme input,
+.light-theme select,
+.light-theme textarea {
+  color: #0f172a !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+.light-theme input::placeholder,
+.light-theme textarea::placeholder {
+  color: #64748b !important;
+}
+
+.light-theme .border-white\/10,
+.light-theme .border-white\/15,
+.light-theme .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
 }
 
 /* Custom Scrollbar */

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { StoreData, SiteSettings, GameItem, PackageItem, CouponItem, OrderItem, AuditLogItem } from './types';
+import { StoreData, SiteSettings, GameItem, PackageItem, CouponItem, OrderItem, AuditLogItem, UserProfile } from './types';
 import { getMongoClient } from './mongodb';
 
 const STORE_PATH = path.join(process.cwd(), 'data', 'store.json');
@@ -77,6 +77,7 @@ export async function getStoreData(): Promise<StoreData> {
       const coupons = await db.collection<CouponItem>('coupons').find({}).toArray();
       const orders = await db.collection<OrderItem>('orders').find({}).sort({ timestamp: -1 }).toArray();
       const auditLogs = await db.collection<AuditLogItem>('auditLogs').find({}).sort({ timestamp: -1 }).limit(100).toArray();
+      const users = await db.collection<UserProfile>('users').find({}).sort({ createdAt: -1 }).toArray();
 
       if (settingsDoc && games.length > 0) {
         const local = readFileStore();
@@ -91,7 +92,8 @@ export async function getStoreData(): Promise<StoreData> {
           games,
           coupons,
           orders,
-          auditLogs
+          auditLogs,
+          users: users?.length ? users : (local.users || [])
         };
       } else if (games.length === 0) {
         // Auto-seed initial store data into MongoDB Atlas
@@ -398,4 +400,131 @@ export async function updateOrderStatus(
     author
   );
   return order;
+}
+
+// ==========================================
+// USER DATABASE & RBAC PERSISTENCE
+// ==========================================
+
+export async function getUsers(): Promise<UserProfile[]> {
+  const mongo = await getMongoClient();
+  if (mongo) {
+    try {
+      const users = await mongo.db().collection<UserProfile>('users').find({}).sort({ createdAt: -1 }).toArray();
+      if (users && users.length > 0) return users;
+    } catch (e) {
+      console.warn('[MongoDB] getUsers failed:', e);
+    }
+  }
+  const store = readFileStore();
+  return store.users || [];
+}
+
+export async function syncUser(user: Partial<UserProfile> & { id: string }): Promise<UserProfile> {
+  const mongo = await getMongoClient();
+  const store = readFileStore();
+  if (!store.users) store.users = [];
+
+  const existingLocal = store.users.find(
+    u => u.id === user.id || (user.email && u.email === user.email) || (user.phone && u.phone === user.phone)
+  );
+
+  let finalUser: UserProfile = {
+    id: user.id,
+    name: user.name || existingLocal?.name || 'Gamer User',
+    email: user.email || existingLocal?.email,
+    phone: user.phone || existingLocal?.phone,
+    avatar: user.avatar || existingLocal?.avatar,
+    role: existingLocal?.role === 'admin' ? 'admin' : (user.role || 'user'),
+    walletBalance: existingLocal ? existingLocal.walletBalance : (user.walletBalance ?? 100),
+    createdAt: existingLocal?.createdAt || Date.now(),
+  };
+
+  if (mongo) {
+    try {
+      const collection = mongo.db().collection<UserProfile>('users');
+      const existingMongo = await collection.findOne({
+        $or: [
+          { id: user.id },
+          ...(user.email ? [{ email: user.email }] : []),
+          ...(user.phone ? [{ phone: user.phone }] : [])
+        ]
+      } as any);
+
+      if (existingMongo) {
+        finalUser.role = existingMongo.role || finalUser.role;
+        finalUser.walletBalance = typeof existingMongo.walletBalance === 'number' ? existingMongo.walletBalance : finalUser.walletBalance;
+        finalUser.name = user.name || existingMongo.name || finalUser.name;
+        finalUser.avatar = user.avatar || existingMongo.avatar || finalUser.avatar;
+      }
+
+      await collection.updateOne(
+        { id: finalUser.id } as any,
+        { $set: finalUser },
+        { upsert: true }
+      );
+    } catch (e) {
+      console.warn('[MongoDB] syncUser failed:', e);
+    }
+  }
+
+  const localIdx = store.users.findIndex(u => u.id === finalUser.id);
+  if (localIdx >= 0) {
+    store.users[localIdx] = finalUser;
+  } else {
+    store.users.push(finalUser);
+  }
+  writeFileStore(store);
+
+  return finalUser;
+}
+
+export async function updateUser(
+  userId: string,
+  updates: Partial<UserProfile>,
+  author: string = 'Admin'
+): Promise<UserProfile | null> {
+  const mongo = await getMongoClient();
+  const store = readFileStore();
+  if (!store.users) store.users = [];
+
+  const localIdx = store.users.findIndex(u => u.id === userId);
+  let user: UserProfile | null = localIdx >= 0 ? { ...store.users[localIdx], ...updates } : null;
+
+  if (mongo) {
+    try {
+      const collection = mongo.db().collection<UserProfile>('users');
+      if (!user) {
+        const found = await collection.findOne({ id: userId } as any);
+        if (found) user = { ...found, ...updates };
+      }
+      if (user) {
+        await collection.updateOne(
+          { id: userId } as any,
+          { $set: updates },
+          { upsert: true }
+        );
+      }
+    } catch (e) {
+      console.warn('[MongoDB] updateUser failed:', e);
+    }
+  }
+
+  if (user) {
+    if (localIdx >= 0) {
+      store.users[localIdx] = user;
+    } else {
+      store.users.push(user);
+    }
+    writeFileStore(store);
+
+    await addAuditLog(
+      'UPDATED',
+      `User: ${user.name} (${user.role.toUpperCase()})`,
+      `Updated user profile: Role=${user.role}, Wallet=৳${user.walletBalance}`,
+      author
+    );
+  }
+
+  return user;
 }

@@ -120,6 +120,17 @@ export interface OrderItem {
   timestamp: number;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  avatar?: string;
+  role: 'user' | 'admin';
+  walletBalance: number;
+  createdAt?: string | number;
+}
+
 export interface AuditLogItem {
   id: string;
   action: 'CREATED' | 'UPDATED' | 'DELETED' | 'STATUS_CHANGE';
@@ -137,4 +148,5 @@ export interface StoreData {
   coupons: CouponItem[];
   orders: OrderItem[];
   auditLogs: AuditLogItem[];
+  users?: UserProfile[];
 }

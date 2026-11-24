@@ -15,6 +15,7 @@ import {
   Settings,
   LogOut,
   ExternalLink,
+  Users,
 } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 
@@ -27,6 +28,7 @@ export type AdminTab =
   | 'packages'
   | 'coupons'
   | 'orders'
+  | 'users'
   | 'history'
   | 'settings';
 
@@ -54,6 +56,7 @@ export function AdminSidebar({
     { id: 'packages', label: 'Packages & Prices', icon: Package },
     { id: 'coupons', label: 'Discount Coupons', icon: Tag },
     { id: 'orders', label: 'Live Orders Hub', icon: ShoppingBag, badge: pendingOrdersCount },
+    { id: 'users', label: 'Users & Roles (RBAC)', icon: Users },
     { id: 'history', label: 'Audit History Logs', icon: History },
     { id: 'settings', label: 'Admin Security', icon: Settings },
   ];

@@ -113,11 +113,26 @@ export const GameSchema = z.object({
  */
 export const CouponSchema = z.object({
   id: z.string().min(1),
-  code: z.string().min(2).max(30).regex(/^[A-Z0-9_-]+$/, 'Coupon code must be uppercase alphanumeric'),
+  code: z.string().min(1).max(30),
   discount: z.number().int().positive('Discount must be positive'),
   minSpend: z.number().int().nonnegative().default(0),
-  expiryDate: z.string().min(1).max(50),
-  isActive: z.boolean().default(true),
+  description: z.string().max(250).optional().default(''),
+  colorClass: z.string().max(50).optional().default('coupon-red'),
+  active: z.boolean().default(true),
+  isActive: z.boolean().optional(),
+  expiryDate: z.string().max(50).optional(),
+});
+
+/**
+ * Schema for User profile and role updates
+ */
+export const UserUpdateSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(100).optional(),
+  email: z.string().email().optional().or(z.literal('')),
+  phone: z.string().max(30).optional(),
+  role: z.enum(['user', 'admin']),
+  walletBalance: z.number().nonnegative().optional(),
 });
 
 /**

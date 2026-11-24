@@ -74,7 +74,7 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
   return (
     <>
       <header className="sticky top-2 z-50 w-full px-2 sm:px-4 md:px-6 mb-2">
-        <div className="max-w-6xl mx-auto liquid-glass-pill py-1.5 sm:py-2 px-2.5 sm:px-5 flex items-center justify-between gap-1.5 sm:gap-4 shadow-2xl flex-nowrap">
+        <div className="max-w-6xl mx-auto liquid-glass-pill py-1.5 sm:py-2 px-2.5 sm:px-5 flex items-center justify-between gap-1.5 sm:gap-4 shadow-2xl flex-nowrap min-h-[44px]">
           {/* Brand Logo - STRICT 1-LINE HORIZONTAL ALIGNMENT (320px-1440px) */}
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group flex-shrink-0">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[oklch(45.5%_0.188_13.697)] flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-md shadow-[oklch(45.5%_0.188_13.697_/_0.4)] group-hover:scale-105 transition-transform flex-shrink-0">
@@ -158,7 +158,7 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                 <span>{locale === 'bn' ? 'লগইন' : 'Login'}</span>
               </Link>
             ) : (
-              <div ref={userMenuRef} className="relative">
+              <div ref={userMenuRef} className="relative flex-shrink-0 flex items-center">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className={`flex items-center gap-1 sm:gap-1.5 py-1 px-2 sm:px-2.5 rounded-full border transition-all cursor-pointer flex-shrink-0 ${
@@ -176,9 +176,12 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                   <ChevronDown className="w-3 h-3 opacity-70" />
                 </button>
 
-                {/* Dynamic RBAC Dropdown Menu */}
+                {/* Dynamic RBAC Dropdown Menu - Explicit absolute overlay so capsule never deforms */}
                 {isUserMenuOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-56 rounded-2xl liquid-glass bg-[#08172e]/95 [html.light-theme_&]:bg-white/95 border border-[oklch(45.5%_0.188_13.697_/_0.35)] [html.light-theme_&]:border-black/10 p-2 shadow-2xl z-50 text-xs space-y-1 backdrop-blur-3xl animate-fadeIn">
+                  <div
+                    className="!absolute top-full right-0 mt-2 w-56 rounded-2xl liquid-glass bg-[#08172e]/95 [html.light-theme_&]:bg-white/95 border border-[oklch(45.5%_0.188_13.697_/_0.35)] [html.light-theme_&]:border-black/10 p-2 shadow-2xl z-50 text-xs space-y-1 backdrop-blur-3xl animate-fadeIn"
+                    style={{ position: 'absolute' }}
+                  >
                     {/* User Profile Header */}
                     <div className="p-2 border-b border-white/10 [html.light-theme_&]:border-black/10 mb-1">
                       <div className="font-bold text-white [html.light-theme_&]:text-slate-900 truncate">{user?.name}</div>

@@ -7,12 +7,15 @@ import {
   savePackage,
   deletePackage,
   saveCoupon,
-  deleteCoupon
+  deleteCoupon,
+  getUsers,
+  updateUser
 } from '@/lib/db';
 import {
   SiteSettingsSchema,
   GameSchema,
   CouponSchema,
+  UserUpdateSchema,
   sanitizeString
 } from '@/lib/validations';
 import { z } from 'zod';
@@ -108,6 +111,23 @@ export async function POST(req: NextRequest) {
         if (!id) return NextResponse.json({ success: false, error: 'Coupon ID required' }, { status: 400 });
         await deleteCoupon(id, author);
         return NextResponse.json({ success: true });
+      }
+
+      case 'get_users': {
+        const users = await getUsers();
+        return NextResponse.json({ success: true, users });
+      }
+
+      case 'update_user': {
+        const parsedUser = UserUpdateSchema.safeParse(payload);
+        if (!parsedUser.success) {
+          return NextResponse.json(
+            { success: false, error: parsedUser.error.issues.map(i => i.message).join(', ') },
+            { status: 400 }
+          );
+        }
+        const updated = await updateUser(parsedUser.data.id, parsedUser.data, author);
+        return NextResponse.json({ success: true, user: updated });
       }
 
       default:
