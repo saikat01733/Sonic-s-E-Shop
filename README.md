@@ -199,9 +199,30 @@ graph LR
     Frontend --> Services
 ```
 
-- **🎨 CSS Architecture**: CSS Variables (`:root`), Backdrop-filter Blur, Custom Glass Shadows, Flexbox & CSS Grid.
+- **🎨 CSS Architecture**: Modular structure (`variables.css`, `main.css`, `responsive.css`), CSS Variables (`:root`), Backdrop-filter Blur, Custom Glass Shadows, Flexbox & CSS Grid.
 - **⚡ JavaScript Logic**: Dynamic package calculation, search filter algorithm, theme toggle memory, animation state triggers.
 - **🖼️ Image Optimization**: Dual WebP + PNG/JPEG fallback pipeline using `<picture>` elements for maximum speed and zero layout shift.
+
+---
+
+## 📂 Project Structure
+
+```bash
+Sonic-s-E-Shop/
+├── index.html          # Main single-page application & interactive UI
+├── css/
+│   ├── variables.css   # Design tokens, color schemes & dark/light theme variables
+│   ├── main.css        # Core layout, components, announcement ticker & badges
+│   ├── responsive.css  # Dedicated 320px to 1440px+ device media queries
+│   └── style.css       # Master modular stylesheet
+├── style.css           # Production bundled stylesheet
+├── logo.png            # Transparent brand logo (WebP/PNG)
+├── logo.webp           # Optimized WebP logo asset
+├── logo.jpg            # Standard JPEG logo
+├── banner.jpg          # Official gaming hero banner (1024x439)
+├── banner.webp         # Next-gen WebP responsive hero banner
+└── README.md           # Documentation & repository overview
+```
 
 ---
 

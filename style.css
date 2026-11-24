@@ -1,0 +1,1713 @@
+/**
+ * Sonic's E-Shop - Design Tokens & Theme Variables
+ * Inspired by modern gaming stores (Khela Store, Codashop, UniPin)
+ */
+
+:root {
+    /* Base Font Stack: Modern SaaS + Native Bengali Support */
+    --font-main: 'Plus Jakarta Sans', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-serif: 'Bodoni Moda', serif;
+
+    /* Dark Theme Colors (Default Gaming Look) */
+    --bg-color: #0c0e14;
+    --bg-surface: #13161f;
+    --bg-pattern: radial-gradient(circle at 15% 15%, rgba(239, 68, 68, 0.12) 0%, transparent 45%),
+                  radial-gradient(circle at 85% 85%, rgba(0, 160, 255, 0.10) 0%, transparent 45%),
+                  radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.05) 0%, transparent 60%);
+    --grid-line: rgba(255, 255, 255, 0.025);
+
+    /* Brand Accents */
+    --accent-red: #ef4444;
+    --accent-red-hover: #dc2626;
+    --accent-rose: #f43f5e;
+    --accent-gold: #f59e0b;
+    --accent-cyan: #06b6d4;
+
+    /* Text Colors */
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+
+    /* Status Colors */
+    --success-green: #10b981;
+    --success-glow: rgba(16, 185, 129, 0.3);
+    --danger-red: #ef4444;
+
+    /* Glassmorphism & Surface Tokens */
+    --card-bg: rgba(21, 24, 33, 0.72);
+    --card-hover: rgba(28, 32, 45, 0.85);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(239, 68, 68, 0.5);
+    --glass-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+    --glow-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
+
+    /* Form Controls */
+    --input-bg: rgba(255, 255, 255, 0.04);
+    --input-focus-bg: rgba(255, 255, 255, 0.07);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --input-focus-border: #ef4444;
+
+    /* Top Bar & Overlays */
+    --header-bg: rgba(12, 14, 20, 0.82);
+    --ticker-bg: rgba(239, 68, 68, 0.08);
+    --ticker-border: rgba(239, 68, 68, 0.25);
+    --toggle-btn-bg: rgba(25, 28, 38, 0.8);
+    --toggle-pill-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.15);
+
+    /* Payment Brand Colors */
+    --bkash-color: #e2136e;
+    --nagad-color: #f7941d;
+    --rocket-color: #8c3494;
+
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    --transition-smooth: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Light Theme (Frosted Clean Mode) */
+html.light-theme {
+    --bg-color: #f3f4f8;
+    --bg-surface: #ffffff;
+    --bg-pattern: radial-gradient(circle at 15% 15%, rgba(239, 68, 68, 0.06) 0%, transparent 45%),
+                  radial-gradient(circle at 85% 85%, rgba(0, 160, 255, 0.05) 0%, transparent 45%);
+    --grid-line: rgba(0, 0, 0, 0.035);
+
+    --accent-red: #e11d48;
+    --accent-red-hover: #be123c;
+    --accent-rose: #f43f5e;
+    --accent-gold: #d97706;
+
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --text-dim: #94a3b8;
+
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --card-hover: rgba(255, 255, 255, 0.98);
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(226, 232, 240, 0.85);
+    --glass-border-hover: rgba(225, 29, 72, 0.4);
+    --glass-shadow: 0 12px 30px rgba(0, 0, 0, 0.06), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    --glow-shadow: 0 0 20px rgba(225, 29, 72, 0.2);
+
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --input-focus-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --input-focus-border: #e11d48;
+
+    --header-bg: rgba(243, 244, 248, 0.85);
+    --ticker-bg: rgba(225, 29, 72, 0.06);
+    --ticker-border: rgba(225, 29, 72, 0.18);
+    --toggle-btn-bg: rgba(226, 232, 240, 0.9);
+    --toggle-pill-shadow: 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.9);
+}
+/**
+ * Sonic's E-Shop - Main Application Styles
+ * Clean, organized, and modular gaming store design
+ */
+
+/* ============================================================
+   1. RESET & BASE STYLES
+   ============================================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    background-image: 
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+        var(--bg-pattern);
+    background-size: 30px 30px, 30px 30px, 100% 100%;
+    background-attachment: fixed;
+    color: var(--text-main);
+    font-family: var(--font-main);
+    padding: 0;
+    padding-bottom: 95px;
+    overflow-x: hidden;
+    transition: background 0.4s ease, color 0.4s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Universal Responsive Images */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.container {
+    max-width: 550px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 16px;
+    transition: max-width 0.3s ease, padding 0.3s ease;
+}
+
+/* ============================================================
+   2. ANNOUNCEMENT NOTICE TICKER (KHELA STORE STYLE)
+   ============================================================ */
+.announcement-bar {
+    background: var(--ticker-bg);
+    border-bottom: 1px solid var(--ticker-border);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    padding: 8px 16px;
+    font-size: 12.5px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+    z-index: 850;
+}
+
+.announcement-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    animation: tickerMarquee 25s linear infinite;
+}
+
+.announcement-bar:hover .announcement-content {
+    animation-play-state: paused;
+}
+
+.ticker-tag {
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.pulse-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--success-green);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--success-green);
+    animation: pulseEffect 1.5s infinite;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+@keyframes pulseEffect {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+@keyframes tickerMarquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* ============================================================
+   3. TOP NAVIGATION BAR
+   ============================================================ */
+.top-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    background: var(--header-bg);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 10px 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    transition: background 0.4s ease, padding 0.3s ease;
+}
+
+.nav-content {
+    max-width: 550px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: max-width 0.3s ease, gap 0.3s ease;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+.brand-logo-img {
+    height: 36px;
+    max-width: 150px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    transition: transform 0.3s ease, filter 0.3s ease, height 0.3s ease;
+}
+
+.brand-logo-img:hover {
+    transform: scale(1.04);
+}
+
+html.dark-theme .brand-logo-img {
+    filter: drop-shadow(0 0 10px rgba(0, 160, 255, 0.45));
+}
+
+html.light-theme .brand-logo-img {
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25)) contrast(1.15) brightness(0.95);
+}
+
+/* Search Bar */
+.search-box {
+    position: relative;
+    flex: 1;
+    max-width: 170px;
+    min-width: 0;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 8px 12px 8px 30px;
+    font-size: 12px;
+    font-family: inherit;
+    border-radius: 20px;
+    background: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    outline: none;
+    transition: all 0.25s ease;
+}
+
+.search-box input:focus {
+    border-color: var(--accent-red);
+    background: var(--input-focus-bg);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+}
+
+.search-box svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    fill: var(--text-muted);
+    pointer-events: none;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.theme-toggle-btn {
+    position: relative;
+    width: 54px;
+    height: 28px;
+    border-radius: 30px;
+    background: var(--toggle-btn-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--toggle-pill-shadow);
+    cursor: pointer;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease, background 0.4s ease;
+    overflow: hidden;
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.94);
+}
+
+.theme-slider-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s ease;
+}
+
+html.light-theme .theme-slider-thumb {
+    transform: translateX(26px);
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.theme-icon {
+    width: 12px;
+    height: 12px;
+    fill: var(--text-main);
+    transition: transform 0.4s ease;
+}
+
+/* Hamburger Menu Button */
+.menu-trigger-btn {
+    background: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--glass-shadow);
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+}
+
+.menu-trigger-btn:hover {
+    background: var(--glass-bg);
+}
+
+.menu-trigger-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+/* ============================================================
+   4. SIDE DRAWER MENU
+   ============================================================ */
+.side-drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(8px);
+    z-index: 1200;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.side-drawer-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.side-drawer {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 275px;
+    height: 100%;
+    background: var(--bg-surface);
+    border-left: 1px solid var(--glass-border);
+    z-index: 1250;
+    padding: 22px;
+    transition: right 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: -10px 0 35px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+}
+
+.side-drawer-overlay.active .side-drawer {
+    right: 0;
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+}
+
+.drawer-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-main);
+}
+
+.drawer-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+.drawer-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.drawer-item:hover {
+    background: var(--card-hover);
+    border-color: var(--accent-red);
+}
+
+.drawer-item svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.drawer-login-btn {
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
+    color: white !important;
+    border: none;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+/* ============================================================
+   5. HERO BANNER & HEADER
+   ============================================================ */
+.hero-banner-container {
+    width: 100%;
+    margin-top: 14px;
+    margin-bottom: 18px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    background: rgba(0, 0, 0, 0.2);
+    transition: border-radius 0.3s ease, margin 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-banner-container:hover {
+    box-shadow: 0 20px 40px rgba(239, 68, 68, 0.2);
+}
+
+.hero-banner-img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1024 / 439;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.hero-banner-container:hover .hero-banner-img {
+    transform: scale(1.02);
+}
+
+/* Header Text */
+.header {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.header h2 {
+    font-family: var(--font-serif);
+    color: var(--text-main);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0;
+    text-shadow: 0 2px 12px rgba(239, 68, 68, 0.25);
+}
+
+/* Trust Badges Row */
+.trust-badges-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.trust-badge-card {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--glass-shadow);
+}
+
+.trust-badge-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-red);
+    flex-shrink: 0;
+}
+
+.trust-badge-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.trust-badge-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.trust-badge-sub {
+    font-size: 10.5px;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   6. TOP-UP STEPS & FORM CONTROLS
+   ============================================================ */
+.section {
+    background: var(--card-bg);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--glass-shadow);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    font-weight: 700;
+    font-size: 15.5px;
+    color: var(--text-main);
+}
+
+.step-number {
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    color: white;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+    flex-shrink: 0;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.form-group {
+    margin-bottom: 14px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--input-bg);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 13.5px;
+    transition: all 0.25s ease;
+}
+
+input:focus, select:focus {
+    border-color: var(--accent-red);
+    background: var(--input-focus-bg);
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.25);
+    outline: none;
+}
+
+/* ============================================================
+   7. DEVICE SELECTOR CARDS
+   ============================================================ */
+.device-selector-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 5px;
+}
+
+.device-card {
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 18px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.25s ease, background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.device-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.device-card.active {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(244, 63, 94, 0.12));
+    border-color: var(--accent-red);
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+}
+
+.device-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.device-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.device-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.device-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-main);
+}
+
+.device-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   8. COIN PACKAGES GRID & CARDS
+   ============================================================ */
+.pkg-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.pkg-card {
+    position: relative;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 18px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pkg-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.pkg-card.active {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(244, 63, 94, 0.12));
+    border-color: var(--accent-red);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.35);
+}
+
+.pkg-card.out-of-stock {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.pkg-card.out-of-stock:hover {
+    transform: none;
+    border-color: var(--glass-border);
+}
+
+.pkg-name { 
+    font-weight: 700; 
+    font-size: 13.5px;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.pkg-price { 
+    color: var(--accent-red); 
+    font-weight: 800; 
+    margin-top: 6px; 
+    font-size: 15px;
+}
+
+.pkg-stock {
+    color: var(--success-green);
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+/* ============================================================
+   9. PAYMENT METHODS & INSTRUCTIONS
+   ============================================================ */
+.pay-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 12px; 
+}
+
+.pay-method { 
+    padding: 14px; 
+    text-align: center; 
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.pay-method:hover {
+    transform: translateY(-2px);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.pay-method.active {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(244, 63, 94, 0.15));
+    border-color: var(--accent-red);
+    box-shadow: 0 8px 22px rgba(239, 68, 68, 0.3);
+}
+
+.payment-instructions {
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(15px);
+    padding: 12px 16px;
+    border-radius: 16px;
+    margin-top: 15px;
+    font-size: 13px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--glass-border);
+}
+
+.payment-instructions span {
+    color: #38bdf8;
+    font-weight: 700;
+}
+
+.copy-btn, .invoice-btn {
+    background: rgba(59, 130, 246, 0.5);
+    color: white;
+    border: 1px solid rgba(59, 130, 246, 0.6);
+    padding: 6px 14px;
+    font-size: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.copy-btn:hover {
+    background: rgba(59, 130, 246, 0.8);
+}
+
+.invoice-btn {
+    background: rgba(34, 197, 94, 0.5);
+    border-color: rgba(34, 197, 94, 0.6);
+}
+
+/* ============================================================
+   10. ORDER TOTAL & ANIMATED TRUCK BUTTON
+   ============================================================ */
+.total-display-btn {
+    background: var(--card-bg);
+    color: #38bdf8;
+    border: 1px dashed var(--glass-border);
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 14.5px;
+    margin-top: 15px;
+}
+
+.truck-order-btn {
+    position: relative;
+    width: 100%;
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 28px;
+    overflow: hidden;
+    cursor: pointer;
+    margin-top: 16px;
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.truck-order-btn:hover {
+    box-shadow: 0 12px 30px rgba(239, 68, 68, 0.55);
+}
+
+.truck-order-btn:active {
+    transform: scale(0.98);
+}
+
+.truck-btn-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    z-index: 5;
+    transition: opacity 0.3s ease;
+}
+
+.road-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255, 255, 255, 0.6) 10px, rgba(255, 255, 255, 0.6) 20px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.truck-vehicle {
+    position: absolute;
+    top: 50%;
+    left: -80px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    z-index: 4;
+    transition: left 2.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.truck-box {
+    width: 38px;
+    height: 26px;
+    background: #ffffff;
+    border-radius: 4px;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.truck-box::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 18px;
+    background: rgba(239, 68, 68, 0.85);
+    border-radius: 2px;
+}
+
+.truck-cab {
+    width: 20px;
+    height: 22px;
+    background: #ffffff;
+    border-radius: 0 6px 6px 0;
+    position: relative;
+    margin-left: 1px;
+}
+
+.truck-headlight {
+    position: absolute;
+    top: 6px;
+    right: -25px;
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 25px solid rgba(255, 235, 59, 0);
+    transition: border-left-color 0.3s ease 0.8s;
+}
+
+.truck-order-btn.animating .truck-btn-text {
+    opacity: 0;
+}
+
+.truck-order-btn.animating .road-line {
+    opacity: 1;
+}
+
+.truck-order-btn.animating .truck-vehicle {
+    left: 110%;
+}
+
+.truck-order-btn.animating .truck-headlight {
+    border-left-color: rgba(255, 235, 59, 0.85);
+}
+
+/* ============================================================
+   11. MODALS & FLOATING CONTROLS
+   ============================================================ */
+.contact-modal, .invoice-modal, .glass-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(15px);
+    z-index: 1100;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+
+.contact-modal-content, .invoice-modal-content, .glass-box {
+    background: var(--bg-surface);
+    backdrop-filter: blur(35px);
+    border: 1px solid var(--glass-border);
+    width: 100%;
+    max-width: 400px;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--glass-shadow);
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 12px;
+}
+
+.modal-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.contact-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.contact-option-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.contact-option-item:hover {
+    background: var(--card-hover);
+    border-color: var(--accent-red);
+}
+
+.contact-option-item svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+/* Floating Contact Button */
+.contact-float-container {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    z-index: 950;
+}
+
+.contact-float-btn {
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
+    color: white;
+    padding: 12px 20px;
+    border-radius: 35px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.contact-float-btn:hover {
+    transform: scale(1.05);
+}
+
+.contact-float-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: white;
+}
+
+/* Floating Bottom Dock */
+.bottom-dock {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 500px;
+    background: var(--header-bg);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid var(--glass-border);
+    border-radius: 35px;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 10px;
+    z-index: 999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.dock-item {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 18px;
+    transition: transform 0.3s ease, color 0.3s ease, background 0.3s ease;
+}
+
+.dock-item svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+    margin-bottom: 2px;
+}
+
+.dock-item.active {
+    color: var(--text-main);
+    background: var(--glass-bg);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.dock-item.active svg {
+    color: var(--accent-red);
+}
+
+/* ============================================================
+   12. INTERACTIVE RETRO LAMP AUTH
+   ============================================================ */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active-tab {
+    display: block;
+}
+
+.lamp-login-container {
+    position: relative;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.lamp-stage {
+    position: relative;
+    width: 120px;
+    height: 140px;
+    margin: 0 auto 15px auto;
+}
+
+.lamp-head {
+    width: 60px;
+    height: 40px;
+    background: #334155;
+    border-radius: 30px 30px 5px 5px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 3;
+    border: 1px solid var(--glass-border);
+}
+
+.lamp-stand {
+    width: 6px;
+    height: 60px;
+    background: #64748b;
+    margin: 0 auto;
+}
+
+.lamp-base {
+    width: 70px;
+    height: 12px;
+    background: #334155;
+    border-radius: 12px;
+    margin: 0 auto;
+}
+
+.pull-string {
+    position: absolute;
+    top: 36px;
+    right: 36px;
+    width: 2px;
+    height: 45px;
+    background: #cbd5e1;
+    cursor: pointer;
+    z-index: 5;
+    transition: height 0.15s ease;
+}
+
+.pull-knob {
+    position: absolute;
+    bottom: -6px;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #f59e0b;
+}
+
+.lamp-glow {
+    position: absolute;
+    top: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 90px solid transparent;
+    border-right: 90px solid transparent;
+    border-bottom: 120px solid rgba(255, 235, 59, 0);
+    z-index: 2;
+    pointer-events: none;
+    transition: border-bottom-color 0.4s ease;
+}
+
+.lamp-login-container.lit .lamp-glow {
+    border-bottom-color: rgba(255, 235, 59, 0.18);
+}
+
+.interactive-auth-box {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 24px;
+    max-width: 420px;
+    margin: 0 auto;
+    box-shadow: var(--glass-shadow);
+}
+
+.welcome-badge {
+    display: inline-block;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--accent-red);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.google-btn {
+    width: 100%;
+    padding: 12px;
+    background: #ffffff;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    margin-bottom: 14px;
+}
+
+.google-btn img {
+    width: 18px;
+    height: 18px;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin: 15px 0;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.divider::before { margin-right: 10px; }
+.divider::after { margin-left: 10px; }
+
+.auth-toggle-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.auth-tab-btn {
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.auth-tab-btn.active {
+    background: var(--glass-bg);
+    border-color: var(--accent-red);
+    color: var(--text-main);
+}
+
+.buy-btn-style {
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Animated Door Logout Button */
+.animated-logout-btn {
+    position: relative;
+    padding: 12px 24px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* ============================================================
+   13. FOOTER
+   ============================================================ */
+.social-footer {
+    margin-top: 35px;
+    text-align: center;
+    border-top: 1px solid var(--glass-border);
+    padding-top: 25px;
+}
+
+.social-footer p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 14px;
+}
+
+.social-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 12.5px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.social-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-red);
+}
+
+.empty-orders {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+/**
+ * Sonic's E-Shop - Responsive Media Queries
+ * Perfectly calibrated across 320px to 1440px+
+ */
+
+/* ============================================================
+   1. ULTRA-COMPACT / SMALL MOBILE (320px to 399px)
+   ============================================================ */
+@media screen and (max-width: 399px) {
+    .container {
+        padding: 0 10px;
+    }
+    .top-navbar {
+        padding: 8px 10px;
+    }
+    .nav-content {
+        gap: 6px;
+    }
+    .brand-logo-img {
+        height: 28px;
+        max-width: 110px;
+    }
+    .search-box {
+        max-width: 115px;
+        min-width: 0;
+    }
+    .search-box input {
+        padding: 6px 8px 6px 24px;
+        font-size: 11px;
+    }
+    .search-box svg {
+        width: 12px;
+        height: 12px;
+        left: 7px;
+    }
+    .theme-toggle-btn {
+        width: 48px;
+        height: 26px;
+        padding: 2px;
+    }
+    .theme-slider-thumb {
+        width: 18px;
+        height: 18px;
+    }
+    html.light-theme .theme-slider-thumb {
+        transform: translateX(22px);
+    }
+    .theme-icon {
+        width: 11px;
+        height: 11px;
+    }
+    .menu-trigger-btn {
+        width: 28px;
+        height: 28px;
+    }
+    .menu-trigger-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    .hero-banner-container {
+        border-radius: 14px;
+        margin-top: 10px;
+        margin-bottom: 14px;
+    }
+    .hero-banner-img {
+        aspect-ratio: 1024 / 439;
+    }
+    .trust-badges-row {
+        gap: 8px;
+    }
+    .trust-badge-card {
+        padding: 8px 10px;
+    }
+    .trust-badge-icon {
+        width: 26px;
+        height: 26px;
+    }
+    .trust-badge-title {
+        font-size: 11px;
+    }
+    .trust-badge-sub {
+        font-size: 9.5px;
+    }
+    .pkg-grid {
+        gap: 8px;
+    }
+    .pkg-card {
+        padding: 12px 10px;
+    }
+    .pkg-name {
+        font-size: 12px;
+    }
+    .pkg-price {
+        font-size: 13.5px;
+    }
+    .device-card {
+        padding: 10px 8px;
+        gap: 8px;
+    }
+    .device-name {
+        font-size: 13px;
+    }
+    .input-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    .header h2 {
+        font-size: 22px;
+    }
+    .bottom-dock {
+        padding: 6px 8px;
+    }
+    .dock-item {
+        padding: 5px 8px;
+        font-size: 10px;
+    }
+    .dock-item svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* ============================================================
+   2. STANDARD MOBILE (400px to 599px)
+   ============================================================ */
+@media screen and (min-width: 400px) and (max-width: 599px) {
+    .brand-logo-img {
+        height: 34px;
+        max-width: 140px;
+    }
+    .hero-banner-img {
+        aspect-ratio: 1024 / 439;
+    }
+}
+
+/* ============================================================
+   3. TABLET PORTRAIT / MEDIUM SCREEN (600px to 767px)
+   ============================================================ */
+@media screen and (min-width: 600px) and (max-width: 767px) {
+    .container, .nav-content {
+        max-width: 680px;
+    }
+    .brand-logo-img {
+        height: 36px;
+        max-width: 155px;
+    }
+    .search-box {
+        max-width: 200px;
+    }
+    .hero-banner-container {
+        border-radius: 20px;
+    }
+    .hero-banner-img {
+        aspect-ratio: 1024 / 439;
+    }
+    .trust-badges-row {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .pkg-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+}
+
+/* ============================================================
+   4. TABLET LANDSCAPE & SMALL DESKTOP (768px to 1023px)
+   ============================================================ */
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+    .container, .nav-content {
+        max-width: 780px;
+    }
+    .top-navbar {
+        padding: 12px 24px;
+    }
+    .brand-logo-img {
+        height: 40px;
+        max-width: 170px;
+    }
+    .search-box {
+        max-width: 250px;
+    }
+    .search-box input {
+        font-size: 13px;
+        padding: 9px 14px 9px 32px;
+    }
+    .hero-banner-container {
+        border-radius: 24px;
+        margin-bottom: 22px;
+    }
+    .hero-banner-img {
+        aspect-ratio: 1024 / 439;
+    }
+    .trust-badges-row {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .pkg-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+    .header h2 {
+        font-size: 30px;
+    }
+    .bottom-dock {
+        max-width: 560px;
+    }
+}
+
+/* ============================================================
+   5. LARGE DESKTOP / STANDARD 1024px - 1279px
+   ============================================================ */
+@media screen and (min-width: 1024px) {
+    .container, .nav-content {
+        max-width: 960px;
+    }
+    .top-navbar {
+        padding: 14px 30px;
+    }
+    .brand-logo-img {
+        height: 44px;
+        max-width: 190px;
+    }
+    .search-box {
+        max-width: 300px;
+    }
+    .search-box input {
+        font-size: 13.5px;
+        padding: 10px 16px 10px 36px;
+    }
+    .hero-banner-container {
+        border-radius: 26px;
+        margin-bottom: 26px;
+    }
+    .hero-banner-img {
+        aspect-ratio: 1024 / 439;
+    }
+    .trust-badges-row {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+    .pkg-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+    .device-selector-container {
+        max-width: 520px;
+        margin: 0 auto;
+    }
+    .header h2 {
+        font-size: 32px;
+    }
+    .bottom-dock {
+        max-width: 620px;
+        bottom: 18px;
+    }
+}
+
+/* ============================================================
+   6. EXTRA WIDE DESKTOP (1280px to 1440px+)
+   ============================================================ */
+@media screen and (min-width: 1280px) {
+    .container, .nav-content {
+        max-width: 1100px;
+    }
+    .brand-logo-img {
+        height: 48px;
+        max-width: 210px;
+    }
+    .hero-banner-img {
+        aspect-ratio: 1024 / 439;
+    }
+    .pkg-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+    }
+}

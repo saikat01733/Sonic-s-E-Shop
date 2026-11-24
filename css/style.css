@@ -1,0 +1,11 @@
+/**
+ * Sonic's E-Shop - Master Stylesheet
+ * Modular Architecture:
+ * - variables.css   : Design tokens, dark/light themes, color palettes
+ * - main.css        : Core layout, components, interactive animations
+ * - responsive.css  : 320px to 1440px+ device breakpoints
+ */
+
+@import './variables.css';
+@import './main.css';
+@import './responsive.css';
