@@ -1718,7 +1718,7 @@ input:focus, select:focus {
 .game-card-poster {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
     overflow: hidden;
     background: #090b10;
     border-radius: 20px 20px 0 0;
@@ -1730,34 +1730,37 @@ input:focus, select:focus {
     object-fit: cover;
     object-position: center;
     transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: block;
 }
 
 .game-card:hover .game-card-poster img {
-    transform: scale(1.1);
+    transform: scale(1.08);
 }
 
-/* Glassmorphic Hover Details Overlay */
+/* Glassmorphic Hover Details Overlay (Only active on desktop mouse hover) */
 .game-card-hover-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(10, 12, 18, 0.65) 0%, rgba(10, 12, 18, 0.95) 100%);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: linear-gradient(180deg, rgba(10, 12, 18, 0.4) 0%, rgba(10, 12, 18, 0.92) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 14px 16px;
+    padding: 12px 14px;
     opacity: 0;
-    visibility: hidden;
-    transform: translateY(8px);
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.3s ease;
+    pointer-events: none;
+    transform: translateY(6px);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 6;
 }
 
-.game-card:hover .game-card-hover-overlay {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+@media (hover: hover) and (pointer: fine) {
+    .game-card:hover .game-card-hover-overlay {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
 }
 
 .hover-overlay-top {
@@ -1770,7 +1773,7 @@ input:focus, select:focus {
     font-size: 9.5px;
     font-weight: 800;
     color: #ffffff;
-    padding: 3px 8px;
+    padding: 2px 7px;
     border-radius: 6px;
     letter-spacing: 0.5px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.4);
@@ -1779,22 +1782,22 @@ input:focus, select:focus {
 .hover-details-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     margin: 4px 0;
 }
 
 .hover-detail-row {
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 11.5px;
+    gap: 6px;
+    font-size: 11px;
     color: #e2e8f0;
-    line-height: 1.35;
+    line-height: 1.3;
 }
 
 .hover-detail-row svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     fill: currentColor;
     color: var(--accent-red);
     flex-shrink: 0;
@@ -1811,18 +1814,18 @@ input:focus, select:focus {
     justify-content: space-between;
     background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
     color: #ffffff;
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 700;
-    padding: 7px 12px;
-    border-radius: 10px;
+    padding: 6px 10px;
+    border-radius: 8px;
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
     border: none;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .hover-action-btn svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     stroke: currentColor;
     stroke-width: 2.5;
     fill: none;
@@ -1848,8 +1851,10 @@ input:focus, select:focus {
     transition: opacity 0.25s ease;
 }
 
-.game-card:hover .game-card-badge {
-    opacity: 0;
+@media (hover: hover) and (pointer: fine) {
+    .game-card:hover .game-card-badge {
+        opacity: 0;
+    }
 }
 
 .game-card-info {
