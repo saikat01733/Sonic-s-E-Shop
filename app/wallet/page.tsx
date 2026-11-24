@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/use-language';
 import { SiteSettings, GameItem } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
-import { Wallet, Plus, ShieldCheck, RefreshCw, Copy, Check, Zap, Sparkles } from 'lucide-react';
+import { Wallet, Plus, ShieldCheck, RefreshCw, Copy, Check, Zap, Trophy } from 'lucide-react';
 
 export default function WalletPage() {
   const [games, setGames] = useState<GameItem[]>([]);

@@ -21,7 +21,7 @@ export default function BottomDock() {
 
   return (
     <nav className="fixed bottom-3 inset-x-0 mx-auto z-40 max-w-lg px-3 pointer-events-none">
-      <div className="liquid-glass-dock pointer-events-auto py-1.5 px-2 sm:px-4 flex items-center justify-around gap-1 shadow-2xl">
+      <div className="liquid-glass-dock pointer-events-auto py-1.5 px-2 sm:px-4 flex items-center justify-around gap-1 shadow-2xl border-cyan-500/25">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -32,7 +32,7 @@ export default function BottomDock() {
               href={item.href}
               className={`flex flex-col items-center justify-center py-1 px-2.5 sm:px-3 rounded-full transition-all duration-300 relative group cursor-pointer ${
                 isActive
-                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/35 scale-105'
+                  ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-600/35 scale-105 border border-cyan-400/40'
                   : 'text-gray-300 hover:text-white hover:bg-white/10 active:scale-95'
               }`}
             >
@@ -41,7 +41,7 @@ export default function BottomDock() {
                 {item.label}
               </span>
               {isActive && (
-                <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-white shadow-sm shadow-white" />
+                <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-sm shadow-cyan-300" />
               )}
             </Link>
           );
