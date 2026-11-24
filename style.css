@@ -533,7 +533,7 @@ html.light-theme .theme-slider-thumb {
 /* Header Text */
 .header {
     text-align: center;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
 .header h2 {
@@ -545,6 +545,52 @@ html.light-theme .theme-slider-thumb {
     text-transform: uppercase;
     margin: 0;
     text-shadow: 0 2px 12px rgba(239, 68, 68, 0.25);
+}
+
+.badge-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.badge-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    width: auto;
+    height: auto;
+}
+
+.badge-safety {
+    background-color: rgba(255, 62, 62, 0.15);
+    border: 1px solid rgba(255, 62, 62, 0.4);
+    color: var(--accent-red);
+}
+
+.badge-time {
+    color: var(--text-muted);
+}
+
+.badge-item svg {
+    width: 14px !important;
+    height: 14px !important;
+    min-width: 14px;
+    min-height: 14px;
+    max-width: 14px;
+    max-height: 14px;
+    fill: currentColor;
+    display: inline-block;
+    flex-shrink: 0;
 }
 
 /* Trust Badges Row */
@@ -1025,7 +1071,66 @@ input:focus, select:focus {
     padding: 16px;
 }
 
-.contact-modal-content, .invoice-modal-content, .glass-box {
+.glass-overlay {
+    z-index: 99999;
+}
+
+.glass-overlay.active {
+    display: flex !important;
+}
+
+.glass-box {
+    background: var(--bg-surface);
+    backdrop-filter: blur(35px);
+    border: 1px solid var(--glass-border);
+    width: 100%;
+    max-width: 340px;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--glass-shadow);
+    text-align: center;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.25s ease;
+}
+
+.glass-overlay.active .glass-box {
+    transform: scale(1);
+}
+
+.glass-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.glass-message {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.glass-btn {
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-rose));
+    border: 1px solid rgba(255, 150, 150, 0.5);
+    color: #ffffff;
+    padding: 12px 30px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 16px;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.2s ease;
+}
+
+.glass-btn:hover {
+    transform: translateY(-2px);
+}
+
+.contact-modal-content, .invoice-modal-content {
     background: var(--bg-surface);
     backdrop-filter: blur(35px);
     border: 1px solid var(--glass-border);
@@ -1181,6 +1286,22 @@ input:focus, select:focus {
     color: var(--accent-red);
 }
 
+.dock-item:hover, .dock-item.magnify-pop {
+    transform: scale(1.25) translateY(-6px);
+    color: var(--text-main);
+    z-index: 10;
+}
+
+@keyframes softPressEffect {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.96); }
+    100% { transform: scale(1); }
+}
+
+.soft-press {
+    animation: softPressEffect 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 /* ============================================================
    12. INTERACTIVE RETRO LAMP AUTH
    ============================================================ */
@@ -1268,8 +1389,20 @@ input:focus, select:focus {
     transition: border-bottom-color 0.4s ease;
 }
 
-.lamp-login-container.lit .lamp-glow {
-    border-bottom-color: rgba(255, 235, 59, 0.18);
+.lamp-login-container.lit .lamp-glow,
+.lamp-login-container.light-on .lamp-glow {
+    border-bottom-color: rgba(255, 235, 59, 0.25);
+    opacity: 1;
+}
+
+.lamp-login-container.lit .lamp-head,
+.lamp-login-container.light-on .lamp-head {
+    background: #fff;
+    box-shadow: 0 0 30px rgba(255, 220, 100, 0.8);
+}
+
+.pull-string.pulled {
+    transform: translateY(15px);
 }
 
 .interactive-auth-box {
@@ -1385,6 +1518,76 @@ input:focus, select:focus {
     align-items: center;
     gap: 10px;
     margin-top: 15px;
+}
+
+.logout-btn-text {
+    color: var(--text-main);
+    letter-spacing: 0.5px;
+}
+
+.logout-door-container {
+    position: relative;
+    width: 32px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-door-frame {
+    position: absolute;
+    width: 24px;
+    height: 32px;
+    background: #5b48e7;
+    border-radius: 3px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-door-leaf {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 20px;
+    height: 32px;
+    background: #5b48e7;
+    border-left: 2px solid #3c2eb2;
+    transform-origin: right center;
+    transform: rotateY(-65deg);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 1px;
+    z-index: 3;
+}
+
+.logout-door-knob {
+    position: absolute;
+    left: 3px;
+    top: 15px;
+    width: 3px;
+    height: 3px;
+    background: #ffffff;
+    border-radius: 50%;
+}
+
+.logout-person-icon {
+    position: absolute;
+    left: 2px;
+    width: 16px;
+    height: 22px;
+    fill: #9d8bf9;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    z-index: 2;
+}
+
+.animated-logout-btn.logging-out .logout-door-leaf {
+    transform: rotateY(0deg);
+}
+
+.animated-logout-btn.logging-out .logout-person-icon {
+    transform: translateX(12px) scale(0.6);
+    opacity: 0;
 }
 
 /* ============================================================
