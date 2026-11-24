@@ -8,7 +8,7 @@
 
   # ⚡ Sonic’s E-Shop
   ### 🎮 Enterprise Multi-Game Top-Up & Digital Gaming Platform
-  **Khela Store Architecture • eFootball, PUBG UC, Roblox Robux & Free Fire • 320px–1440px Responsive**
+  **Khela Store Architecture • eFootball, PUBG UC & Roblox Robux • 320px–1440px Responsive**
 
   <br/>
 
@@ -61,7 +61,7 @@
 **Sonic’s E-Shop** is an enterprise-grade multi-game top-up platform engineered after Bangladesh's leading gaming store models (inspired by **Khela Store**). Built with sleek **Cyber-Glassmorphism**, modular architecture, and full-spectrum responsive engineering, it gives gamers an unmatched, lightning-fast shopping experience across every device from a tiny **320px mobile phone** to a massive **1440px desktop monitor**.
 
 > **Highlights:**
-> - 🎮 **Multi-Game Hub**: eFootball™ Coins, PUBG Mobile UC, Roblox Robux, and Free Fire Diamonds in one unified shop.
+> - 🎮 **Multi-Game Hub**: eFootball™ Coins, PUBG Mobile UC, and Roblox Robux matching the official hero banner.
 > - ⚡ **Smart Product Type Engine**: Automatically switches between **UID Direct Top-Up** (no password required) and **Login Purchase** (Konami ID/Pass) based on game specification.
 > - 🧾 **Instant Digital Invoice**: Generates printable receipts with Order ID, detailed breakdown, and 1-click WhatsApp support links.
 > - 🔍 **Live Order Tracking**: Search orders anytime using Order ID or WhatsApp number.
@@ -75,7 +75,7 @@
   <tr>
     <td width="50%">
       <h3>🎮 Khela Store Multi-Game Catalog</h3>
-      Filter by category (All, eFootball, PUBG Mobile, Roblox, Free Fire) with interactive pills, real-time stock indicators, and custom delivery tags.
+      Filter by category (All, eFootball, PUBG Mobile, Roblox) with interactive pills, real-time stock indicators, and custom delivery tags.
     </td>
     <td width="50%">
       <h3>🌓 Dual Cyber-Glass Theme Engine</h3>
@@ -85,7 +85,7 @@
   <tr>
     <td width="50%">
       <h3>⚙️ Dynamic Step 1 Form Adapter</h3>
-      Adapts automatically to the selected game: renders Android/iOS device selector & Konami login for eFootball; renders UID & Character Name for PUBG/Free Fire; renders Username for Roblox.
+      Adapts automatically to the selected game: renders Android/iOS device selector & Konami login for eFootball; renders UID & Character Name for PUBG; renders Username for Roblox.
     </td>
     <td width="50%">
       <h3>🪙 Real-Time Multi-Package Cart</h3>
@@ -123,7 +123,6 @@
 | ⚽ **eFootball™ 2026** | `Login Purchase` | Device (Android/iOS), Konami Mail & Password | 130 to 12,800 Coins + Player Packs | ⚡ 1–10 Minutes |
 | 🔫 **PUBG Mobile** | `In-Game ID (UID)` | Player ID (UID), Character Name (Optional) | 60 to 8,100 UC | ⚡ 1–5 Minutes |
 | 🧱 **Roblox** | `Username ID` | Roblox Username | 80 to 4,500 Robux | ⚡ 5–15 Minutes |
-| 💎 **Free Fire** | `In-Game ID (UID)` | Player ID (UID) | 115 to 2,230 Diamonds + Memberships | ⚡ 1–3 Minutes |
 
 ---
 
@@ -160,7 +159,7 @@ Every single element—typography, icons, catalog cards, package grids, banner a
 </div>
 
 ### 📝 Step-by-Step Order Guide:
-1. **Step 1:** Click on your desired game from the **Gaming Top-Up Catalog** (eFootball, PUBG, Roblox, or Free Fire).
+1. **Step 1:** Click on your desired game from the **Gaming Top-Up Catalog** (eFootball, PUBG Mobile, or Roblox).
 2. **Step 2:** Fill in your required account information (UID or Konami login) and WhatsApp number.
 3. **Step 3:** Select your desired package(s) and apply any promo code (e.g. `SONIC10`).
 4. **Step 4:** Select payment method (`bKash` or `Nagad`), copy number, send payment, and enter your last 4 digits.
@@ -215,8 +214,7 @@ Sonic-s-E-Shop/
 ├── assets/
 │   ├── efootball.jpg   # eFootball poster graphic
 │   ├── pubg.jpg        # PUBG Mobile poster graphic
-│   ├── roblox.jpg      # Roblox Robux poster graphic
-│   └── freefire.jpg    # Free Fire poster graphic
+│   └── roblox.jpg      # Roblox Robux poster graphic
 ├── style.css           # Production bundled stylesheet
 ├── logo.png            # Transparent brand logo (WebP/PNG)
 ├── logo.webp           # Optimized WebP logo asset

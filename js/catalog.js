@@ -177,55 +177,6 @@ const GAME_CATALOG = [
             { id: "rbx-1700", name: "1700 Robux", price: 2100, stock: true, icon: "🪙" },
             { id: "rbx-4500", name: "4500 Robux", price: 5200, stock: true, icon: "🪙" }
         ]
-    },
-    {
-        id: "freefire",
-        slug: "free-fire-diamonds",
-        name: "Free Fire Diamonds",
-        name_bn: "ফ্রি ফায়ার ডায়মন্ড",
-        category: "freefire",
-        category_name: "Free Fire",
-        badge: "INSTANT 24/7",
-        badge_color: "#10b981",
-        poster: "assets/freefire.jpg",
-        icon: "💎",
-        product_type: "in_game_id",
-        delivery_time: "১-৩ মিনিট",
-        trust_tag: "সরাসরি প্লেয়ার আইডি টপ-আপ",
-        description: "Official Free Fire Diamonds instant top-up via Player UID. Safe, fast, and 24/7 automatic delivery.",
-        rules: [
-            "শুধুমাত্র আপনার সঠিক Free Fire Player ID দিন।",
-            "কোনো পাসওয়ার্ড প্রয়োজন নেই। ডায়মন্ড ১ থেকে ৩ মিনিটে যুক্ত হবে।"
-        ],
-        custom_fields: [
-            {
-                id: "player_id",
-                type: "text",
-                label: "Free Fire Player ID (UID)",
-                label_bn: "ফ্রি ফায়ার প্লেয়ার আইডি দিন",
-                placeholder: "e.g. 1928374650",
-                required: true
-            },
-            {
-                id: "whatsapp",
-                type: "tel",
-                label: "WhatsApp Number",
-                label_bn: "হোয়াটসঅ্যাপ নাম্বার দিন",
-                placeholder: "017XXXXXXXX",
-                required: true
-            }
-        ],
-        packages: [
-            { id: "ff-115", name: "115 Diamonds", price: 85, stock: true, icon: "💎" },
-            { id: "ff-240", name: "240 Diamonds", price: 175, stock: true, icon: "💎" },
-            { id: "ff-355", name: "355 Diamonds", price: 255, stock: true, icon: "💎" },
-            { id: "ff-505", name: "505 Diamonds", price: 360, stock: true, icon: "💎" },
-            { id: "ff-610", name: "610 Diamonds", price: 430, stock: true, icon: "💎" },
-            { id: "ff-1090", name: "1090 Diamonds", price: 770, stock: true, icon: "💎" },
-            { id: "ff-2230", name: "2230 Diamonds", price: 1530, stock: true, icon: "💎" },
-            { id: "ff-weekly", name: "Weekly Membership", price: 190, stock: true, icon: "👑", badge: "Special" },
-            { id: "ff-monthly", name: "Monthly Membership", price: 950, stock: true, icon: "🌟", badge: "VIP" }
-        ]
     }
 ];
 

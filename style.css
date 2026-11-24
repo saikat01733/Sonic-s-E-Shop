@@ -2350,17 +2350,10 @@ input:focus, select:focus {
 }
 
 
-/* Responsive Game Catalog Grid */
-@media screen and (min-width: 600px) and (max-width: 1023px) {
+/* Responsive Game Catalog Grid (3-Game Symmetrical Layout) */
+@media screen and (min-width: 600px) {
     .game-catalog-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-    }
-}
-
-@media screen and (min-width: 1024px) {
-    .game-catalog-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        gap: 18px;
     }
 }
