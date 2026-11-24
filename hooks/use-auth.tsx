@@ -220,36 +220,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       saveUserSession(authUser);
       return { success: true, role: authUser.role };
     } catch (err: any) {
-      console.warn('[Google Auth] Popup error, falling back to simulated Google session:', err.message);
-      // Fallback for sandboxed preview environments where Google popups might be blocked
-      const simulatedEmail = 'gamer@gmail.com';
-      let authUser: AuthUser = {
-        id: 'usr-google-' + Date.now(),
-        name: 'Gamer User',
-        email: simulatedEmail,
-        role: 'user',
-        walletBalance: 250,
-      };
-
-      try {
-        const res = await fetch('/api/auth/sync-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(authUser),
-        });
-        const data = await res.json();
-        if (data.success && data.user) {
-          authUser = {
-            ...authUser,
-            role: data.user.role || authUser.role,
-          };
-        }
-      } catch (e) {
-        console.warn('[Auth] syncUser fallback error:', e);
+      console.error('[Google Auth Error]:', err);
+      let message = 'Google sign-in failed. Please try again.';
+      if (err.code === 'auth/popup-closed-by-user') {
+        message = 'Google sign-in popup was closed.';
+      } else if (err.code === 'auth/popup-blocked') {
+        message = 'Browser blocked the Google popup. Please allow popups for this site.';
+      } else if (err.code === 'auth/unauthorized-domain') {
+        message = 'This domain is not authorized in Firebase Console (Authentication > Settings > Authorized domains).';
+      } else if (err.code === 'auth/operation-not-allowed') {
+        message = 'Google provider is not enabled in Firebase Console (Authentication > Sign-in method).';
+      } else if (err.message) {
+        message = err.message;
       }
-
-      saveUserSession(authUser);
-      return { success: true, role: authUser.role };
+      return { success: false, error: message };
     }
   };
 

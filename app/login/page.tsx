@@ -50,6 +50,8 @@ export default function LoginPage() {
       const res = await loginWithGoogle();
       if (res.success) {
         router.push(res.role === 'admin' ? '/admin' : '/');
+      } else {
+        setError(res.error || 'Google sign-in failed');
       }
     } catch (err: any) {
       setError(err.message || 'Google sign-in failed');
