@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMongoDb } from '@/lib/db';
+import { getMongoDb, logDbError } from '@/lib/db';
 import { RegisterSchema } from '@/lib/validations';
 import { hashPassword, createSessionToken, checkRateLimit, COOKIE_NAME } from '@/lib/auth';
 import { UserProfile } from '@/lib/types';
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     const { name, email, phone, password } = parsed.data;
     const db = await getMongoDb();
     if (!db) {
+      logDbError('POST /api/auth/register');
       return NextResponse.json(
         { success: false, error: 'Database service unavailable' },
         { status: 503 }
@@ -123,10 +124,11 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
-    console.error('[API] /api/auth/register error:', error);
+    logDbError('POST /api/auth/register exception', error);
+    const isDbUnavailable = error?.message?.includes('Database') || error?.name?.includes('Mongo');
     return NextResponse.json(
-      { success: false, error: error.message || 'Registration failed' },
-      { status: 500 }
+      { success: false, error: isDbUnavailable ? 'Database service unavailable' : (error.message || 'Registration failed') },
+      { status: isDbUnavailable ? 503 : 500 }
     );
   }
 }

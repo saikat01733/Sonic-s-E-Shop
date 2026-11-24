@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySessionToken, COOKIE_NAME, Permission, hasPermission } from '@/lib/auth';
 import { UserProfile, UserRole } from '@/lib/types';
-import { getMongoDb } from '@/lib/db';
+import { getMongoDb, logDbError } from '@/lib/db';
 
 export interface AuthGuardResult {
   authorized: boolean;
@@ -55,7 +55,9 @@ export async function requireAdmin(
   // Fetch fresh user from DB
   const db = await getMongoDb();
   let user: UserProfile | undefined;
-  if (db) {
+  if (!db) {
+    logDbError('requireAdmin:getMongoDb');
+  } else {
     const doc = await db.collection<UserProfile>('users').findOne({ id: payload.userId });
     if (doc) {
       if (doc.status === 'banned' || doc.status === 'suspended') {

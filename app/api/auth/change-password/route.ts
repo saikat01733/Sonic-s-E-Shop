@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser, verifyPassword, hashPassword } from '@/lib/auth';
 import { ChangePasswordSchema } from '@/lib/validations';
-import { getMongoDb, recordAuditLog } from '@/lib/db';
+import { getMongoDb, recordAuditLog, logDbError } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     const { currentPassword, newPassword } = parsed.data;
     const db = await getMongoDb();
     if (!db) {
+      logDbError('POST /api/auth/change-password');
       return NextResponse.json({ success: false, error: 'Database service unavailable' }, { status: 503 });
     }
 
@@ -53,7 +54,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, message: 'Password updated successfully!' });
   } catch (error: any) {
-    console.error('[API] /api/auth/change-password error:', error);
-    return NextResponse.json({ success: false, error: error.message || 'Failed to update password' }, { status: 500 });
+    logDbError('POST /api/auth/change-password exception', error);
+    const isDbUnavailable = error?.message?.includes('Database') || error?.name?.includes('Mongo');
+    return NextResponse.json({ success: false, error: isDbUnavailable ? 'Database service unavailable' : (error.message || 'Failed to update password') }, { status: isDbUnavailable ? 503 : 500 });
   }
 }

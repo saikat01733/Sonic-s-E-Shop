@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMongoDb } from '@/lib/db';
+import { getMongoDb, logDbError } from '@/lib/db';
 import { createSessionToken, COOKIE_NAME } from '@/lib/auth';
 import { UserProfile, UserRole } from '@/lib/types';
 
@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
 
     const db = await getMongoDb();
     if (!db) {
+      logDbError('POST /api/auth/sync-user');
       return NextResponse.json({ success: false, error: 'Database service unavailable' }, { status: 503 });
     }
 
@@ -119,7 +120,8 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
-    console.error('[API] /api/auth/sync-user error:', error);
-    return NextResponse.json({ success: false, error: error.message || 'Internal server error' }, { status: 500 });
+    logDbError('POST /api/auth/sync-user exception', error);
+    const isDbUnavailable = error?.message?.includes('Database') || error?.name?.includes('Mongo');
+    return NextResponse.json({ success: false, error: isDbUnavailable ? 'Database service unavailable' : (error.message || 'Internal server error') }, { status: isDbUnavailable ? 503 : 500 });
   }
 }

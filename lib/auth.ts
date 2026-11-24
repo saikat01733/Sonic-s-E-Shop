@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-import { getMongoDb } from '@/lib/db';
+import { getMongoDb, logDbError } from '@/lib/db';
 import { UserProfile, UserRole } from '@/lib/types';
 
 const JWT_SECRET = new TextEncoder().encode(
@@ -116,7 +116,10 @@ export async function getCurrentUser(req?: NextRequest): Promise<UserProfile | n
     if (!payload || !payload.userId) return null;
 
     const db = await getMongoDb();
-    if (!db) return null;
+    if (!db) {
+      logDbError('getCurrentUser');
+      return null;
+    }
 
     const user = await db.collection<UserProfile>('users').findOne({ id: payload.userId });
     if (!user) return null;

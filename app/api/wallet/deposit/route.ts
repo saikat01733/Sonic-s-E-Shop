@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireUser } from '@/lib/auth-guard';
 import { WalletDepositSchema, sanitizeString } from '@/lib/validations';
-import { getMongoDb, recordAuditLog } from '@/lib/db';
+import { getMongoDb, recordAuditLog, logDbError } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     const { amount, paymentMethod, senderNumber, trxId } = parsed.data;
     const db = await getMongoDb();
     if (!db) {
+      logDbError('POST /api/wallet/deposit');
       return NextResponse.json({ success: false, error: 'Database service unavailable' }, { status: 503 });
     }
 
@@ -67,7 +68,8 @@ export async function POST(req: NextRequest) {
       message: `Deposit request for ৳${amount} submitted! It will be verified and credited within 5-15 mins.`,
     });
   } catch (error: any) {
-    console.error('[API] /api/wallet/deposit error:', error);
-    return NextResponse.json({ success: false, error: error.message || 'Deposit failed' }, { status: 500 });
+    logDbError('POST /api/wallet/deposit exception', error);
+    const isDbUnavailable = error?.message?.includes('Database') || error?.name?.includes('Mongo');
+    return NextResponse.json({ success: false, error: isDbUnavailable ? 'Database service unavailable' : (error.message || 'Deposit failed') }, { status: isDbUnavailable ? 503 : 500 });
   }
 }

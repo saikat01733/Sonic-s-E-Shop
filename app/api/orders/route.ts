@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getStoreData, createOrder, getMongoDb } from '@/lib/db';
+import { getStoreData, createOrder, getMongoDb, logDbError } from '@/lib/db';
 import { OrderItem } from '@/lib/types';
 import { OrderSubmissionSchema, sanitizeString } from '@/lib/validations';
 import { getCurrentUser } from '@/lib/auth';
@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
 
     const db = await getMongoDb();
     if (!db) {
+      logDbError('GET /api/orders');
       return NextResponse.json({ success: false, error: 'Database service unavailable' }, { status: 503 });
     }
 
@@ -141,10 +142,11 @@ export async function POST(req: NextRequest) {
       message: `Order #${savedOrder.id} placed successfully! Delivery in 1-10 mins.`,
     });
   } catch (error: any) {
-    console.error('[API] /api/orders POST error:', error);
+    logDbError('POST /api/orders', error);
+    const isDbUnavailable = error?.message?.includes('Database') || error?.name?.includes('Mongo');
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to place order' },
-      { status: 400 }
+      { success: false, error: isDbUnavailable ? 'Database service unavailable' : (error.message || 'Failed to place order') },
+      { status: isDbUnavailable ? 503 : 400 }
     );
   }
 }

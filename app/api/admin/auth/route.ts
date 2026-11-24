@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: false, error: 'ভুল পিন অথবা ইউজারনেম/পাসওয়ার্ড!' },
+      { success: false, error: 'Invalid PIN or username/password.' },
       { status: 401 }
     );
   } catch (error: any) {

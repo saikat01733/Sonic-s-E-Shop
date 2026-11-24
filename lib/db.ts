@@ -1,4 +1,6 @@
-import { getMongoClient } from './mongodb';
+import type { MongoClient } from 'mongodb';
+import { getMongoClient, getMongoDb, logDbError } from './mongodb';
+export { getMongoDb, logDbError, getMongoClient };
 import {
   StoreData,
   SiteSettings,
@@ -11,14 +13,6 @@ import {
   WalletTransaction,
   OrderStatus
 } from './types';
-
-/**
- * Convenience helper to obtain the active MongoDB database instance
- */
-export async function getMongoDb() {
-  const client = await getMongoClient();
-  return client ? client.db() : null;
-}
 
 /**
  * Record an audit log entry
@@ -64,12 +58,22 @@ function getFormattedDate(): string {
   });
 }
 
+async function getRequiredMongoClient(action: string): Promise<MongoClient> {
+  const mongo = await getMongoClient();
+  if (!mongo) {
+    logDbError(`lib/db.ts:${action}`);
+    throw new Error('Database connection unavailable');
+  }
+  return mongo;
+}
+
 /**
  * Returns comprehensive store data from MongoDB Atlas
  */
 export async function getStoreData(): Promise<StoreData> {
   const mongo = await getMongoClient();
   if (!mongo) {
+    logDbError('lib/db.ts:getStoreData');
     return {
       settings: DEFAULT_SETTINGS,
       trustBadges: [],
@@ -153,8 +157,7 @@ export async function updateSiteSettings(
   trustBadges?: any[],
   author: string = 'admin'
 ) {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('updateSiteSettings');
 
   const updateDoc: any = {};
   if (settings) updateDoc['settings'] = settings;
@@ -174,8 +177,7 @@ export async function updateSiteSettings(
  * Save or update a game catalog item
  */
 export async function saveGame(game: GameItem, author: string = 'admin'): Promise<GameItem> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('saveGame');
 
   const docToSave = { ...game, isArchived: false };
   delete (docToSave as any)._id;
@@ -203,8 +205,7 @@ export async function saveGame(game: GameItem, author: string = 'admin'): Promis
  * Delete or soft-delete (archive) a game
  */
 export async function deleteGame(gameId: string, author: string = 'admin'): Promise<boolean> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('deleteGame');
 
   const db = mongo.db();
   const game = await db.collection<GameItem>('games').findOne({ id: gameId } as any);
@@ -227,8 +228,7 @@ export async function deleteGame(gameId: string, author: string = 'admin'): Prom
  * Save or update a package in a game
  */
 export async function savePackage(gameId: string, pkg: PackageItem, author: string = 'admin'): Promise<PackageItem> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('savePackage');
 
   const db = mongo.db();
   const game = await db.collection<GameItem>('games').findOne({ id: gameId } as any);
@@ -258,8 +258,7 @@ export async function savePackage(gameId: string, pkg: PackageItem, author: stri
  * Delete a package from a game
  */
 export async function deletePackage(gameId: string, pkgId: string, author: string = 'admin'): Promise<boolean> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('deletePackage');
 
   const db = mongo.db();
   const game = await db.collection<GameItem>('games').findOne({ id: gameId } as any);
@@ -279,8 +278,7 @@ export async function deletePackage(gameId: string, pkgId: string, author: strin
  * Save or update a coupon
  */
 export async function saveCoupon(coupon: CouponItem, author: string = 'admin'): Promise<CouponItem> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('saveCoupon');
 
   const docToSave = { ...coupon };
   delete (docToSave as any)._id;
@@ -305,8 +303,7 @@ export async function saveCoupon(coupon: CouponItem, author: string = 'admin'): 
  * Delete a coupon
  */
 export async function deleteCoupon(couponId: string, author: string = 'admin'): Promise<boolean> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('deleteCoupon');
 
   const db = mongo.db();
   const coupon = await db.collection<CouponItem>('coupons').findOne({ id: couponId } as any);
@@ -330,8 +327,7 @@ export async function createOrder(orderPayload: {
   userId?: string;
   userEmail?: string;
 }): Promise<OrderItem> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('createOrder');
 
   const db = mongo.db();
 
@@ -476,8 +472,7 @@ export async function updateOrderStatus(
   adminNotes?: string,
   refundToWallet?: boolean
 ): Promise<OrderItem> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('updateOrderStatus');
 
   const db = mongo.db();
   const order = await db.collection<OrderItem>('orders').findOne({ id: orderId } as any);
@@ -561,8 +556,7 @@ export async function updateUser(
   updates: Partial<UserProfile>,
   author: string = 'Admin'
 ): Promise<UserProfile | null> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('updateUser');
 
   const db = mongo.db();
   const docToSave = { ...updates };
@@ -597,8 +591,7 @@ export async function adjustWalletBalance(
   note?: string,
   author: string = 'System'
 ): Promise<number> {
-  const mongo = await getMongoClient();
-  if (!mongo) throw new Error('Database connection unavailable');
+  const mongo = await getRequiredMongoClient('adjustWalletBalance');
 
   const db = mongo.db();
   const user = await db.collection<UserProfile>('users').findOne({ id: userId } as any);
