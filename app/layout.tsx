@@ -62,17 +62,17 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
         />
       </head>
-      <body className="antialiased selection:bg-cyan-500 selection:text-white relative min-h-screen">
+      <body className="antialiased selection:bg-[oklch(45.5%_0.188_13.697)] selection:text-white relative min-h-screen">
         <AuthProvider>
           <LanguageProvider>
             {/* Deep Ocean Blue Ambient Lighting Engine */}
-            <div className="ambient-glow-ocean" />
-            <div className="ambient-glow-cobalt" />
-            <div className="ambient-glow-midnight" />
-            <div className="ambient-glow-ice" />
-
-            {/* Subtle Geometric Refractive Grid Overlay */}
-            <div className="refractive-grid" />
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+              <div className="ambient-glow-ocean" />
+              <div className="ambient-glow-cobalt" />
+              <div className="ambient-glow-midnight" />
+              <div className="ambient-glow-ice" />
+              <div className="refractive-grid" />
+            </div>
 
             {/* Main App Page Content Container */}
             <div className="relative z-10 flex flex-col min-h-screen pb-20 sm:pb-16">

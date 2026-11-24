@@ -26,8 +26,9 @@ import {
   Flame,
   ArrowLeft
 } from 'lucide-react';
-import { StoreData, GameItem, PackageItem, CouponItem, OrderItem } from '@/lib/types';
+import { StoreData, GameItem, PackageItem, CouponItem, OrderItem, HeroSlide, TrustBadge } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
+import { ImageUploader } from '@/components/common/ImageUploader';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -43,6 +44,8 @@ export default function AdminPage() {
   const [editingGame, setEditingGame] = useState<GameItem | null>(null);
   const [editingPackage, setEditingPackage] = useState<{ gameId: string; pkg: PackageItem } | null>(null);
   const [editingCoupon, setEditingCoupon] = useState<CouponItem | null>(null);
+  const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
+  const [editingTrustBadge, setEditingTrustBadge] = useState<TrustBadge | null>(null);
   const [orderSearch, setOrderSearch] = useState('');
   const [orderFilter, setOrderFilter] = useState<string>('all');
   const [historySearch, setHistorySearch] = useState('');
@@ -52,6 +55,10 @@ export default function AdminPage() {
     const params = new URLSearchParams(window.location.search);
     if (token || params.get('auth') === '1') {
       setIsAuthenticated(true);
+    }
+    const tabParam = params.get('tab') as AdminTab;
+    if (tabParam) {
+      setActiveTab(tabParam);
     }
     fetchStoreData();
   }, []);
@@ -233,6 +240,95 @@ export default function AdminPage() {
     }
   };
 
+  const handleSaveSlide = async (slide: HeroSlide) => {
+    if (!storeData) return;
+    const currentSlides = storeData.settings.slides || [];
+    const exists = currentSlides.some(s => s.id === slide.id);
+    const updatedSlides = exists
+      ? currentSlides.map(s => (s.id === slide.id ? slide : s))
+      : [...currentSlides, slide];
+
+    const updatedSettings = { ...storeData.settings, slides: updatedSlides };
+    setStoreData({ ...storeData, settings: updatedSettings });
+
+    try {
+      const res = await fetch('/api/admin/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_settings',
+          payload: { settings: updatedSettings, trustBadges: storeData.trustBadges },
+          author: 'Admin'
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showNotice(`স্লাইড '${slide.title}' সফলভাবে সংরক্ষিত হয়েছে!`);
+        setEditingSlide(null);
+        fetchStoreData();
+      } else {
+        showNotice(json.error || 'স্লাইড সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+      }
+    } catch (e: any) {
+      showNotice(e.message, 'error');
+    }
+  };
+
+  const handleDeleteSlide = async (slideId: string) => {
+    if (!storeData) return;
+    if (!confirm('আপনি কি এই স্লাইডটি মুছে ফেলতে চান?')) return;
+    const updatedSlides = (storeData.settings.slides || []).filter(s => s.id !== slideId);
+    const updatedSettings = { ...storeData.settings, slides: updatedSlides };
+    setStoreData({ ...storeData, settings: updatedSettings });
+
+    try {
+      const res = await fetch('/api/admin/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_settings',
+          payload: { settings: updatedSettings, trustBadges: storeData.trustBadges },
+          author: 'Admin'
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showNotice('স্লাইড মুছে ফেলা হয়েছে!');
+        fetchStoreData();
+      }
+    } catch (e: any) {
+      showNotice(e.message, 'error');
+    }
+  };
+
+  const handleSaveTrustBadge = async (badge: TrustBadge) => {
+    if (!storeData) return;
+    const updatedBadges = (storeData.trustBadges || []).map(b => (b.id === badge.id ? badge : b));
+    setStoreData({ ...storeData, trustBadges: updatedBadges });
+
+    try {
+      const res = await fetch('/api/admin/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_settings',
+          payload: { settings: storeData.settings, trustBadges: updatedBadges },
+          author: 'Admin'
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showNotice(`ট্রাস্ট ফিচার '${badge.title}' সংরক্ষিত হয়েছে!`);
+        setEditingTrustBadge(null);
+        fetchStoreData();
+      } else {
+        showNotice(json.error || 'সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+      }
+    } catch (e: any) {
+      showNotice(e.message, 'error');
+    }
+  };
+
   const handleUpdateOrderStatus = async (orderId: string, status: OrderItem['status']) => {
     try {
       const res = await fetch('/api/admin/orders', {
@@ -383,10 +479,10 @@ export default function AdminPage() {
           <form onSubmit={handleSaveSettings} className="space-y-6">
             <div>
               <h2 className="text-xl font-black text-white">সাইট ব্র্যান্ডিং ও কন্টেন্ট CMS</h2>
-              <p className="text-xs text-gray-400">টিকার নোটিশ, ব্যানার ছবি ও পেমেন্ট নম্বর পরিবর্তন করুন</p>
+              <p className="text-xs text-gray-400">লোগো ও ব্যানার সরাসরি আপলোড করুন, নোটিশ টিকার ও পেমেন্ট নম্বর পরিবর্তন করুন</p>
             </div>
 
-            <Card variant="glass" className="p-5 space-y-3">
+            <Card variant="glass" className="p-5 space-y-4">
               <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
                 <Flame className="w-4 h-4 text-cyan-400" />
                 হেডার নোটিশ টিকার টেক্সট (Marquee Text)
@@ -400,15 +496,43 @@ export default function AdminPage() {
                     settings: { ...storeData.settings, tickerText: e.target.value }
                   })
                 }
-                className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-red-500"
+                className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-red-500 font-medium"
               />
             </Card>
 
-            <Card variant="glass" className="p-5 space-y-4">
-              <h3 className="text-sm font-extrabold text-white">ব্যানার ও সাইট তথ্য</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card variant="glass" className="p-5 space-y-5">
+              <h3 className="text-sm font-extrabold text-white">ব্র্যান্ডিং ও ইমেজ ফাইল আপলোড (ImgBB Direct Upload)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <ImageUploader
+                  label="সাইট লোগো (Logo File)"
+                  value={storeData.settings.logo || ''}
+                  onChange={url =>
+                    setStoreData({
+                      ...storeData,
+                      settings: { ...storeData.settings, logo: url }
+                    })
+                  }
+                  aspect="aspect-square"
+                  hint="সরাসরি ড্রপ করুন অথবা ফাইল বেছে নিন (ImgBB CDN)"
+                />
+
+                <ImageUploader
+                  label="হিরো ব্যানার ফলব্যাক (Wide Banner File)"
+                  value={storeData.settings.heroBanner}
+                  onChange={url =>
+                    setStoreData({
+                      ...storeData,
+                      settings: { ...storeData.settings, heroBanner: url }
+                    })
+                  }
+                  aspect="aspect-[24/8]"
+                  hint="সরাসরি ড্রপ করুন অথবা ফাইল বেছে নিন (ImgBB CDN)"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-white/10">
                 <Input
-                  label="স্টোর নাম"
+                  label="স্টোর নাম (Site Title)"
                   value={storeData.settings.siteName}
                   onChange={e =>
                     setStoreData({
@@ -418,23 +542,24 @@ export default function AdminPage() {
                   }
                 />
                 <Input
-                  label="হিরো ব্যানার ইমেজ URL"
-                  value={storeData.settings.heroBanner}
+                  label="হিরো হেডলাইন (Hero Title)"
+                  value={storeData.settings.heroTitle || ''}
                   onChange={e =>
                     setStoreData({
                       ...storeData,
-                      settings: { ...storeData.settings, heroBanner: e.target.value }
+                      settings: { ...storeData.settings, heroTitle: e.target.value }
                     })
                   }
                 />
-              </div>
-
-              <div className="aspect-[24/8] w-full rounded-2xl overflow-hidden bg-black/40 border border-white/10 relative">
-                <img
-                  src={storeData.settings.heroBanner}
-                  alt="Banner Preview"
-                  className="w-full h-full object-cover"
-                  onError={(e: any) => (e.target.src = '/banner.jpg')}
+                <Input
+                  label="হিরো সাবটাইটেল (Hero Subtitle)"
+                  value={storeData.settings.heroSubtitle || ''}
+                  onChange={e =>
+                    setStoreData({
+                      ...storeData,
+                      settings: { ...storeData.settings, heroSubtitle: e.target.value }
+                    })
+                  }
                 />
               </div>
             </Card>
@@ -443,7 +568,7 @@ export default function AdminPage() {
               <h3 className="text-sm font-extrabold text-white">পেমেন্ট পার্সোনাল নম্বর (Send Money)</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
-                  label="bKash নম্বর"
+                  label="bKash পার্সোনাল নম্বর"
                   value={storeData.settings.bkashNumber}
                   onChange={e =>
                     setStoreData({
@@ -453,7 +578,7 @@ export default function AdminPage() {
                   }
                 />
                 <Input
-                  label="Nagad নম্বর"
+                  label="Nagad পার্সোনাল নম্বর"
                   value={storeData.settings.nagadNumber}
                   onChange={e =>
                     setStoreData({
@@ -465,10 +590,297 @@ export default function AdminPage() {
               </div>
             </Card>
 
+            <Card variant="glass" className="p-5 space-y-4">
+              <h3 className="text-sm font-extrabold text-white">কাস্টমার সাপোর্ট ও সোশ্যাল মিডিয়া</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Input
+                  label="সাপোর্ট ফোন নম্বর"
+                  value={storeData.settings.supportPhone || ''}
+                  onChange={e =>
+                    setStoreData({
+                      ...storeData,
+                      settings: { ...storeData.settings, supportPhone: e.target.value }
+                    })
+                  }
+                />
+                <Input
+                  label="WhatsApp লিংক (wa.me)"
+                  value={storeData.settings.whatsappUrl || ''}
+                  onChange={e =>
+                    setStoreData({
+                      ...storeData,
+                      settings: { ...storeData.settings, whatsappUrl: e.target.value }
+                    })
+                  }
+                />
+                <Input
+                  label="ফেসবুক পেইজ লিংক"
+                  value={storeData.settings.facebookUrl || ''}
+                  onChange={e =>
+                    setStoreData({
+                      ...storeData,
+                      settings: { ...storeData.settings, facebookUrl: e.target.value }
+                    })
+                  }
+                />
+              </div>
+            </Card>
+
             <Button variant="primary" size="md" type="submit" icon={<Save className="w-4 h-4" />}>
               পরিবর্তন সংরক্ষণ করুন
             </Button>
           </form>
+        )}
+
+        {/* HERO SLIDES TAB */}
+        {activeTab === 'hero_slides' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-white">হিরো ক্যারোজেল স্লাইডার CMS (Hero Slides)</h2>
+                <p className="text-xs text-gray-400">হোমপেজ স্লাইডার ইমেজ (ImgBB Upload), টাইটেল, ব্যাজ ও লিঙ্ক সরাসরি নিয়ন্ত্রণ করুন</p>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={<Plus className="w-4 h-4" />}
+                onClick={() =>
+                  setEditingSlide({
+                    id: `slide-${Date.now()}`,
+                    gameId: storeData.games[0]?.id || 'efootball',
+                    slug: storeData.games[0]?.slug || 'efootball-coin',
+                    title: 'New Game Top-Up',
+                    subtitle: 'Instant delivery with 100% guarantee.',
+                    badge: '⚡ 1-10 MINS',
+                    deliveryTime: '১-১০ মিনিট',
+                    image: '/banner.webp',
+                    color: '#0284c7'
+                  })
+                }
+              >
+                নতুন স্লাইড যোগ করুন
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(storeData.settings.slides || []).map((slide, idx) => (
+                <Card key={slide.id || idx} variant="glass" className="overflow-hidden p-0 flex flex-col justify-between border-white/15">
+                  <div className="relative aspect-[21/9] w-full bg-black/40 overflow-hidden">
+                    <img
+                      src={slide.image}
+                      alt={slide.title}
+                      className="w-full h-full object-cover"
+                      onError={(e: any) => (e.target.src = '/banner.webp')}
+                    />
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-cyan-500/80 text-white backdrop-blur-md">
+                        {slide.badge}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-2 right-2 text-[10px] font-mono font-bold bg-black/70 px-2 py-0.5 rounded text-white">
+                      ⏱ {slide.deliveryTime}
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="text-sm font-black text-white">{slide.title}</h4>
+                      <p className="text-xs text-gray-300 line-clamp-2 mt-1">{slide.subtitle}</p>
+                      <div className="text-[11px] text-cyan-400 font-mono mt-2">
+                        Game Link: /{slide.slug}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
+                      <Button
+                        variant="glass"
+                        size="sm"
+                        icon={<Edit2 className="w-3.5 h-3.5" />}
+                        onClick={() => setEditingSlide({ ...slide })}
+                      >
+                        এডিট
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        icon={<Trash2 className="w-3.5 h-3.5" />}
+                        onClick={() => handleDeleteSlide(slide.id)}
+                      />
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Slide Edit Modal */}
+            <Modal
+              isOpen={Boolean(editingSlide)}
+              onClose={() => setEditingSlide(null)}
+              title="হিরো স্লাইডার সম্পাদনা (Edit Slide)"
+            >
+              {editingSlide && (
+                <div className="space-y-4">
+                  <ImageUploader
+                    label="স্লাইড ব্যানার ইমেজ (ImgBB File Upload)"
+                    value={editingSlide.image}
+                    onChange={url => setEditingSlide({ ...editingSlide, image: url })}
+                    aspect="aspect-[21/9]"
+                    hint="ড্র্যাগ & ড্রপ অথবা সিলেক্ট করে ফাইল আপলোড করুন (ImgBB CDN)"
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="স্লাইড টাইটেল"
+                      value={editingSlide.title}
+                      onChange={e => setEditingSlide({ ...editingSlide, title: e.target.value })}
+                    />
+                    <Input
+                      label="টপ ব্যাজ"
+                      value={editingSlide.badge}
+                      onChange={e => setEditingSlide({ ...editingSlide, badge: e.target.value })}
+                      placeholder="e.g. ⚡ HOT TOP-UP"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="ডেলিভারি সময়"
+                      value={editingSlide.deliveryTime}
+                      onChange={e => setEditingSlide({ ...editingSlide, deliveryTime: e.target.value })}
+                      placeholder="e.g. 1-10 MINS"
+                    />
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 mb-1.5">কানেক্টেড গেম (Target Game)</label>
+                      <select
+                        value={editingSlide.gameId}
+                        onChange={e => {
+                          const found = storeData.games.find(g => g.id === e.target.value);
+                          if (found) {
+                            setEditingSlide({
+                              ...editingSlide,
+                              gameId: found.id,
+                              slug: found.slug
+                            });
+                          }
+                        }}
+                        className="w-full px-3 py-2.5 rounded-xl bg-white/10 border border-white/15 text-xs text-white font-bold"
+                      >
+                        {storeData.games.map(g => (
+                          <option key={g.id} value={g.id} className="bg-black">
+                            {g.name} (/{g.slug})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1.5">সাবটাইটেল / বিবরণ</label>
+                    <textarea
+                      rows={2}
+                      value={editingSlide.subtitle}
+                      onChange={e => setEditingSlide({ ...editingSlide, subtitle: e.target.value })}
+                      className="w-full p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-red-500"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-3 border-t border-white/10">
+                    <Button variant="ghost" size="sm" onClick={() => setEditingSlide(null)}>
+                      বাতিল
+                    </Button>
+                    <Button variant="primary" size="sm" onClick={() => handleSaveSlide(editingSlide)}>
+                      স্লাইড সংরক্ষণ করুন
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Modal>
+          </div>
+        )}
+
+        {/* TRUST BADGES TAB */}
+        {activeTab === 'trust_badges' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-black text-white">ট্রাস্ট ব্যাজ ও সুবিধা CMS (Trust Badges & Perks)</h2>
+              <p className="text-xs text-gray-400">হোমপেজের 'Why Choose Us' সেকশনের ট্রাস্ট ফিচারসমূহ কাস্টমাইজ করুন</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(storeData.trustBadges || []).map((badge, idx) => (
+                <Card key={badge.id || idx} variant="glass" className="p-5 flex flex-col justify-between space-y-4 border-white/15">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-black">
+                      {badge.icon === 'shield' ? '🛡️' : badge.icon === 'zap' ? '⚡' : badge.icon === 'headset' ? '🎧' : '👥'}
+                    </span>
+                    <span className="text-[10px] font-mono text-gray-400">#{badge.id}</span>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-black text-white">{badge.title}</h4>
+                    <p className="text-xs text-gray-300 mt-1">{badge.sub}</p>
+                  </div>
+
+                  <div className="pt-2 border-t border-white/10 flex justify-end">
+                    <Button
+                      variant="glass"
+                      size="sm"
+                      icon={<Edit2 className="w-3.5 h-3.5" />}
+                      onClick={() => setEditingTrustBadge({ ...badge })}
+                    >
+                      এডিট
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Trust Badge Edit Modal */}
+            <Modal
+              isOpen={Boolean(editingTrustBadge)}
+              onClose={() => setEditingTrustBadge(null)}
+              title="ট্রাস্ট ফিচার সম্পাদনা (Edit Trust Badge)"
+            >
+              {editingTrustBadge && (
+                <div className="space-y-4">
+                  <Input
+                    label="ফিচার টাইটেল"
+                    value={editingTrustBadge.title}
+                    onChange={e => setEditingTrustBadge({ ...editingTrustBadge, title: e.target.value })}
+                  />
+
+                  <Input
+                    label="সাবটাইটেল / বিবরণ"
+                    value={editingTrustBadge.sub}
+                    onChange={e => setEditingTrustBadge({ ...editingTrustBadge, sub: e.target.value })}
+                  />
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 mb-1.5">আইকন নির্বাচন করুন</label>
+                    <select
+                      value={editingTrustBadge.icon}
+                      onChange={e => setEditingTrustBadge({ ...editingTrustBadge, icon: e.target.value })}
+                      className="w-full px-3 py-2.5 rounded-xl bg-white/10 border border-white/15 text-xs text-white font-bold"
+                    >
+                      <option value="shield" className="bg-black">🛡️ Shield (নিরাপত্তা)</option>
+                      <option value="zap" className="bg-black">⚡ Zap (দ্রুত ডেলিভারি)</option>
+                      <option value="headset" className="bg-black">🎧 Headset (২৪/৭ সাপোর্ট)</option>
+                      <option value="users" className="bg-black">👥 Users (গ্রাহক আস্থা)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-3 border-t border-white/10">
+                    <Button variant="ghost" size="sm" onClick={() => setEditingTrustBadge(null)}>
+                      বাতিল
+                    </Button>
+                    <Button variant="primary" size="sm" onClick={() => handleSaveTrustBadge(editingTrustBadge)}>
+                      সংরক্ষণ করুন
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Modal>
+          </div>
         )}
 
         {/* GAMES TAB */}
@@ -561,10 +973,12 @@ export default function AdminPage() {
                     value={editingGame.name_bn || ''}
                     onChange={e => setEditingGame({ ...editingGame, name_bn: e.target.value })}
                   />
-                  <Input
-                    label="পোস্টার ইমেজ URL"
+                  <ImageUploader
+                    label="গেমের পোস্টার ইমেজ (ImgBB File Upload)"
                     value={editingGame.poster}
-                    onChange={e => setEditingGame({ ...editingGame, poster: e.target.value })}
+                    onChange={url => setEditingGame({ ...editingGame, poster: url })}
+                    aspect="aspect-[3/4]"
+                    hint="সরাসরি কম্পিউটার/মোবাইল থেকে ছবি ফাইল আপলোড করুন (ImgBB CDN)"
                   />
                   <div className="grid grid-cols-2 gap-3">
                     <Input

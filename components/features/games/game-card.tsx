@@ -70,7 +70,7 @@ export function GameCard({ game }: GameCardProps) {
             <span>{game.packages.length} {t('packagesAvailable')}</span>
           </div>
 
-          <div className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-600/30 transition-all">
+          <div className="w-full py-2.5 rounded-2xl bg-[oklch(45.5%_0.188_13.697)] hover:bg-[oklch(52%_0.20_13.697)] text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-[oklch(45.5%_0.188_13.697_/_0.35)] transition-all">
             <span>{t('topUpBtn')}</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>

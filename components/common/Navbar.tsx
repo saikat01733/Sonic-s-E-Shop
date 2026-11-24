@@ -73,15 +73,16 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
 
   return (
     <>
-      <header className="sticky top-2 z-50 w-full px-2 sm:px-4 md:px-6">
-        <div className="max-w-6xl mx-auto liquid-glass-pill py-1.5 sm:py-2 px-2 sm:px-5 flex items-center justify-between gap-1 sm:gap-4 shadow-2xl flex-nowrap">
+      <header className="sticky top-2 z-50 w-full px-2 sm:px-4 md:px-6 mb-2">
+        <div className="max-w-6xl mx-auto liquid-glass-pill py-1.5 sm:py-2 px-2.5 sm:px-5 flex items-center justify-between gap-1.5 sm:gap-4 shadow-2xl flex-nowrap">
           {/* Brand Logo - STRICT 1-LINE HORIZONTAL ALIGNMENT (320px-1440px) */}
-          <Link href="/" className="flex items-center gap-1.5 group flex-shrink-0">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform flex-shrink-0">
+          <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group flex-shrink-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[oklch(45.5%_0.188_13.697)] flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-md shadow-[oklch(45.5%_0.188_13.697_/_0.4)] group-hover:scale-105 transition-transform flex-shrink-0">
               ⚡
             </div>
-            <span className="font-extrabold tracking-tight text-[11px] sm:text-sm bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent max-w-[85px] xs:max-w-none truncate sm:overflow-visible">
-              {settings?.siteName || t('siteName')}
+            <span className="font-extrabold tracking-tight text-[11px] sm:text-sm text-white [html.light-theme_&]:text-slate-900 flex-shrink-0">
+              <span className="inline sm:hidden">Sonic&apos;s</span>
+              <span className="hidden sm:inline">{settings?.siteName || t('siteName')}</span>
             </span>
           </Link>
 
@@ -97,8 +98,8 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                   href={link.href}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                     isActive
-                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-cyan-600/35 border border-cyan-400/40'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
+                      ? 'bg-[oklch(45.5%_0.188_13.697)] text-white shadow-lg shadow-[oklch(45.5%_0.188_13.697_/_0.35)] border border-[oklch(55%_0.20_13.697_/_0.4)]'
+                      : 'text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-slate-950 hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -108,54 +109,41 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
             })}
           </nav>
 
-          {/* Desktop Spotlight Pill Button */}
-          <button
-            onClick={() => setIsSearchModalOpen(true)}
-            className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs text-gray-300 hover:text-white transition-all cursor-pointer shadow-inner group flex-shrink-0"
-            title="Search Games (⌘K / Ctrl+K)"
-          >
-            <Search className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
-            <span className="text-gray-400 font-medium">{t('searchPlaceholder')}</span>
-            <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/10 text-[9px] font-mono text-gray-300 border border-white/10">
-              ⌘K
-            </kbd>
-          </button>
-
-          {/* Right Action Controls: Search (mobile) + Language Toggle + Theme + Auth */}
-          <div className="flex items-center gap-1 sm:gap-2 whitespace-nowrap flex-shrink-0">
-            {/* Mobile / Tablet Compact Search Icon Button */}
+          {/* Right Action Controls: Search Icon Button + Language Toggle + Theme Switcher + Auth */}
+          <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap flex-shrink-0">
+            {/* Compact Search Icon Trigger (Desktop + Mobile) */}
             <button
               onClick={() => setIsSearchModalOpen(true)}
-              className="md:hidden p-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.15] border border-white/10 text-cyan-400 transition-colors cursor-pointer flex-shrink-0"
+              className="p-1.5 sm:p-2 rounded-full bg-white/[0.08] [html.light-theme_&]:bg-black/[0.04] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.08] border border-white/10 [html.light-theme_&]:border-black/10 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] transition-all cursor-pointer flex-shrink-0 hover:scale-105 active:scale-95 shadow-sm"
+              title="Search Games (⌘K / Ctrl+K)"
               aria-label="Open Search Modal"
-              title="Search Games"
             >
-              <Search className="w-3.5 h-3.5" />
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
-            {/* Bilingual Switcher (EN | বাং) */}
+            {/* Bilingual Switcher (EN | বাং) - Desktop & Tablet */}
             <button
               onClick={toggleLocale}
-              className="flex items-center gap-0.5 px-1.5 sm:px-2 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.15] border border-white/10 text-white text-[10px] sm:text-[11px] font-extrabold transition-all cursor-pointer shadow-sm flex-shrink-0"
+              className="hidden sm:flex items-center gap-0.5 px-2 py-1 rounded-full bg-white/[0.08] [html.light-theme_&]:bg-black/[0.04] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.08] border border-white/10 [html.light-theme_&]:border-black/10 text-white [html.light-theme_&]:text-slate-800 text-[9px] sm:text-[11px] font-extrabold transition-all cursor-pointer shadow-sm flex-shrink-0"
               title="Switch Language / ভাষা পরিবর্তন"
             >
-              <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-cyan-400 flex-shrink-0" />
-              <span className={locale === 'en' ? 'text-cyan-300' : 'text-gray-400'}>EN</span>
-              <span className="text-gray-500 text-[8px] sm:text-[10px]">|</span>
-              <span className={locale === 'bn' ? 'text-cyan-300' : 'text-gray-400'}>বাং</span>
+              <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] flex-shrink-0" />
+              <span className={locale === 'en' ? 'text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] font-black' : 'text-gray-400 [html.light-theme_&]:text-slate-500'}>EN</span>
+              <span className="text-gray-500 [html.light-theme_&]:text-slate-400 text-[8px] sm:text-[10px]">|</span>
+              <span className={locale === 'bn' ? 'text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] font-black' : 'text-gray-400 [html.light-theme_&]:text-slate-500'}>বাং</span>
             </button>
 
-            {/* Theme Switcher */}
+            {/* Theme Switcher - Desktop & Tablet */}
             <button
               onClick={toggleTheme}
-              className="p-1 sm:p-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.15] border border-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer flex-shrink-0"
+              className="hidden sm:flex p-1.5 sm:p-2 rounded-full bg-white/[0.08] [html.light-theme_&]:bg-black/[0.04] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.08] border border-white/10 [html.light-theme_&]:border-black/10 text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black transition-colors cursor-pointer flex-shrink-0"
               title="Theme Toggle"
               aria-label="Toggle Dark/Light Mode"
             >
               {theme === 'dark' ? (
-                <Sun className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-cyan-300" />
+                <Sun className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[oklch(70%_0.18_13.697)]" />
               ) : (
-                <Moon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-cyan-400" />
+                <Moon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[oklch(45.5%_0.188_13.697)]" />
               )}
             </button>
 
@@ -163,11 +151,11 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
             {!isAuthenticated ? (
               <Link
                 href="/login"
-                className="flex items-center gap-1 p-1 xs:px-2.5 xs:py-1 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-[10px] sm:text-[11px] font-extrabold transition-all cursor-pointer shadow-sm shadow-cyan-600/30 flex-shrink-0"
-                title="Sign In"
+                className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[oklch(45.5%_0.188_13.697)] hover:bg-[oklch(52%_0.20_13.697)] text-white text-[10px] sm:text-xs font-black transition-all cursor-pointer shadow-md shadow-[oklch(45.5%_0.188_13.697_/_0.35)] border border-[oklch(60%_0.18_13.697_/_0.4)] flex-shrink-0 hover:scale-105 active:scale-95"
+                title="Login / লগইন"
               >
-                <User className="w-3 h-3" />
-                <span className="hidden xs:inline">Sign In</span>
+                <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span>{locale === 'bn' ? 'লগইন' : 'Login'}</span>
               </Link>
             ) : (
               <div ref={userMenuRef} className="relative">
@@ -175,12 +163,12 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className={`flex items-center gap-1 sm:gap-1.5 py-1 px-2 sm:px-2.5 rounded-full border transition-all cursor-pointer flex-shrink-0 ${
                     isAdmin
-                      ? 'bg-blue-500/20 border-cyan-400/50 text-cyan-300 shadow-md shadow-cyan-500/20'
-                      : 'bg-white/[0.08] border-white/15 text-white'
+                      ? 'bg-[oklch(45.5%_0.188_13.697_/_0.2)] border-[oklch(45.5%_0.188_13.697_/_0.5)] text-[oklch(65%_0.20_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] shadow-md shadow-[oklch(45.5%_0.188_13.697_/_0.2)]'
+                      : 'bg-white/[0.08] [html.light-theme_&]:bg-black/[0.05] border-white/15 [html.light-theme_&]:border-black/10 text-white [html.light-theme_&]:text-slate-900'
                   }`}
                 >
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
-                    {isAdmin ? <Crown className="w-3 h-3 text-cyan-300" /> : user?.name.charAt(0).toUpperCase()}
+                  <div className="w-5 h-5 rounded-full bg-[oklch(45.5%_0.188_13.697)] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
+                    {isAdmin ? <Crown className="w-3 h-3 text-white" /> : user?.name.charAt(0).toUpperCase()}
                   </div>
                   <span className="text-[11px] font-extrabold hidden sm:inline-block max-w-[70px] truncate">
                     {isAdmin ? 'Admin' : user?.name}
@@ -190,15 +178,15 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
 
                 {/* Dynamic RBAC Dropdown Menu */}
                 {isUserMenuOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-56 rounded-2xl liquid-glass bg-[#08172e]/95 border border-cyan-500/35 p-2 shadow-2xl z-50 text-xs space-y-1 backdrop-blur-3xl animate-fadeIn">
+                  <div className="absolute top-full right-0 mt-2 w-56 rounded-2xl liquid-glass bg-[#08172e]/95 [html.light-theme_&]:bg-white/95 border border-[oklch(45.5%_0.188_13.697_/_0.35)] [html.light-theme_&]:border-black/10 p-2 shadow-2xl z-50 text-xs space-y-1 backdrop-blur-3xl animate-fadeIn">
                     {/* User Profile Header */}
-                    <div className="p-2 border-b border-white/10 mb-1">
-                      <div className="font-bold text-white truncate">{user?.name}</div>
-                      <div className="text-[10px] text-gray-400 flex items-center justify-between mt-0.5">
+                    <div className="p-2 border-b border-white/10 [html.light-theme_&]:border-black/10 mb-1">
+                      <div className="font-bold text-white [html.light-theme_&]:text-slate-900 truncate">{user?.name}</div>
+                      <div className="text-[10px] text-gray-400 [html.light-theme_&]:text-slate-500 flex items-center justify-between mt-0.5">
                         <span>{user?.phone}</span>
                         <span
                           className={`px-1.5 py-0.2 rounded-full font-extrabold uppercase text-[9px] ${
-                            isAdmin ? 'bg-cyan-400/20 text-cyan-300' : 'bg-blue-400/20 text-blue-300'
+                            isAdmin ? 'bg-[oklch(45.5%_0.188_13.697_/_0.2)] text-[oklch(65%_0.20_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]' : 'bg-white/10 text-white [html.light-theme_&]:text-slate-800'
                           }`}
                         >
                           {user?.role}
@@ -211,23 +199,23 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                         <Link
                           href="/admin"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 text-white font-bold transition-colors"
+                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-white [html.light-theme_&]:text-slate-900 font-bold transition-colors"
                         >
-                          <LayoutDashboard className="w-4 h-4 text-cyan-400" />
+                          <LayoutDashboard className="w-4 h-4 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]" />
                           <span>Admin CMS Dashboard</span>
                         </Link>
                         <Link
                           href="/admin"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black transition-colors"
                         >
-                          <Gamepad2 className="w-4 h-4 text-cyan-400" />
+                          <Gamepad2 className="w-4 h-4 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]" />
                           <span>Manage Games & Packages</span>
                         </Link>
                         <Link
                           href="/admin"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black transition-colors"
                         >
                           <Package className="w-4 h-4 text-emerald-400" />
                           <span>Manage Live Orders</span>
@@ -238,23 +226,23 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                         <Link
                           href="/account"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 text-white font-bold transition-colors"
+                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-white [html.light-theme_&]:text-slate-900 font-bold transition-colors"
                         >
-                          <User className="w-4 h-4 text-cyan-400" />
+                          <User className="w-4 h-4 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]" />
                           <span>My Account Profile</span>
                         </Link>
                         <Link
                           href="/orders"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black transition-colors"
                         >
-                          <Package className="w-4 h-4 text-blue-400" />
+                          <Package className="w-4 h-4 text-[oklch(65%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)]" />
                           <span>My Orders & Invoices</span>
                         </Link>
                         <Link
                           href="/wallet"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+                          className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-gray-300 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black transition-colors"
                         >
                           <Wallet className="w-4 h-4 text-emerald-400" />
                           <span>My Gamer Wallet (৳{user?.walletBalance || 0})</span>
@@ -262,13 +250,13 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                       </>
                     )}
 
-                    <div className="border-t border-white/10 pt-1 mt-1">
+                    <div className="border-t border-white/10 [html.light-theme_&]:border-black/10 pt-1 mt-1">
                       <button
                         onClick={() => {
                           logout();
                           setIsUserMenuOpen(false);
                         }}
-                        className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-red-500/20 text-red-300 font-bold transition-colors text-left cursor-pointer"
+                        className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-red-500/20 text-red-400 font-bold transition-colors text-left cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Sign Out</span>

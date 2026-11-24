@@ -24,19 +24,19 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-lg shadow-blue-600/30 border border-cyan-400/30 hover:shadow-cyan-500/40',
+        'bg-[oklch(45.5%_0.188_13.697)] hover:bg-[oklch(52%_0.20_13.697)] text-white shadow-lg shadow-[oklch(45.5%_0.188_13.697_/_0.35)] border border-[oklch(60%_0.18_13.697_/_0.40)] hover:shadow-[oklch(45.5%_0.188_13.697_/_0.50)]',
       glass:
-        'bg-white/[0.07] hover:bg-white/[0.16] text-white border border-white/20 backdrop-blur-2xl shadow-md hover:border-white/40',
+        'bg-white/[0.07] [html.light-theme_&]:bg-black/[0.05] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.1] text-white [html.light-theme_&]:text-slate-900 border border-white/20 [html.light-theme_&]:border-black/10 backdrop-blur-2xl shadow-md hover:border-white/40',
       pill:
-        'bg-white/[0.07] hover:bg-white/[0.16] text-white border border-cyan-400/30 backdrop-blur-2xl shadow-lg rounded-full hover:border-cyan-400/60',
+        'bg-white/[0.07] [html.light-theme_&]:bg-black/[0.05] hover:bg-white/[0.16] [html.light-theme_&]:hover:bg-black/[0.1] text-white [html.light-theme_&]:text-slate-900 border border-white/20 [html.light-theme_&]:border-black/10 backdrop-blur-2xl shadow-lg rounded-full hover:border-[oklch(45.5%_0.188_13.697_/_0.5)]',
       danger:
         'bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/35 shadow-md shadow-red-500/20',
       success:
         'bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-white border border-emerald-500/35 shadow-md shadow-emerald-500/20',
       ghost:
-        'bg-transparent hover:bg-white/10 text-gray-200 hover:text-white',
+        'bg-transparent hover:bg-white/10 [html.light-theme_&]:hover:bg-black/5 text-gray-200 [html.light-theme_&]:text-slate-700 hover:text-white [html.light-theme_&]:hover:text-black',
       outline:
-        'border border-cyan-400/30 hover:border-cyan-400/60 text-white hover:bg-cyan-500/10 backdrop-blur-md',
+        'border border-[oklch(45.5%_0.188_13.697_/_0.40)] hover:border-[oklch(45.5%_0.188_13.697)] text-white [html.light-theme_&]:text-slate-900 hover:bg-[oklch(45.5%_0.188_13.697_/_0.15)] backdrop-blur-md',
     };
 
     return (

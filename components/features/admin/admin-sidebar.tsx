@@ -5,6 +5,8 @@ import Link from 'next/link';
 import {
   LayoutDashboard,
   Palette,
+  Flame,
+  ShieldCheck,
   Gamepad2,
   Package,
   Tag,
@@ -19,6 +21,8 @@ import { useLanguage } from '@/hooks/use-language';
 export type AdminTab =
   | 'dashboard'
   | 'site_cms'
+  | 'hero_slides'
+  | 'trust_badges'
   | 'games'
   | 'packages'
   | 'coupons'
@@ -43,7 +47,9 @@ export function AdminSidebar({
 
   const menuItems: { id: AdminTab; label: string; icon: any; badge?: number }[] = [
     { id: 'dashboard', label: 'Overview & KPIs', icon: LayoutDashboard },
-    { id: 'site_cms', label: 'Site Settings & Ticker', icon: Palette },
+    { id: 'site_cms', label: 'Site Branding & Info', icon: Palette },
+    { id: 'hero_slides', label: 'Hero Carousel Slides', icon: Flame },
+    { id: 'trust_badges', label: 'Trust Badges & Perks', icon: ShieldCheck },
     { id: 'games', label: 'Game Catalog (CRUD)', icon: Gamepad2 },
     { id: 'packages', label: 'Packages & Prices', icon: Package },
     { id: 'coupons', label: 'Discount Coupons', icon: Tag },
@@ -57,7 +63,7 @@ export function AdminSidebar({
       <div>
         <div className="p-3 border-b border-white/15 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-cyan-500/30">
+            <div className="w-8 h-8 rounded-2xl bg-[oklch(45.5%_0.188_13.697)] flex items-center justify-center text-white font-black text-sm shadow-lg shadow-[oklch(45.5%_0.188_13.697_/_0.35)]">
               ⚡
             </div>
             <div>
@@ -98,7 +104,7 @@ export function AdminSidebar({
                   <span>{item.label}</span>
                 </div>
                 {item.badge ? (
-                  <span className="px-2 py-0.5 rounded-full bg-cyan-400 text-black font-extrabold text-[10px] shadow-sm">
+                  <span className="px-2 py-0.5 rounded-full bg-[oklch(45.5%_0.188_13.697)] text-white font-extrabold text-[10px] shadow-sm">
                     {item.badge}
                   </span>
                 ) : null}

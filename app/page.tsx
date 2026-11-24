@@ -57,19 +57,19 @@ export default function HomeShowcasePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between">
+    <div className="min-h-screen flex flex-col justify-between overflow-x-hidden w-full max-w-full">
       {/* Floating Apple Liquid Glass Pill Navbar */}
       <Navbar settings={settings} games={games} />
 
-      <main className="flex-1 w-full space-y-10 pb-12">
+      <main className="flex-1 w-full space-y-10 pb-12 overflow-x-hidden max-w-full">
         {/* 1. HIGH-CONTRAST LIVE NOTICE TICKER */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-1">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-3.5 sm:pt-4">
           <div className="live-notice-capsule rounded-full py-1.5 px-3 sm:px-4 flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-1.5 font-extrabold text-[11px] sm:text-xs bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 px-2.5 py-0.5 rounded-full flex-shrink-0 uppercase shadow-sm">
-              <Zap className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
+            <div className="flex items-center gap-1.5 font-extrabold text-[11px] sm:text-xs bg-[oklch(45.5%_0.188_13.697_/_0.20)] border border-[oklch(45.5%_0.188_13.697_/_0.45)] text-[oklch(68%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] px-2.5 py-0.5 rounded-full flex-shrink-0 uppercase shadow-sm">
+              <Zap className="w-3.5 h-3.5 text-[oklch(68%_0.19_13.697)] [html.light-theme_&]:text-[oklch(45.5%_0.188_13.697)] animate-pulse" />
               <span>{t('liveNotice')}:</span>
             </div>
-            <div className="overflow-hidden relative w-full text-xs font-bold text-white tracking-wide min-w-0">
+            <div className="overflow-hidden relative w-full text-xs font-bold text-white [html.light-theme_&]:text-slate-900 tracking-wide min-w-0">
               <div className="animate-marquee">
                 <span className="mr-12">{settings.tickerText}</span>
                 <span className="mr-12">{settings.tickerText}</span>
@@ -80,7 +80,7 @@ export default function HomeShowcasePage() {
 
         {/* 2. INTERACTIVE HERO SLIDER (3 CORE GAMES) */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6">
-          <HeroSlider />
+          <HeroSlider slides={settings?.slides} />
         </section>
 
         {/* 3. TRENDING GAMES SHOWCASE (3 CORE GAMES) */}

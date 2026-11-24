@@ -82,7 +82,7 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
           >
             {/* Top Search Bar */}
             <div className="relative flex items-center px-4 py-3.5 border-b border-white/10">
-              <Search className="w-5 h-5 text-cyan-400 mr-3 flex-shrink-0" />
+              <Search className="w-5 h-5 text-[oklch(65%_0.19_13.697)] mr-3 flex-shrink-0" />
               <input
                 ref={inputRef}
                 type="text"
@@ -109,8 +109,8 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
             {/* Results / Suggestions Area */}
             <div className="max-h-[60vh] sm:max-h-[380px] overflow-y-auto p-3 space-y-2">
               <div className="flex items-center justify-between px-2 py-1 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                <span className="flex items-center gap-1.5 text-cyan-300">
-                  <Gamepad2 className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="flex items-center gap-1.5 text-[oklch(65%_0.19_13.697)]">
+                  <Gamepad2 className="w-3.5 h-3.5 text-[oklch(65%_0.19_13.697)]" />
                   {q ? `${filteredGames.length} ${t('navGames')}` : t('popularGames')}
                 </span>
                 <span className="text-[10px] text-gray-500 font-normal">Instant Top-Up</span>
@@ -129,7 +129,7 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
                   <button
                     key={game.id}
                     onClick={() => handleSelectGame(game.slug)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-transparent hover:border-cyan-500/30 transition-all text-left group cursor-pointer"
+                    className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-transparent hover:border-[oklch(45.5%_0.188_13.697_/_0.4)] transition-all text-left group cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <img
@@ -139,7 +139,7 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
                         onError={(e: any) => (e.target.src = '/assets/pubg.jpg')}
                       />
                       <div>
-                        <div className="text-xs sm:text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+                        <div className="text-xs sm:text-sm font-bold text-white group-hover:text-[oklch(65%_0.19_13.697)] transition-colors">
                           {locale === 'bn' && game.name_bn ? game.name_bn : game.name}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
@@ -153,10 +153,10 @@ export default function SearchModal({ isOpen, onClose, games }: SearchModalProps
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300">
+                      <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-[oklch(45.5%_0.188_13.697_/_0.2)] border border-[oklch(45.5%_0.188_13.697_/_0.4)] text-[oklch(65%_0.19_13.697)]">
                         {game.badge}
                       </span>
-                      <div className="w-7 h-7 rounded-full bg-white/5 group-hover:bg-cyan-500/20 text-gray-400 group-hover:text-cyan-300 flex items-center justify-center transition-colors">
+                      <div className="w-7 h-7 rounded-full bg-white/5 group-hover:bg-[oklch(45.5%_0.188_13.697_/_0.2)] text-gray-400 group-hover:text-[oklch(65%_0.19_13.697)] flex items-center justify-center transition-colors">
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </div>

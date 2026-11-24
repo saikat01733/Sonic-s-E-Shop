@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, Zap, Flame, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 
-interface SlideItem {
+export interface SlideItem {
   id: string;
   gameId: string;
   slug: string;
@@ -17,7 +17,7 @@ interface SlideItem {
   badge: string;
   deliveryTime: string;
   image: string;
-  color: string;
+  color?: string;
 }
 
 const slides: SlideItem[] = [
@@ -56,7 +56,12 @@ const slides: SlideItem[] = [
   },
 ];
 
-export function HeroSlider() {
+interface HeroSliderProps {
+  slides?: SlideItem[];
+}
+
+export function HeroSlider({ slides: propSlides }: HeroSliderProps = {}) {
+  const activeSlides = propSlides && propSlides.length > 0 ? propSlides : slides;
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const { t } = useLanguage();
@@ -64,15 +69,15 @@ export function HeroSlider() {
   useEffect(() => {
     if (isPaused) return;
     const interval = setInterval(() => {
-      setCurrent(prev => (prev + 1) % slides.length);
+      setCurrent(prev => (prev + 1) % activeSlides.length);
     }, 5500);
     return () => clearInterval(interval);
-  }, [isPaused]);
+  }, [isPaused, activeSlides.length]);
 
-  const nextSlide = () => setCurrent(prev => (prev + 1) % slides.length);
-  const prevSlide = () => setCurrent(prev => (prev - 1 + slides.length) % slides.length);
+  const nextSlide = () => setCurrent(prev => (prev + 1) % activeSlides.length);
+  const prevSlide = () => setCurrent(prev => (prev - 1 + activeSlides.length) % activeSlides.length);
 
-  const activeSlide = slides[current];
+  const activeSlide = activeSlides[current] || activeSlides[0];
 
   return (
     <div
@@ -129,7 +134,7 @@ export function HeroSlider() {
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                 className="space-y-1.5 sm:space-y-2"
               >
-                <h1 className="text-base sm:text-2xl md:text-4xl lg:text-5xl font-black tracking-wide text-white uppercase drop-shadow-2xl font-display leading-snug break-words px-2">
+                <h1 className="text-base sm:text-2xl md:text-4xl lg:text-5xl font-black tracking-wide text-white uppercase drop-shadow-2xl font-display leading-snug [text-wrap:balance] hyphens-none px-2">
                   {activeSlide.title}
                 </h1>
                 <p className="text-[11px] sm:text-xs md:text-sm text-gray-200 font-medium drop-shadow-lg max-w-xl mx-auto line-clamp-2 px-2">
@@ -169,7 +174,7 @@ export function HeroSlider() {
 
           {/* Slide Indicator Dots */}
           <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-2 z-30">
-            {slides.map((s, idx) => (
+            {activeSlides.map((s, idx) => (
               <button
                 key={s.id}
                 onClick={() => setCurrent(idx)}
