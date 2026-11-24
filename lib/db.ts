@@ -87,6 +87,28 @@ export async function getStoreData(): Promise<StoreData> {
           orders,
           auditLogs
         };
+      } else if (games.length === 0) {
+        // Auto-seed initial store data into MongoDB Atlas
+        const local = readFileStore();
+        await db.collection('settings').updateOne(
+          { _id: 'main' as any },
+          { $set: { settings: local.settings, trustBadges: local.trustBadges } },
+          { upsert: true }
+        );
+        if (local.games && local.games.length > 0) {
+          await db.collection('games').insertMany(local.games as any);
+        }
+        if (local.coupons && local.coupons.length > 0) {
+          await db.collection('coupons').insertMany(local.coupons as any);
+        }
+        if (local.orders && local.orders.length > 0) {
+          await db.collection('orders').insertMany(local.orders as any);
+        }
+        if (local.auditLogs && local.auditLogs.length > 0) {
+          await db.collection('auditLogs').insertMany(local.auditLogs as any);
+        }
+        console.log('[MongoDB] Successfully seeded initial store data to Atlas collections!');
+        return local;
       }
     } catch (e) {
       console.warn('[MongoDB] Query failed, using file store:', e);
