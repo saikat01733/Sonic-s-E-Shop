@@ -46,6 +46,9 @@
             --toggle-btn-bg: rgba(240, 240, 245, 0.9);
             --toggle-pill-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 2px 4px rgba(255,255,255,1);
         }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
         body {
             background-color: var(--bg-color);
             background-image: 
@@ -59,12 +62,15 @@
             margin: 0;
             padding: 0;
             padding-bottom: 90px;
+            overflow-x: hidden;
             transition: background 0.4s ease, color 0.4s ease;
         }
         .container {
             max-width: 550px;
+            width: 100%;
             margin: 0 auto;
             padding: 0 15px;
+            transition: max-width 0.3s ease, padding 0.3s ease;
         }
         /* Top Header Navbar */
         .top-navbar {
@@ -78,30 +84,47 @@
             padding: 10px 15px;
             margin-bottom: 15px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            transition: background 0.4s ease;
+            transition: background 0.4s ease, padding 0.3s ease;
         }
         .nav-content {
             max-width: 550px;
+            width: 100%;
             margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
+            transition: max-width 0.3s ease, gap 0.3s ease;
         }
         .brand-logo {
             display: flex;
             align-items: center;
             flex-shrink: 0;
         }
+        /* Universal Responsive Images */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
         .brand-logo-img {
             height: 36px;
+            max-width: 150px;
             width: auto;
-            border-radius: 10px;
             object-fit: contain;
             display: block;
-            background: #000000;
-            border: 1px solid var(--glass-border);
-            padding: 2px 6px;
+            background: transparent;
+            border: none;
+            padding: 0;
+            transition: transform 0.3s ease, filter 0.3s ease, height 0.3s ease;
+        }
+        .brand-logo-img:hover {
+            transform: scale(1.05);
+        }
+        html.dark-theme .brand-logo-img {
+            filter: drop-shadow(0 0 8px rgba(0, 160, 255, 0.45));
+        }
+        html.light-theme .brand-logo-img {
+            filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3)) contrast(1.15) brightness(0.95);
         }
         
         /* Hero Banner Image */
@@ -112,12 +135,19 @@
             overflow: hidden;
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
+            background: rgba(0, 0, 0, 0.2);
+            transition: border-radius 0.3s ease, margin 0.3s ease;
         }
         .hero-banner-img {
             width: 100%;
             height: auto;
+            aspect-ratio: 16 / 9;
             display: block;
             object-fit: cover;
+            transition: transform 0.5s ease, aspect-ratio 0.3s ease;
+        }
+        .hero-banner-container:hover .hero-banner-img {
+            transform: scale(1.02);
         }
 
         /* Search Bar */
@@ -1157,6 +1187,231 @@
             cursor: pointer;
             width: 100%;
         }
+
+        /* ============================================================
+           RESPONSIVE MEDIA QUERIES (320px to 1440px+)
+           ============================================================ */
+
+        /* Ultra-compact / Small Mobile (320px to 399px) */
+        @media screen and (max-width: 399px) {
+            .container {
+                padding: 0 10px;
+            }
+            .top-navbar {
+                padding: 8px 10px;
+            }
+            .nav-content {
+                gap: 6px;
+            }
+            .brand-logo-img {
+                height: 28px;
+                max-width: 110px;
+            }
+            .search-box {
+                max-width: 115px;
+                min-width: 0;
+            }
+            .search-box input {
+                padding: 6px 8px 6px 24px;
+                font-size: 11px;
+            }
+            .search-box svg {
+                width: 12px;
+                height: 12px;
+                left: 7px;
+            }
+            .theme-toggle-btn {
+                width: 48px;
+                height: 26px;
+                padding: 2px;
+            }
+            .theme-slider-thumb {
+                width: 18px;
+                height: 18px;
+            }
+            html.light-theme .theme-slider-thumb {
+                transform: translateX(22px);
+            }
+            .theme-icon {
+                width: 11px;
+                height: 11px;
+            }
+            .menu-trigger-btn {
+                width: 28px;
+                height: 28px;
+            }
+            .menu-trigger-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+            .hero-banner-container {
+                border-radius: 14px;
+                margin-bottom: 12px;
+            }
+            .hero-banner-img {
+                aspect-ratio: 16 / 9;
+            }
+            .pkg-grid {
+                gap: 8px;
+            }
+            .pkg-card {
+                padding: 12px 10px;
+            }
+            .pkg-name {
+                font-size: 12px;
+            }
+            .pkg-price {
+                font-size: 13px;
+            }
+            .device-card {
+                padding: 10px 8px;
+                gap: 8px;
+            }
+            .device-name {
+                font-size: 13px;
+            }
+            .input-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .header h2 {
+                font-size: 22px;
+            }
+        }
+
+        /* Standard Mobile (400px to 599px) */
+        @media screen and (min-width: 400px) and (max-width: 599px) {
+            .brand-logo-img {
+                height: 34px;
+                max-width: 140px;
+            }
+            .hero-banner-img {
+                aspect-ratio: 16 / 9;
+            }
+        }
+
+        /* Tablet Portrait / Medium Screen (600px to 767px) */
+        @media screen and (min-width: 600px) and (max-width: 767px) {
+            .container, .nav-content {
+                max-width: 680px;
+            }
+            .brand-logo-img {
+                height: 36px;
+                max-width: 155px;
+            }
+            .search-box {
+                max-width: 200px;
+            }
+            .hero-banner-container {
+                border-radius: 20px;
+            }
+            .hero-banner-img {
+                aspect-ratio: 1.9 / 1;
+            }
+            .pkg-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+        }
+
+        /* Tablet Landscape & Small Desktop (768px to 1023px) */
+        @media screen and (min-width: 768px) and (max-width: 1023px) {
+            .container, .nav-content {
+                max-width: 780px;
+            }
+            .top-navbar {
+                padding: 12px 24px;
+            }
+            .brand-logo-img {
+                height: 40px;
+                max-width: 170px;
+            }
+            .search-box {
+                max-width: 250px;
+            }
+            .search-box input {
+                font-size: 13px;
+                padding: 9px 14px 9px 32px;
+            }
+            .hero-banner-container {
+                border-radius: 24px;
+                margin-bottom: 22px;
+            }
+            .hero-banner-img {
+                aspect-ratio: 2.2 / 1;
+            }
+            .pkg-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 14px;
+            }
+            .header h2 {
+                font-size: 30px;
+            }
+            .bottom-dock {
+                max-width: 560px;
+            }
+        }
+
+        /* Large Desktop / Standard 1024px - 1440px Breakpoint */
+        @media screen and (min-width: 1024px) {
+            .container, .nav-content {
+                max-width: 960px;
+            }
+            .top-navbar {
+                padding: 14px 30px;
+            }
+            .brand-logo-img {
+                height: 44px;
+                max-width: 190px;
+            }
+            .search-box {
+                max-width: 300px;
+            }
+            .search-box input {
+                font-size: 13px;
+                padding: 10px 16px 10px 36px;
+            }
+            .hero-banner-container {
+                border-radius: 26px;
+                margin-bottom: 26px;
+            }
+            .hero-banner-img {
+                aspect-ratio: 2.5 / 1;
+            }
+            .pkg-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+            }
+            .device-selector-container {
+                max-width: 520px;
+                margin: 0 auto;
+            }
+            .header h2 {
+                font-size: 32px;
+            }
+            .bottom-dock {
+                max-width: 620px;
+                bottom: 18px;
+            }
+        }
+
+        /* Extra Wide Desktop (1280px to 1440px+) */
+        @media screen and (min-width: 1280px) {
+            .container, .nav-content {
+                max-width: 1100px;
+            }
+            .brand-logo-img {
+                height: 48px;
+                max-width: 210px;
+            }
+            .hero-banner-img {
+                aspect-ratio: 2.7 / 1;
+            }
+            .pkg-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 18px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1164,7 +1419,7 @@
 <div class="top-navbar">
     <div class="nav-content">
         <div class="brand-logo">
-            <img src="logo.jpg" alt="Sonic's E-Shop Logo" class="brand-logo-img">
+            <img src="logo.png" alt="Sonic's E-Shop Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='logo.jpg';">
         </div>
         
         <!-- Live Search Bar -->
@@ -1230,7 +1485,10 @@
 <div class="container">
     <!-- HERO BANNER -->
     <div class="hero-banner-container">
-        <img src="banner.jpg" alt="Sonic's E-Shop Banner" class="hero-banner-img">
+        <picture>
+            <source srcset="banner.webp" type="image/webp">
+            <img src="banner.jpg" alt="Sonic's E-Shop Banner" class="hero-banner-img" loading="eager" decoding="async">
+        </picture>
     </div>
 
     <div class="header">
