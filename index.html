@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Sonic’s E-Shop</title>
+    <title>Sonic’s E-Shop</title>
     <!-- Google Font: Bodoni Moda -->
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&display=swap" rel="stylesheet">
     
@@ -28,7 +28,7 @@
             --toggle-pill-shadow: 0 4px 15px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.15);
         }
         html.light-theme {
-            /* Light Theme Colors (Inverted/Reference Clean Metallic Light) */
+            /* Light Theme Colors */
             --bg-color: #e5e7eb;
             --bg-pattern: radial-gradient(circle at 15% 15%, rgba(255, 62, 62, 0.08) 0%, transparent 45%),
                         radial-gradient(circle at 85% 85%, rgba(0, 136, 204, 0.08) 0%, transparent 45%);
@@ -89,15 +89,36 @@
             gap: 10px;
         }
         .brand-logo {
-            font-family: 'Bodoni Moda', serif;
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--text-main);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .brand-logo-img {
+            height: 36px;
+            width: auto;
+            border-radius: 8px;
+            object-fit: contain;
+            display: block;
+            background: #ffffff;
+            padding: 2px 6px;
         }
         
+        /* Hero Banner Image */
+        .hero-banner-container {
+            width: 100%;
+            margin-bottom: 18px;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+        .hero-banner-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
         /* Search Bar */
         .search-box {
             position: relative;
@@ -124,7 +145,7 @@
             height: 14px;
             fill: var(--text-muted);
         }
-        /* Video Reference Theme Toggle Switch */
+        /* Theme Toggle Switch */
         .theme-toggle-wrapper {
             display: flex;
             align-items: center;
@@ -408,6 +429,13 @@
         }
         .device-card:hover, .pkg-card:hover, .pay-method:hover, .social-btn:hover {
             transform: translateY(-2px) scale(1.01);
+        }
+        .pkg-card.out-of-stock {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .pkg-card.out-of-stock:hover {
+            transform: none;
         }
         .soft-press {
             animation: softPressEffect 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -997,7 +1025,7 @@
             cursor: pointer;
         }
         
-        /* NEW ANIMATED LOGOUT BUTTON STYLES */
+        /* ANIMATED LOGOUT BUTTON STYLES */
         .animated-logout-btn {
             background: #1d1b2a;
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -1083,7 +1111,6 @@
             transform: translateX(12px) scale(0.6);
             opacity: 0;
         }
-
         .glass-overlay {
             position: fixed;
             top: 0;
@@ -1135,18 +1162,19 @@
 <!-- TOP HEADER NAVIGATION BAR -->
 <div class="top-navbar">
     <div class="nav-content">
-        <div class="brand-logo">Sonic’s E-Shop</div>
+        <div class="brand-logo">
+            <img src="logo.jpg" alt="Sonic's E-Shop Logo" class="brand-logo-img">
+        </div>
         
         <!-- Live Search Bar -->
         <div class="search-box">
             <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
             <input type="text" id="pkgSearchInput" placeholder="Search package..." onkeyup="filterPackages()">
         </div>
-        <!-- Video Reference Glassmorphic Dark/Light Mode Switch -->
+        <!-- Theme Toggle Switch -->
         <div class="theme-toggle-wrapper">
             <div class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleThemeMode()" title="Toggle Dark/Light Mode">
                 <div class="theme-slider-thumb" id="themeSliderThumb">
-                    <!-- Moon Icon -->
                     <svg class="theme-icon" id="themeIcon" viewBox="0 0 24 24">
                         <path d="M12.3 2a10 10 0 0 0 9.7 12.8 10 10 0 1 1-11.8-12.7c.7 0 1.4.1 2.1.2z"/>
                     </svg>
@@ -1199,6 +1227,11 @@
     </div>
 </div>
 <div class="container">
+    <!-- HERO BANNER -->
+    <div class="hero-banner-container">
+        <img src="banner.jpg" alt="Sonic's E-Shop Banner" class="hero-banner-img">
+    </div>
+
     <div class="header">
         <h2>Sonic’s E-Shop</h2>
         <div class="badge-container">
@@ -1264,70 +1297,70 @@
                 <div class="step-number">2</div> Select Package (Multiple allowed)
             </div>
             <div class="pkg-grid" id="pkgGrid">
-                <div class="pkg-card" onclick="togglePackage(this, '130 Coin', 140)">
+                <div class="pkg-card" onclick="togglePackage(this, '130 Coin', 170)">
                     <div>
                         <div class="pkg-name">130 Coin</div>
                         <div class="pkg-price">৳170</div>
                     </div>
                     <div class="pkg-stock">🟢 In Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '260 Coin', 270)">
+                <div class="pkg-card out-of-stock" onclick="showGlassAlert('Out of Stock', 'এই প্যাকেজটি বর্তমানে স্টকে নেই!')">
                     <div>
                         <div class="pkg-name">260 Coin</div>
                         <div class="pkg-price">৳***</div>
                     </div>
                     <div class="pkg-stock" style="color: #ef4444;">🔴 Out of Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '300 Coin', 320)">
+                <div class="pkg-card" onclick="togglePackage(this, '300 Coin', 350)">
                     <div>
                         <div class="pkg-name">300 Coin</div>
                         <div class="pkg-price">৳350</div>
                     </div>
                     <div class="pkg-stock">🟢 In Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '550 Coin', 570)">
+                <div class="pkg-card" onclick="togglePackage(this, '550 Coin', 630)">
                     <div>
                         <div class="pkg-name">550 Coin</div>
                         <div class="pkg-price">৳630</div>
                     </div>
                     <div class="pkg-stock">🟢 In Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '750 Coin', 780)">
+                <div class="pkg-card" onclick="togglePackage(this, '750 Coin', 840)">
                     <div>
                         <div class="pkg-name">750 Coin</div>
                         <div class="pkg-price">৳840</div>
                     </div>
                     <div class="pkg-stock">🟢 In Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '840 Coin', 880)">
+                <div class="pkg-card out-of-stock" onclick="showGlassAlert('Out of Stock', 'এই প্যাকেজটি বর্তমানে স্টকে নেই!')">
                     <div>
                         <div class="pkg-name">840 Coin</div>
                         <div class="pkg-price">৳***</div>
                     </div>
                     <div class="pkg-stock" style="color: #ef4444;">🔴 Out of Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '1040 Coin', 1080)">
+                <div class="pkg-card" onclick="togglePackage(this, '1040 Coin', 1170)">
                     <div>
                         <div class="pkg-name">1040 Coin</div>
                         <div class="pkg-price">৳1170</div>
                     </div>
                     <div class="pkg-stock">🟢 In Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '1630 Coin', 1650)">
+                <div class="pkg-card out-of-stock" onclick="showGlassAlert('Out of Stock', 'এই প্যাকেজটি বর্তমানে স্টকে নেই!')">
                     <div>
                         <div class="pkg-name">1630 Coin</div>
                         <div class="pkg-price">৳****</div>
                     </div>
                     <div class="pkg-stock" style="color: #ef4444;">🔴 Out of Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '2130 Coin', 2200)">
+                <div class="pkg-card" onclick="togglePackage(this, '2130 Coin', 2300)">
                     <div>
                         <div class="pkg-name">2130 Coin</div>
                         <div class="pkg-price">৳2300</div>
                     </div>
                     <div class="pkg-stock">🟢 In Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '3250 Coin', 3350)">
+                <div class="pkg-card" onclick="togglePackage(this, '3250 Coin', 3420)">
                     <div>
                         <div class="pkg-name">3250 Coin</div>
                         <div class="pkg-price">৳3420</div>
@@ -1341,7 +1374,7 @@
                     </div>
                     <div class="pkg-stock">🟢 In Stock</div>
                 </div>
-                <div class="pkg-card" onclick="togglePackage(this, '12800 Coin', 12500)">
+                <div class="pkg-card" onclick="togglePackage(this, '12800 Coin', 12350)">
                     <div>
                         <div class="pkg-name">12800 Coin</div>
                         <div class="pkg-price">৳12350</div>
@@ -1456,7 +1489,6 @@
                 <div id="userProfileView" style="display: none;">
                     <p style="color: var(--success-green); font-weight: bold;" id="loggedInUserEmail"></p>
                     
-                    <!-- NEW ANIMATED LOGOUT BUTTON REPLACED HERE -->
                     <button class="animated-logout-btn" id="animatedLogoutBtn" onclick="handleAnimatedLogout()">
                         <span class="logout-btn-text">Log Out</span>
                         <div class="logout-door-container">
@@ -1714,7 +1746,6 @@
         signOut(auth).then(() => { showGlassAlert('E-football coin shop', 'লগআউট হয়েছে!'); }).catch((error) => { showGlassAlert('E-football coin shop', error.message); });
     }
     
-    /* ANIMATED LOGOUT HANDLER */
     window.handleAnimatedLogout = function() {
         let btn = document.getElementById('animatedLogoutBtn');
         if (btn.classList.contains('logging-out')) return;
@@ -1727,7 +1758,6 @@
             }, 500);
         }, 450);
     }
-
     onAuthStateChanged(auth, (user) => {
         let authFormView = document.getElementById('authFormView');
         let userProfileView = document.getElementById('userProfileView');
@@ -1754,7 +1784,6 @@
     document.addEventListener("DOMContentLoaded", function() {
         renderOrders();
     });
-    /* Live Search Packages Feature */
     function filterPackages() {
         let input = document.getElementById('pkgSearchInput').value.toLowerCase();
         let cards = document.querySelectorAll('#pkgGrid .pkg-card');
@@ -1767,7 +1796,6 @@
             }
         });
     }
-    /* Video Reference Theme Switcher (Dark / Light) */
     function toggleThemeMode() {
         let htmlEl = document.documentElement;
         let icon = document.getElementById('themeIcon');
@@ -1775,16 +1803,13 @@
         if (htmlEl.classList.contains('dark-theme')) {
             htmlEl.classList.remove('dark-theme');
             htmlEl.classList.add('light-theme');
-            // Sun Icon SVG Path
             icon.innerHTML = '<path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zM7.05 18.01l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.02-.39-1.41 0z"/>';
         } else {
             htmlEl.classList.remove('light-theme');
             htmlEl.classList.add('dark-theme');
-            // Moon Icon SVG Path
             icon.innerHTML = '<path d="M12.3 2a10 10 0 0 0 9.7 12.8 10 10 0 1 1-11.8-12.7c.7 0 1.4.1 2.1.2z"/>';
         }
     }
-    /* Side Drawer Menu Handler */
     function toggleSideDrawer() {
         document.getElementById('sideDrawerOverlay').classList.toggle('active');
     }
@@ -1876,7 +1901,7 @@
         if(!order) return;
         let content = `
             <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 10px;">
-                <h4 style="margin: 0; color: var(--text-main); font-size: 16px;">E-football coin shop</h4>
+                <h4 style="margin: 0; color: var(--text-main); font-size: 16px;">Sonic’s E-Shop</h4>
                 <p style="margin: 2px 0; font-size: 12px; color: var(--text-muted);">Official Digital Invoice</p>
             </div>
             <p><strong>Order ID:</strong> #${order.id}</p>
@@ -1927,19 +1952,19 @@
         let btnText = document.getElementById('truckBtnText');
         
         if (!gmail || !pass || !whatsapp) {
-            showGlassAlert('E-football coin shop', 'দয়া করে অ্যাকাউন্ট ইনফোর সব ফিল্ড পূরণ করুন!');
+            showGlassAlert('Sonic’s E-Shop', 'দয়া করে অ্যাকাউন্ট ইনফোর সব ফিল্ড পূরণ করুন!');
             return;
         }
         if (selectedPackages.length === 0) {
-            showGlassAlert('E-football coin shop', 'দয়া করে কমপক্ষে একটি বা অধিক প্যাকেজ সিলেক্ট করুন!');
+            showGlassAlert('Sonic’s E-Shop', 'দয়া করে কমপক্ষে একটি বা অধিক প্যাকেজ সিলেক্ট করুন!');
             return;
         }
         if (!selectedPay) {
-            showGlassAlert('E-football coin shop', 'দয়া করে পেমেন্ট মেথড সিলেক্ট করুন!');
+            showGlassAlert('Sonic’s E-Shop', 'দয়া করে পেমেন্ট মেথড সিলেক্ট করুন!');
             return;
         }
         if (!lastDigit) {
-            showGlassAlert('E-football coin shop', 'দয়া করে লাস্ট ৪ ডিজিট বা সেন্ডার নম্বর দিন!');
+            showGlassAlert('Sonic’s E-Shop', 'দয়া করে লাস্ট ৪ ডিজিট বা সেন্ডার নম্বর দিন!');
             return;
         }
         
@@ -1966,7 +1991,7 @@
             ordersList.unshift(newOrder);
             localStorage.setItem('savedOrders', JSON.stringify(ordersList));
             renderOrders();
-            let msg = `*New Order - E-football coin shop*%0A%0A` +
+            let msg = `*New Order - Sonic’s E-Shop*%0A%0A` +
                       `📱 Device: ${device}%0A` +
                       `📧 Gmail: ${gmail}%0A` +
                       `🔑 Password: ${pass}%0A` +
