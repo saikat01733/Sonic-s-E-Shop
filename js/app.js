@@ -103,6 +103,32 @@ function renderGameCatalogGrid(filterCategory = 'all') {
             <div class="game-card-poster">
                 <img src="${game.poster}" alt="${game.name}" loading="lazy" onerror="this.src='banner.jpg'">
                 <span class="game-card-badge" style="background: ${game.badge_color};">${game.badge}</span>
+                
+                <!-- Interactive Glassmorphic Details Overlay on Hover -->
+                <div class="game-card-hover-overlay">
+                    <div class="hover-overlay-top">
+                        <span class="hover-badge" style="background: ${game.badge_color};">${game.badge}</span>
+                        <span style="font-size: 10px; color: var(--success-green); font-weight: 700;">🟢 ১০০% নিরাপদ</span>
+                    </div>
+                    <div class="hover-details-list">
+                        <div class="hover-detail-row">
+                            <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                            <span><strong>ডেলিভারি:</strong> ${game.delivery_time}</span>
+                        </div>
+                        <div class="hover-detail-row">
+                            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                            <span><strong>মেথড:</strong> ${game.product_type === 'login_purchase' ? 'Konami ID লগইন' : (game.id === 'roblox' ? 'রোব্লক্স ইউজারনেম' : 'সরাসরি Player UID')}</span>
+                        </div>
+                        <div class="hover-detail-row">
+                            <svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.1.89 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 12 8.76 15.38 12 17 10.83 14.92 8H20v6z"/></svg>
+                            <span><strong>প্যাকেজ:</strong> ${game.packages.length} টি ভ্যারিয়েন্ট</span>
+                        </div>
+                    </div>
+                    <div class="hover-action-btn">
+                        <span>টপ-আপ করতে ক্লিক করুন</span>
+                        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </div>
+                </div>
             </div>
             <div class="game-card-info">
                 <span class="game-card-cat">${game.category_name}</span>
