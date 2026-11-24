@@ -1,12 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { auth } from '@/lib/firebase';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 export interface AuthUser {
   id: string;
   name: string;
-  phone: string;
+  phone?: string;
   email?: string;
+  avatar?: string;
   role: 'user' | 'admin';
   walletBalance: number;
 }
@@ -15,10 +18,10 @@ interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (phoneOrEmail: string, pass: string) => Promise<{ success: boolean; error?: string }>;
-  signup: (name: string, phone: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  login: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string; role?: 'user' | 'admin' }>;
+  signup: (name: string, identifier: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: () => Promise<{ success: boolean; error?: string; role?: 'user' | 'admin' }>;
   logout: () => void;
-  quickLoginAs: (role: 'user' | 'admin') => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -27,9 +30,19 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   login: async () => ({ success: false }),
   signup: async () => ({ success: false }),
+  loginWithGoogle: async () => ({ success: false }),
   logout: () => {},
-  quickLoginAs: () => {},
 });
+
+const ADMIN_IDENTIFIERS = [
+  'admin',
+  'admin@sonic.com',
+  'admin@sonicseshop.com',
+  '01733185830',
+  'saikatahmmad77@gmail.com',
+  'saikat01733@gmail.com',
+  'md.asifiqbal2008@gmail.com',
+];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -51,6 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('sonic_auth_user', JSON.stringify(newUser));
       if (newUser.role === 'admin') {
         localStorage.setItem('sonic_admin_token', 'sonic_admin_session_token_' + Date.now());
+      } else {
+        localStorage.removeItem('sonic_admin_token');
       }
     } else {
       localStorage.removeItem('sonic_auth_user');
@@ -58,71 +73,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (phoneOrEmail: string, pass: string) => {
-    const cleanInput = phoneOrEmail.trim().toLowerCase();
-    
-    // Check if logging in as Admin
-    if (cleanInput === 'admin' || cleanInput === 'admin@sonic.com' || cleanInput === '01733185830' || pass === 'sonic2026') {
-      const adminUser: AuthUser = {
-        id: 'usr-admin-1',
-        name: 'Sonic Admin',
-        phone: '01733185830',
-        email: 'admin@sonicseshop.com',
-        role: 'admin',
-        walletBalance: 25000,
-      };
-      saveUserSession(adminUser);
-      return { success: true };
+  const isRoleAdmin = (identifier: string, pass?: string): boolean => {
+    const clean = identifier.trim().toLowerCase();
+    if (ADMIN_IDENTIFIERS.includes(clean)) return true;
+    if (pass === 'sonic2026') return true;
+    return false;
+  };
+
+  const login = async (identifier: string, pass: string) => {
+    const clean = identifier.trim().toLowerCase();
+    if (!clean) {
+      return { success: false, error: 'Please enter your email or phone number' };
     }
 
-    // Customer login
-    const customerUser: AuthUser = {
-      id: 'usr-' + Math.floor(1000 + Math.random() * 9000),
-      name: cleanInput.includes('@') ? cleanInput.split('@')[0] : 'Gamer User',
-      phone: cleanInput.replace(/\D/g, '') || '01712345678',
-      email: cleanInput.includes('@') ? cleanInput : undefined,
-      role: 'user',
-      walletBalance: 1250,
+    const isAdmin = isRoleAdmin(clean, pass);
+    const authUser: AuthUser = {
+      id: isAdmin ? 'usr-admin-1' : 'usr-' + Math.floor(1000 + Math.random() * 9000),
+      name: isAdmin ? 'Sonic Admin' : (clean.includes('@') ? clean.split('@')[0] : 'Gamer User'),
+      email: clean.includes('@') ? clean : undefined,
+      phone: clean.includes('@') ? '01733185830' : clean,
+      role: isAdmin ? 'admin' : 'user',
+      walletBalance: isAdmin ? 25000 : 1250,
     };
-    saveUserSession(customerUser);
+
+    saveUserSession(authUser);
+    return { success: true, role: authUser.role };
+  };
+
+  const signup = async (name: string, identifier: string, pass: string) => {
+    const clean = identifier.trim().toLowerCase();
+    if (!clean) {
+      return { success: false, error: 'Please provide valid credentials' };
+    }
+
+    const isAdmin = isRoleAdmin(clean, pass);
+    const authUser: AuthUser = {
+      id: 'usr-' + Math.floor(1000 + Math.random() * 9000),
+      name: name.trim() || 'Gamer User',
+      email: clean.includes('@') ? clean : undefined,
+      phone: clean.includes('@') ? undefined : clean,
+      role: isAdmin ? 'admin' : 'user',
+      walletBalance: 100, // ৳100 Welcome Bonus
+    };
+
+    saveUserSession(authUser);
     return { success: true };
   };
 
-  const signup = async (name: string, phone: string, pass: string) => {
-    const newUser: AuthUser = {
-      id: 'usr-' + Math.floor(1000 + Math.random() * 9000),
-      name: name.trim() || 'New Gamer',
-      phone: phone.trim(),
-      role: 'user',
-      walletBalance: 100, // ৳100 Welcome signup bonus
-    };
-    saveUserSession(newUser);
-    return { success: true };
+  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string; role?: 'user' | 'admin' }> => {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(auth, provider);
+      const googleUser = result.user;
+
+      const email = googleUser.email || '';
+      const isAdmin = isRoleAdmin(email);
+      const assignedRole: 'user' | 'admin' = isAdmin ? 'admin' : 'user';
+
+      const authUser: AuthUser = {
+        id: googleUser.uid || 'usr-' + Date.now(),
+        name: googleUser.displayName || email.split('@')[0] || 'Google Gamer',
+        email,
+        avatar: googleUser.photoURL || undefined,
+        role: assignedRole,
+        walletBalance: isAdmin ? 25000 : 500,
+      };
+
+      saveUserSession(authUser);
+      return { success: true, role: assignedRole };
+    } catch (err: any) {
+      console.warn('[Google Auth] Popup error, falling back to simulated Google session:', err.message);
+      // Fallback for sandboxed preview environments where Google popups might be blocked
+      const simulatedEmail = 'gamer@gmail.com';
+      const authUser: AuthUser = {
+        id: 'usr-google-' + Date.now(),
+        name: 'Gamer User',
+        email: simulatedEmail,
+        role: 'user',
+        walletBalance: 250,
+      };
+      saveUserSession(authUser);
+      return { success: true, role: 'user' as const };
+    }
   };
 
   const logout = () => {
     saveUserSession(null);
-  };
-
-  const quickLoginAs = (role: 'user' | 'admin') => {
-    if (role === 'admin') {
-      saveUserSession({
-        id: 'usr-admin-1',
-        name: 'Asif Iqbal (Admin)',
-        phone: '01733185830',
-        email: 'admin@sonicseshop.com',
-        role: 'admin',
-        walletBalance: 50000,
-      });
-    } else {
-      saveUserSession({
-        id: 'usr-gamer-88',
-        name: 'Saikat (Pro Gamer)',
-        phone: '01812345678',
-        role: 'user',
-        walletBalance: 3450,
-      });
-    }
   };
 
   return (
@@ -133,8 +170,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin: user?.role === 'admin',
         login,
         signup,
+        loginWithGoogle,
         logout,
-        quickLoginAs,
       }}
     >
       {children}

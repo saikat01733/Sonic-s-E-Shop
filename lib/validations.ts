@@ -40,11 +40,24 @@ export const OrderSubmissionSchema = z.object({
   customData: z.record(z.string(), z.any()).optional().default({}),
 });
 
+export const HeroSlideSchema = z.object({
+  id: z.string(),
+  gameId: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  subtitle: z.string(),
+  badge: z.string(),
+  deliveryTime: z.string(),
+  image: z.string(),
+  color: z.string().optional(),
+});
+
 /**
  * Schema for Site Settings CMS updates
  */
 export const SiteSettingsSchema = z.object({
   siteName: z.string().min(1).max(100),
+  logo: z.string().max(500).optional(),
   heroTitle: z.string().min(1).max(150),
   heroSubtitle: z.string().min(1).max(250),
   heroBanner: z.string().min(1).max(500),
@@ -53,6 +66,9 @@ export const SiteSettingsSchema = z.object({
   nagadNumber: z.string().min(5).max(30),
   supportPhone: z.string().min(5).max(30),
   whatsappUrl: z.string().min(5).max(250),
+  facebookUrl: z.string().max(250).optional(),
+  slides: z.array(HeroSlideSchema).optional(),
+  whyChooseUs: z.any().optional(),
 });
 
 /**
@@ -61,7 +77,8 @@ export const SiteSettingsSchema = z.object({
 export const TrustBadgeSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1).max(100),
-  desc: z.string().min(1).max(200),
+  sub: z.string().min(1).max(200).optional(),
+  desc: z.string().min(1).max(200).optional(),
   icon: z.string().min(1).max(50),
 });
 

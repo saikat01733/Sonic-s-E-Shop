@@ -79,9 +79,15 @@ export async function getStoreData(): Promise<StoreData> {
       const auditLogs = await db.collection<AuditLogItem>('auditLogs').find({}).sort({ timestamp: -1 }).limit(100).toArray();
 
       if (settingsDoc && games.length > 0) {
+        const local = readFileStore();
+        const mergedSettings: SiteSettings = {
+          ...local.settings,
+          ...settingsDoc.settings,
+          slides: settingsDoc.settings?.slides?.length ? settingsDoc.settings.slides : local.settings.slides,
+        };
         return {
-          settings: settingsDoc.settings,
-          trustBadges: settingsDoc.trustBadges || [],
+          settings: mergedSettings,
+          trustBadges: settingsDoc.trustBadges?.length ? settingsDoc.trustBadges : local.trustBadges || [],
           games,
           coupons,
           orders,

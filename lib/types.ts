@@ -64,6 +64,31 @@ export interface TrustBadge {
   icon: string;
 }
 
+export interface HeroSlide {
+  id: string;
+  gameId: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  badge: string;
+  deliveryTime: string;
+  image: string;
+  color?: string;
+}
+
+export interface BenefitItem {
+  id?: string;
+  icon: string;
+  title: string;
+  desc: string;
+}
+
+export interface WhyChooseUsSection {
+  title: string;
+  subtitle: string;
+  benefits: BenefitItem[];
+}
+
 export interface SiteSettings {
   siteName: string;
   logo: string;
@@ -77,6 +102,8 @@ export interface SiteSettings {
   bkashNumber: string;
   nagadNumber: string;
   adminPin: string;
+  slides?: HeroSlide[];
+  whyChooseUs?: WhyChooseUsSection;
 }
 
 export interface OrderItem {

@@ -11,7 +11,42 @@
     "facebookUrl": "https://facebook.com",
     "bkashNumber": "01733185830",
     "nagadNumber": "01733185830",
-    "adminPin": "sonic2026"
+    "adminPin": "sonic2026",
+    "slides": [
+      {
+        "id": "slide-efootball",
+        "gameId": "efootball",
+        "slug": "efootball-coin",
+        "title": "eFootball™ 2026 Coins",
+        "subtitle": "Official Konami In-Game Coins with exclusive bonus packs & 100% guarantee.",
+        "badge": "HOT TOP-UP",
+        "deliveryTime": "1-10 MINS",
+        "image": "/assets/efootball.jpg",
+        "color": "#0284c7"
+      },
+      {
+        "id": "slide-pubg",
+        "gameId": "pubg",
+        "slug": "pubg-mobile-uc",
+        "title": "PUBG Mobile Unknown Cash",
+        "subtitle": "Instant direct Player ID (UID) delivery with Royal Pass & Lucky Spin UC packs.",
+        "badge": "INSTANT DELIVERY",
+        "deliveryTime": "1-5 MINS",
+        "image": "/assets/pubg.jpg",
+        "color": "#0284c7"
+      },
+      {
+        "id": "slide-roblox",
+        "gameId": "roblox",
+        "slug": "roblox-robux",
+        "title": "Roblox Robux VIP Top-Up",
+        "subtitle": "Safe in-game Robux delivery via username with zero account risk or password required.",
+        "badge": "100% SAFE",
+        "deliveryTime": "5-15 MINS",
+        "image": "/assets/roblox.jpg",
+        "color": "#06b6d4"
+      }
+    ]
   },
   "trustBadges": [
     {
@@ -262,7 +297,7 @@
         {
           "id": "pubg-60",
           "name": "60 UC",
-          "price": 95,
+          "price": 220,
           "stock": true,
           "icon": "💵"
         },
@@ -456,6 +491,26 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1795527829806-427",
+      "action": "UPDATED",
+      "entity": "Package: 60 UC (PUBG Mobile UC)",
+      "details": "Updated package price or stock status: ৳220 (In Stock)",
+      "author": "Admin",
+      "timestamp": 1795527829806,
+      "dateStr": "২৪ নভেম্বর, ২০২৬ এ ০৭:৪৩ PM",
+      "_id": "6b0594954a4fb560a603b170"
+    },
+    {
+      "id": "log-1795527829693-506",
+      "action": "UPDATED",
+      "entity": "Game: PUBG Mobile UC",
+      "details": "Updated game configuration and packages",
+      "author": "Admin",
+      "timestamp": 1795527829693,
+      "dateStr": "২৪ নভেম্বর, ২০২৬ এ ০৭:৪৩ PM",
+      "_id": "6b0594954a4fb560a603b16f"
+    },
     {
       "id": "log-1795522569337-88",
       "action": "CREATED",
