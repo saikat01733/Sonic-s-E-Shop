@@ -49,7 +49,7 @@ export default function Footer({ settings }: FooterProps) {
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">{t('popularTopups')}</h4>
             <ul className="space-y-1.5 text-xs">
               <li><Link href="/games/efootball-coin" className="hover:text-red-400 transition-colors">eFootball™ Coins Top-Up</Link></li>
-              <li><Link href="/games/pubg-mobile-uc" className="hover:text-amber-400 transition-colors">PUBG Mobile UC Top-Up</Link></li>
+              <li><Link href="/games/pubg-mobile-uc" className="hover:text-cyan-400 transition-colors">PUBG Mobile UC Top-Up</Link></li>
               <li><Link href="/games/roblox-robux" className="hover:text-cyan-400 transition-colors">Roblox Robux Top-Up</Link></li>
               <li><Link href="/account" className="hover:text-white transition-colors">{t('navAccount')}</Link></li>
             </ul>

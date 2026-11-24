@@ -43,7 +43,7 @@ export function GameCard({ game }: GameCardProps) {
 
           {/* Speed Badge Top Right */}
           <div className="absolute top-3 right-3">
-            <Badge variant="speed" icon={<Zap className="w-3 h-3 text-amber-400" />}>
+            <Badge variant="speed" icon={<Zap className="w-3 h-3 text-cyan-400" />}>
               {game.delivery_time}
             </Badge>
           </div>
@@ -55,7 +55,7 @@ export function GameCard({ game }: GameCardProps) {
             <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest block">
               {game.category_name}
             </span>
-            <h3 className="text-base font-black text-white group-hover:text-red-400 transition-colors mt-0.5">
+            <h3 className="text-base font-black text-white group-hover:text-cyan-300 transition-colors mt-0.5">
               {locale === 'bn' && game.name_bn ? game.name_bn : game.name}
             </h3>
             <p className="text-xs text-gray-300 line-clamp-2 mt-1 leading-relaxed">
@@ -70,7 +70,7 @@ export function GameCard({ game }: GameCardProps) {
             <span>{game.packages.length} {t('packagesAvailable')}</span>
           </div>
 
-          <div className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 group-hover:from-red-500 group-hover:to-amber-500 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/30 transition-all">
+          <div className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-600/30 transition-all">
             <span>{t('topUpBtn')}</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>

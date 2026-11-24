@@ -193,7 +193,7 @@ export default function GameDetailPage({ params }: { params: Promise<{ slug: str
                   >
                     {game.badge}
                   </span>
-                  <Badge variant="speed" icon={<Zap className="w-3 h-3 text-amber-400" />}>
+                  <Badge variant="speed" icon={<Zap className="w-3 h-3 text-cyan-400" />}>
                     {game.delivery_time}
                   </Badge>
                 </div>

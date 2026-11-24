@@ -20,8 +20,8 @@ export default function BottomDock() {
   ];
 
   return (
-    <nav className="fixed bottom-3 inset-x-0 mx-auto z-40 max-w-lg px-3 pointer-events-none">
-      <div className="liquid-glass-dock pointer-events-auto py-1.5 px-2 sm:px-4 flex items-center justify-around gap-1 shadow-2xl border-cyan-500/25">
+    <nav className="fixed bottom-2.5 inset-x-0 mx-auto z-40 max-w-lg px-2 sm:px-3 pointer-events-none">
+      <div className="liquid-glass-dock pointer-events-auto py-1 sm:py-1.5 px-1.5 sm:px-4 flex items-center justify-around gap-0.5 sm:gap-1 shadow-2xl border-cyan-500/25">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -30,18 +30,18 @@ export default function BottomDock() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 sm:px-3 rounded-full transition-all duration-300 relative group cursor-pointer ${
+              className={`flex flex-col items-center justify-center py-1 px-1.5 xs:px-2 sm:px-3 rounded-full transition-all duration-300 relative group cursor-pointer ${
                 isActive
                   ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-600/35 scale-105 border border-cyan-400/40'
                   : 'text-gray-300 hover:text-white hover:bg-white/10 active:scale-95'
               }`}
             >
-              <Icon className={`w-4 h-4 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-              <span className="text-[9px] sm:text-[10px] font-bold tracking-tight mt-0.5 truncate max-w-[55px] sm:max-w-none">
+              <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+              <span className="text-[8px] xs:text-[9px] sm:text-[10px] font-bold tracking-tight mt-0.5 truncate max-w-[45px] sm:max-w-none">
                 {item.label}
               </span>
               {isActive && (
-                <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-sm shadow-cyan-300" />
+                <span className="absolute -bottom-0.5 w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-sm shadow-cyan-300" />
               )}
             </Link>
           );

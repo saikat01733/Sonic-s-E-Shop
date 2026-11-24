@@ -38,7 +38,7 @@ export function OrderCard({ order, onViewInvoice }: OrderCardProps) {
         );
       default:
         return (
-          <span className="flex items-center gap-1 text-[11px] font-bold text-amber-300 bg-amber-500/25 px-2.5 py-0.5 rounded-full border border-amber-500/40">
+          <span className="flex items-center gap-1 text-[11px] font-bold text-cyan-300 bg-cyan-500/20 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
             <Clock className="w-3 h-3" /> {t('orderStatusPending')}
           </span>
         );

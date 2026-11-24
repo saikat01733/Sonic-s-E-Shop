@@ -29,8 +29,8 @@ export function KpiGrid({
 
       <Card variant="glass" className="p-5 border-white/20">
         <div className="text-xs text-gray-300 font-semibold">Pending Orders</div>
-        <div className="text-2xl font-black text-amber-300 mt-1">{pendingOrdersCount}</div>
-        <div className="text-[10px] text-amber-400 mt-0.5">Awaiting Processing</div>
+        <div className="text-2xl font-black text-cyan-300 mt-1">{pendingOrdersCount}</div>
+        <div className="text-[10px] text-cyan-400 mt-0.5">Awaiting Processing</div>
       </Card>
 
       <Card variant="glass" className="p-5 border-white/20">

@@ -24,7 +24,7 @@ export const translations = {
     searchPlaceholder: "Search games or packages...",
     popularGames: "Popular Games",
     noResults: "No results found!",
-    topUpBtn: "Top-Up →",
+    topUpBtn: "Top-Up",
 
     // Hero Showcase
     browseGames: "Browse Games",
@@ -159,7 +159,7 @@ export const translations = {
     searchPlaceholder: "গেম বা প্যাকেজ খুঁজুন...",
     popularGames: "জনপ্রিয় গেমসমূহ",
     noResults: "কোনো ফলাফল পাওয়া যায়নি!",
-    topUpBtn: "টপ-আপ →",
+    topUpBtn: "টপ-আপ",
 
     // Hero Showcase
     browseGames: "গেম ব্রাউজ করুন",

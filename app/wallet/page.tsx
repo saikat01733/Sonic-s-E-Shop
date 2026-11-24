@@ -95,7 +95,7 @@ export default function WalletPage() {
         <Card variant="glass" className="p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 border-white/25">
           <div className="space-y-1 text-center sm:text-left">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('currentBalance')}</span>
-            <div className="text-4xl sm:text-5xl font-black text-white font-mono bg-gradient-to-r from-white via-amber-200 to-emerald-400 bg-clip-text text-transparent">
+            <div className="text-4xl sm:text-5xl font-black text-white font-mono bg-gradient-to-r from-white via-cyan-200 to-blue-400 bg-clip-text text-transparent">
               {formatCurrency(walletBalance)}
             </div>
             <p className="text-[11px] text-emerald-300 flex items-center justify-center sm:justify-start gap-1 font-bold pt-1">
@@ -123,7 +123,7 @@ export default function WalletPage() {
             <p className="text-xs text-gray-300">Skip manual bKash/Nagad send-money steps every time.</p>
           </Card>
           <Card variant="glass" className="p-5 space-y-2 border-white/20">
-            <div className="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
               🎁
             </div>
             <h4 className="text-sm font-bold text-white">{t('cashbackPerk')}</h4>
@@ -166,7 +166,7 @@ export default function WalletPage() {
               onClick={() => setPaymentMethod('Nagad')}
               className={`py-2 px-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
                 paymentMethod === 'Nagad'
-                  ? 'bg-amber-600/80 text-white border-amber-400 shadow-lg'
+                  ? 'bg-blue-600/80 text-white border-cyan-400 shadow-lg'
                   : 'bg-white/[0.06] border-white/15 text-gray-300'
               }`}
             >

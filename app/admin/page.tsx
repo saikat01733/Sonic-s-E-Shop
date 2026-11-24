@@ -388,7 +388,7 @@ export default function AdminPage() {
 
             <Card variant="glass" className="p-5 space-y-3">
               <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-                <Flame className="w-4 h-4 text-amber-400" />
+                <Flame className="w-4 h-4 text-cyan-400" />
                 হেডার নোটিশ টিকার টেক্সট (Marquee Text)
               </h3>
               <textarea
@@ -889,7 +889,7 @@ export default function AdminPage() {
                             order.status === 'Completed'
                               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                               : order.status === 'Pending'
-                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                              ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
                               : 'bg-white/10 text-white'
                           }`}
                         >
@@ -969,7 +969,7 @@ export default function AdminPage() {
                               : log.action === 'DELETED'
                               ? 'bg-red-500/20 text-red-400'
                               : log.action === 'STATUS_CHANGE'
-                              ? 'bg-amber-500/20 text-amber-400'
+                              ? 'bg-cyan-500/20 text-cyan-400'
                               : 'bg-cyan-500/20 text-cyan-400'
                           }`}
                         >

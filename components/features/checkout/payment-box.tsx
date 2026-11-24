@@ -67,7 +67,7 @@ export function PaymentBox({
           onClick={() => setMethod('Nagad')}
           className={`p-3 rounded-2xl border font-bold text-xs flex items-center justify-center transition-all cursor-pointer backdrop-blur-xl ${
             method === 'Nagad'
-              ? 'bg-amber-600/80 text-white border-amber-400 shadow-xl shadow-amber-600/35 ring-2 ring-amber-500/40'
+              ? 'bg-blue-600/80 text-white border-cyan-400 shadow-xl shadow-cyan-600/35 ring-2 ring-cyan-500/40'
               : 'bg-white/[0.06] border-white/15 text-gray-300 hover:bg-white/[0.12]'
           }`}
         >

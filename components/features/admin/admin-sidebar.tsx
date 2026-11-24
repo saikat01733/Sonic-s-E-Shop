@@ -57,7 +57,7 @@ export function AdminSidebar({
       <div>
         <div className="p-3 border-b border-white/15 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-2xl bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-red-500/40">
+            <div className="w-8 h-8 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-cyan-500/30">
               ⚡
             </div>
             <div>
@@ -98,7 +98,7 @@ export function AdminSidebar({
                   <span>{item.label}</span>
                 </div>
                 {item.badge ? (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-black font-extrabold text-[10px] shadow-sm">
+                  <span className="px-2 py-0.5 rounded-full bg-cyan-400 text-black font-extrabold text-[10px] shadow-sm">
                     {item.badge}
                   </span>
                 ) : null}

@@ -44,7 +44,7 @@ export function PackageSelector({ packages, selectedPackages, onTogglePackage }:
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder={t('searchPlaceholder')}
-            className="w-full pl-8 pr-3 py-1.5 rounded-2xl bg-white/[0.08] border border-white/20 text-xs text-white focus:outline-none focus:border-red-500/70 backdrop-blur-xl"
+            className="w-full pl-8 pr-3 py-1.5 rounded-2xl bg-white/[0.08] border border-white/20 text-xs text-white focus:outline-none focus:border-cyan-400/70 backdrop-blur-xl"
           />
         </div>
       </div>
@@ -60,7 +60,7 @@ export function PackageSelector({ packages, selectedPackages, onTogglePackage }:
               onClick={() => onTogglePackage(pkg)}
               className={`p-3.5 rounded-2xl border text-left transition-all duration-300 relative group cursor-pointer backdrop-blur-2xl ${
                 isSelected
-                  ? 'bg-gradient-to-br from-red-600/30 to-amber-600/20 border-red-500/80 shadow-[0_0_20px_rgba(255,42,75,0.35)] ring-2 ring-red-500/50 scale-102'
+                  ? 'bg-gradient-to-br from-blue-600/30 to-cyan-600/20 border-cyan-400/80 shadow-[0_0_20px_rgba(6,182,212,0.35)] ring-2 ring-cyan-500/50 scale-102'
                   : 'bg-white/[0.06] border-white/15 hover:border-white/35 hover:bg-white/[0.12]'
               } ${!pkg.stock ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
@@ -75,7 +75,7 @@ export function PackageSelector({ packages, selectedPackages, onTogglePackage }:
                 </span>
               </div>
 
-              <div className="text-xs font-bold text-white group-hover:text-red-400 transition-colors">
+              <div className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">
                 {pkg.name}
               </div>
 

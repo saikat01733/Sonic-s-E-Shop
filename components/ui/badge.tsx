@@ -9,12 +9,12 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 export function Badge({ className, variant = 'info', color, icon, children, ...props }: BadgeProps) {
   const variantStyles = {
-    hot: 'bg-red-500/90 text-white border border-red-400/40 shadow-lg shadow-red-500/35',
-    speed: 'bg-black/60 text-amber-300 border border-white/20 backdrop-blur-xl shadow-md',
-    success: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 backdrop-blur-md',
-    warning: 'bg-amber-500/20 text-amber-300 border border-amber-500/40 backdrop-blur-md',
-    danger: 'bg-red-500/20 text-red-300 border border-red-500/40 backdrop-blur-md',
-    info: 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 backdrop-blur-md',
+    hot: 'bg-red-500/80 text-white border border-red-400/40 shadow-md shadow-red-500/25',
+    speed: 'bg-black/60 text-cyan-300 border border-cyan-400/30 backdrop-blur-xl shadow-md',
+    success: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur-md',
+    warning: 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 backdrop-blur-md',
+    danger: 'bg-red-500/20 text-red-300 border border-red-500/30 backdrop-blur-md',
+    info: 'bg-blue-500/20 text-blue-300 border border-blue-500/30 backdrop-blur-md',
     custom: '',
   };
 
@@ -25,7 +25,7 @@ export function Badge({ className, variant = 'info', color, icon, children, ...p
         variantStyles[variant],
         className
       )}
-      style={color ? { backgroundColor: `${color}30`, color, borderColor: `${color}60` } : undefined}
+      style={color ? { backgroundColor: `${color}25`, color, borderColor: `${color}50` } : undefined}
       {...props}
     >
       {icon}

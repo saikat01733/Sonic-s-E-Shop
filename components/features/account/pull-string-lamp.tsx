@@ -26,10 +26,10 @@ export function PullStringLamp() {
         <div className="w-0.5 h-10 bg-gradient-to-b from-gray-500 to-gray-400" />
         <div
           className={`w-20 h-10 rounded-t-full transition-all duration-300 relative ${
-            isLampOn ? 'bg-amber-400 shadow-[0_0_50px_rgba(251,191,36,0.6)]' : 'bg-zinc-700'
+            isLampOn ? 'bg-cyan-400 shadow-[0_0_50px_rgba(6,182,212,0.6)]' : 'bg-zinc-700'
           }`}
         >
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-4 rounded-b-full bg-amber-200/90" />
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-4 rounded-b-full bg-cyan-200/90" />
         </div>
 
         <div
@@ -39,9 +39,9 @@ export function PullStringLamp() {
           }`}
           title="দড়ি টেনে বাতি জ্বালান"
         >
-          <div className="w-0.5 h-12 bg-amber-200/60 group-hover:bg-amber-400 transition-colors" />
-          <div className="w-3.5 h-3.5 rounded-full bg-amber-400 shadow-md group-hover:scale-125 transition-transform" />
-          <span className="text-[10px] text-gray-400 mt-1 font-semibold group-hover:text-amber-300">
+          <div className="w-0.5 h-12 bg-cyan-200/60 group-hover:bg-cyan-400 transition-colors" />
+          <div className="w-3.5 h-3.5 rounded-full bg-cyan-400 shadow-md group-hover:scale-125 transition-transform" />
+          <span className="text-[10px] text-gray-400 mt-1 font-semibold group-hover:text-cyan-300">
             দড়ি টানুন 💡
           </span>
         </div>
@@ -51,7 +51,7 @@ export function PullStringLamp() {
       <Card
         variant="glass"
         className={`p-6 border transition-all duration-500 ${
-          isLampOn ? 'border-amber-400/40 shadow-2xl shadow-amber-500/10' : 'border-white/10'
+          isLampOn ? 'border-cyan-400/40 shadow-2xl shadow-cyan-500/10' : 'border-white/10'
         }`}
       >
         <div className="text-center mb-5">

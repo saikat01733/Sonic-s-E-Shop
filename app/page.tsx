@@ -37,7 +37,7 @@ export default function HomeShowcasePage() {
       case 'shield':
         return <ShieldCheck className="w-5 h-5 text-emerald-400" />;
       case 'zap':
-        return <Zap className="w-5 h-5 text-amber-400" />;
+        return <Zap className="w-5 h-5 text-cyan-400" />;
       case 'headset':
         return <Headphones className="w-5 h-5 text-cyan-400" />;
       case 'users':
@@ -66,10 +66,10 @@ export default function HomeShowcasePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-1">
           <div className="live-notice-capsule rounded-full py-1.5 px-3 sm:px-4 flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-1.5 font-extrabold text-[11px] sm:text-xs bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 px-2.5 py-0.5 rounded-full flex-shrink-0 uppercase shadow-sm">
-              <Zap className="w-3.5 h-3.5 text-yellow-300 animate-pulse" />
+              <Zap className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
               <span>{t('liveNotice')}:</span>
             </div>
-            <div className="overflow-hidden relative w-full text-xs font-bold text-white tracking-wide">
+            <div className="overflow-hidden relative w-full text-xs font-bold text-white tracking-wide min-w-0">
               <div className="animate-marquee">
                 <span className="mr-12">{settings.tickerText}</span>
                 <span className="mr-12">{settings.tickerText}</span>
@@ -121,7 +121,7 @@ export default function HomeShowcasePage() {
             <div className="flex items-center justify-between border-b border-white/15 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="p-1 rounded-lg bg-amber-500/20 text-amber-400">
+                  <span className="p-1 rounded-lg bg-cyan-500/20 text-cyan-400">
                     <Tag className="w-4 h-4" />
                   </span>
                   <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">
@@ -134,9 +134,10 @@ export default function HomeShowcasePage() {
               </div>
               <Link
                 href="/coupons"
-                className="text-xs font-extrabold text-amber-400 hover:text-amber-300 flex items-center gap-1 group transition-colors"
+                className="text-xs font-extrabold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 group transition-colors"
               >
-                <span>{t('viewOffers')} →</span>
+                <span>{t('viewOffers')}</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
 

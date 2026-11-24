@@ -66,14 +66,14 @@ export default function LoginPage() {
         {/* 1-Click Quick Demo Login Row */}
         <div className="p-3.5 rounded-2xl bg-white/[0.05] border border-cyan-500/30 space-y-2">
           <div className="text-[10px] font-extrabold uppercase tracking-widest text-cyan-300 flex items-center gap-1">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <Zap className="w-3.5 h-3.5 text-cyan-400" />
             <span>1-Click Test Accounts (Demo Access):</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => handleDemoLogin('admin')}
-              className="py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+              className="py-2 px-3 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-cyan-400/40 text-cyan-300 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Login as Admin</span>
