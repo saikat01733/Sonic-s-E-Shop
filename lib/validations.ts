@@ -50,7 +50,7 @@ export const HeroSlideSchema = z.object({
   deliveryTime: z.string(),
   image: z.string(),
   color: z.string().optional(),
-});
+}).passthrough();
 
 /**
  * Schema for Site Settings CMS updates
@@ -69,7 +69,7 @@ export const SiteSettingsSchema = z.object({
   facebookUrl: z.string().max(250).optional(),
   slides: z.array(HeroSlideSchema).optional(),
   whyChooseUs: z.any().optional(),
-});
+}).passthrough();
 
 /**
  * Schema for Trust Badge
@@ -80,7 +80,7 @@ export const TrustBadgeSchema = z.object({
   sub: z.string().min(1).max(200).optional(),
   desc: z.string().min(1).max(200).optional(),
   icon: z.string().min(1).max(50),
-});
+}).passthrough();
 
 /**
  * Schema for Game items
@@ -104,9 +104,9 @@ export const GameSchema = z.object({
       originalPrice: z.number().int().positive().optional(),
       inStock: z.boolean().default(true),
       badge: z.string().max(50).optional(),
-    })
+    }).passthrough()
   ).default([]),
-});
+}).passthrough();
 
 /**
  * Schema for Coupon items
@@ -114,14 +114,14 @@ export const GameSchema = z.object({
 export const CouponSchema = z.object({
   id: z.string().min(1),
   code: z.string().min(1).max(30),
-  discount: z.number().int().positive('Discount must be positive'),
-  minSpend: z.number().int().nonnegative().default(0),
+  discount: z.number().nonnegative('Discount must be positive'),
+  minSpend: z.number().nonnegative().default(0),
   description: z.string().max(250).optional().default(''),
   colorClass: z.string().max(50).optional().default('coupon-red'),
   active: z.boolean().default(true),
   isActive: z.boolean().optional(),
   expiryDate: z.string().max(50).optional(),
-});
+}).passthrough();
 
 /**
  * Schema for User profile and role updates
@@ -133,7 +133,7 @@ export const UserUpdateSchema = z.object({
   phone: z.string().max(30).optional(),
   role: z.enum(['user', 'admin']),
   walletBalance: z.number().nonnegative().optional(),
-});
+}).passthrough();
 
 /**
  * Schema for Order status updates

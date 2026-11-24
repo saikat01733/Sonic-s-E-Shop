@@ -194,9 +194,11 @@ export async function saveGame(game: GameItem, author: string = 'admin'): Promis
   const mongo = await getMongoClient();
   if (mongo) {
     try {
+      const docToSave = { ...game };
+      delete (docToSave as any)._id;
       await mongo.db().collection('games').updateOne(
         { id: game.id } as any,
-        { $set: game },
+        { $set: docToSave },
         { upsert: true }
       );
     } catch (e) {
@@ -247,10 +249,20 @@ export async function deleteGame(gameId: string, author: string = 'admin'): Prom
 
 // Save or Update Package
 export async function savePackage(gameId: string, pkg: PackageItem, author: string = 'admin'): Promise<PackageItem> {
-  const store = readFileStore();
-  const game = store.games.find(g => g.id === gameId);
+  const mongo = await getMongoClient();
+  let game: GameItem | null = null;
+  if (mongo) {
+    try {
+      game = await mongo.db().collection<GameItem>('games').findOne({ id: gameId } as any);
+    } catch (e) {}
+  }
+  if (!game) {
+    const store = readFileStore();
+    game = store.games.find(g => g.id === gameId) || null;
+  }
   if (!game) throw new Error('Game not found');
 
+  if (!game.packages) game.packages = [];
   const pIndex = game.packages.findIndex(p => p.id === pkg.id);
   const isNew = pIndex === -1;
   if (isNew) {
@@ -271,10 +283,20 @@ export async function savePackage(gameId: string, pkg: PackageItem, author: stri
 
 // Delete Package
 export async function deletePackage(gameId: string, pkgId: string, author: string = 'admin'): Promise<boolean> {
-  const store = readFileStore();
-  const game = store.games.find(g => g.id === gameId);
+  const mongo = await getMongoClient();
+  let game: GameItem | null = null;
+  if (mongo) {
+    try {
+      game = await mongo.db().collection<GameItem>('games').findOne({ id: gameId } as any);
+    } catch (e) {}
+  }
+  if (!game) {
+    const store = readFileStore();
+    game = store.games.find(g => g.id === gameId) || null;
+  }
   if (!game) throw new Error('Game not found');
 
+  if (!game.packages) game.packages = [];
   const pkg = game.packages.find(p => p.id === pkgId);
   const pkgName = pkg ? pkg.name : pkgId;
 
@@ -290,9 +312,11 @@ export async function saveCoupon(coupon: CouponItem, author: string = 'admin'): 
   const mongo = await getMongoClient();
   if (mongo) {
     try {
+      const docToSave = { ...coupon };
+      delete (docToSave as any)._id;
       await mongo.db().collection('coupons').updateOne(
         { id: coupon.id } as any,
-        { $set: coupon },
+        { $set: docToSave },
         { upsert: true }
       );
     } catch (e) {
@@ -443,24 +467,27 @@ export async function syncUser(user: Partial<UserProfile> & { id: string }): Pro
   if (mongo) {
     try {
       const collection = mongo.db().collection<UserProfile>('users');
-      const existingMongo = await collection.findOne({
-        $or: [
-          { id: user.id },
-          ...(user.email ? [{ email: user.email }] : []),
-          ...(user.phone ? [{ phone: user.phone }] : [])
-        ]
-      } as any);
+      const orClauses: any[] = [{ id: user.id }];
+      if (user.email) orClauses.push({ email: user.email });
+      if (user.phone) orClauses.push({ phone: user.phone });
+
+      const existingMongo = await collection.findOne({ $or: orClauses } as any);
 
       if (existingMongo) {
+        finalUser.id = existingMongo.id || finalUser.id;
         finalUser.role = existingMongo.role || finalUser.role;
         finalUser.walletBalance = typeof existingMongo.walletBalance === 'number' ? existingMongo.walletBalance : finalUser.walletBalance;
         finalUser.name = user.name || existingMongo.name || finalUser.name;
         finalUser.avatar = user.avatar || existingMongo.avatar || finalUser.avatar;
       }
 
+      const docToSave = { ...finalUser };
+      delete (docToSave as any)._id;
+
+      const filter = existingMongo ? { _id: existingMongo._id } : { id: finalUser.id };
       await collection.updateOne(
-        { id: finalUser.id } as any,
-        { $set: finalUser },
+        filter as any,
+        { $set: docToSave },
         { upsert: true }
       );
     } catch (e) {
@@ -468,7 +495,7 @@ export async function syncUser(user: Partial<UserProfile> & { id: string }): Pro
     }
   }
 
-  const localIdx = store.users.findIndex(u => u.id === finalUser.id);
+  const localIdx = store.users.findIndex(u => u.id === finalUser.id || (finalUser.email && u.email === finalUser.email));
   if (localIdx >= 0) {
     store.users[localIdx] = finalUser;
   } else {
@@ -499,9 +526,11 @@ export async function updateUser(
         if (found) user = { ...found, ...updates };
       }
       if (user) {
+        const docToSave = { ...updates };
+        delete (docToSave as any)._id;
         await collection.updateOne(
           { id: userId } as any,
-          { $set: updates },
+          { $set: docToSave },
           { upsert: true }
         );
       }

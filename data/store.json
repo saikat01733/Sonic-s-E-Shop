@@ -557,6 +557,30 @@
       "role": "admin",
       "walletBalance": 25000,
       "createdAt": 1795529405305
+    },
+    {
+      "id": "google_test_uid_999",
+      "name": "Test Google User",
+      "email": "testgoogle999@gmail.com",
+      "role": "user",
+      "walletBalance": 100,
+      "createdAt": 1795534226727
+    },
+    {
+      "id": "google_verified_gamer_uid_101",
+      "name": "Verified Google Gamer",
+      "email": "gamer101@gmail.com",
+      "role": "user",
+      "walletBalance": 500,
+      "createdAt": 1795536471593
+    },
+    {
+      "id": "usr-admin-1",
+      "name": "Sonic Admin",
+      "email": "saikat01733@gmail.com",
+      "role": "admin",
+      "walletBalance": 25000,
+      "createdAt": 1795536545194
     }
   ]
 }

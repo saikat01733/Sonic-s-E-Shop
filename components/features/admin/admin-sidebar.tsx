@@ -123,7 +123,7 @@ export function AdminSidebar({
           className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl bg-white/10 hover:bg-red-500/25 text-gray-300 hover:text-red-300 text-xs font-bold transition-all cursor-pointer border border-white/10"
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span>{t('logout')}</span>
+          <span>Sign Out</span>
         </button>
       </div>
     </aside>

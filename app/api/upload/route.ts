@@ -14,14 +14,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert file to base64 or forward multipart
-    let base64Image = '';
-    if (typeof imageFile === 'string') {
-      base64Image = imageFile.replace(/^data:image\/[a-z]+;base64,/, '');
-    } else if (imageFile instanceof Blob) {
-      const arrayBuffer = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      base64Image = buffer.toString('base64');
+    const imgbbFormData = new FormData();
+
+    if (imageFile instanceof Blob) {
+      const fileName = (imageFile as any).name || 'upload.png';
+      imgbbFormData.append('image', imageFile, fileName);
+    } else if (typeof imageFile === 'string') {
+      const base64Data = imageFile.replace(/^data:image\/[a-z]+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      const blob = new Blob([buffer], { type: 'image/png' });
+      imgbbFormData.append('image', blob, 'upload.png');
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid image format' },
@@ -29,13 +31,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Upload to ImgBB
-    const imgbbParams = new URLSearchParams();
-    imgbbParams.append('image', base64Image);
-
+    // Direct multipart upload to ImgBB API
     const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
       method: 'POST',
-      body: imgbbParams,
+      body: imgbbFormData,
     });
 
     const json = await imgbbResponse.json();

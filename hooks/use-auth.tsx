@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'firebase/auth';
 
 export interface AuthUser {
   id: string;
@@ -76,6 +76,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Failed to parse auth user', e);
     }
+
+    // Listen to Firebase Auth state for automatic Google user session restoration & MongoDB sync
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        const email = fbUser.email || '';
+        const isAdmin = isRoleAdmin(email);
+        const assignedRole: 'user' | 'admin' = isAdmin ? 'admin' : 'user';
+
+        const authUser: AuthUser = {
+          id: fbUser.uid,
+          name: fbUser.displayName || email.split('@')[0] || 'Google Gamer',
+          email,
+          avatar: fbUser.photoURL || undefined,
+          role: assignedRole,
+          walletBalance: isAdmin ? 25000 : 500,
+        };
+
+        try {
+          const res = await fetch('/api/auth/sync-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(authUser),
+          });
+          const data = await res.json();
+          if (data.success && data.user) {
+            saveUserSession({
+              ...authUser,
+              role: data.user.role || authUser.role,
+              walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : authUser.walletBalance,
+              name: data.user.name || authUser.name,
+            });
+          } else {
+            saveUserSession(authUser);
+          }
+        } catch {
+          saveUserSession(authUser);
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const saveUserSession = (newUser: AuthUser | null) => {
