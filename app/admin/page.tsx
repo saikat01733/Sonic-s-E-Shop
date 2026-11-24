@@ -33,7 +33,10 @@ import {
   Gamepad2,
   Package,
   Layers,
-  Palette
+  Palette,
+  Menu,
+  Download,
+  Key
 } from 'lucide-react';
 import { StoreData, GameItem, PackageItem, CouponItem, OrderItem, HeroSlide, TrustBadge, UserProfile } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
@@ -47,6 +50,14 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [saveMessage, setSaveMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string>('efootball');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [kpiDateRange, setKpiDateRange] = useState<'all' | 'today' | '7d' | '30d'>('all');
+
+  // Password Change State
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Edit / Modal States
   const [editingGame, setEditingGame] = useState<GameItem | null>(null);
@@ -87,6 +98,87 @@ export default function AdminPage() {
   const showNotice = (text: string, type: 'success' | 'error' = 'success') => {
     setSaveMessage({ text, type });
     setTimeout(() => setSaveMessage(null), 3500);
+  };
+
+  const exportOrdersCSV = () => {
+    if (!storeData) return;
+    const headers = ['Order ID', 'Game', 'Packages', 'Total (BDT)', 'Payment Method', 'Last Digits / TrxID', 'Status', 'Date', 'Customer Details'];
+    const rows = storeData.orders.map(o => [
+      o.id,
+      `"${(o.gameName || '').replace(/"/g, '""')}"`,
+      `"${o.packages.map(p => p.name).join('; ').replace(/"/g, '""')}"`,
+      o.totalAmount,
+      o.paymentMethod,
+      `"${o.senderLastDigits}"`,
+      o.status,
+      `"${o.date}"`,
+      `"${Object.entries(o.customData || {}).map(([k, v]) => `${k}:${v}`).join('; ').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `sonic_orders_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportAuditCSV = () => {
+    if (!storeData) return;
+    const headers = ['Action', 'Entity', 'Details', 'Author', 'Timestamp'];
+    const rows = (storeData.auditLogs || []).map(l => [
+      l.action,
+      `"${(l.entity || '').replace(/"/g, '""')}"`,
+      `"${(l.details || '').replace(/"/g, '""')}"`,
+      `"${l.author}"`,
+      `"${l.dateStr}"`
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `sonic_audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword) {
+      showNotice('Please fill in current and new password', 'error');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      showNotice('New passwords do not match', 'error');
+      return;
+    }
+    if (newPassword.length < 6) {
+      showNotice('New password must be at least 6 characters', 'error');
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showNotice('Password changed successfully!', 'success');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        showNotice(data.error || 'Failed to change password', 'error');
+      }
+    } catch (e: any) {
+      showNotice(e.message || 'Network error changing password', 'error');
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
@@ -326,15 +418,25 @@ export default function AdminPage() {
   };
 
   const handleUpdateOrderStatus = async (orderId: string, status: OrderItem['status']) => {
+    let refundToWallet = false;
+    if (status === 'Cancelled' || status === 'Failed' || status === 'Refunded') {
+      refundToWallet = window.confirm(`Refund order amount to customer's Gamer Wallet balance?`);
+    }
+
     try {
       const res = await fetch('/api/admin/orders', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, status, author: user?.name || 'Admin' })
+        body: JSON.stringify({
+          orderId,
+          status,
+          refundToWallet,
+          author: user?.name || 'Admin',
+        }),
       });
       const json = await res.json();
       if (json.success) {
-        showNotice(`Order ${orderId} status updated to '${status}'!`);
+        showNotice(`Order ${orderId} status updated to '${status}'${refundToWallet ? ' (Refunded to Wallet)' : ''}!`);
         fetchStoreData();
       } else {
         showNotice(json.error || 'Failed to update order status', 'error');
@@ -401,8 +503,22 @@ export default function AdminPage() {
     );
   }
 
+  const nowMs = Date.now();
+  const filteredOrdersByDate = storeData.orders.filter(o => {
+    if (kpiDateRange === 'today') {
+      return (nowMs - (o.timestamp || 0)) <= 24 * 60 * 60 * 1000;
+    }
+    if (kpiDateRange === '7d') {
+      return (nowMs - (o.timestamp || 0)) <= 7 * 24 * 60 * 60 * 1000;
+    }
+    if (kpiDateRange === '30d') {
+      return (nowMs - (o.timestamp || 0)) <= 30 * 24 * 60 * 60 * 1000;
+    }
+    return true;
+  });
+
   const pendingOrders = storeData.orders.filter(o => o.status === 'Pending');
-  const completedOrders = storeData.orders.filter(o => o.status === 'Completed');
+  const completedOrders = filteredOrdersByDate.filter(o => o.status === 'Completed' || o.status === 'Delivered');
   const totalRevenue = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
 
   return (
@@ -421,12 +537,35 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Mobile Top App Bar */}
+      <div className="md:hidden flex items-center justify-between p-3 rounded-2xl liquid-glass bg-white/[0.08] border border-white/15">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+            aria-label="Open Admin Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-extrabold text-sm text-white">Sonic CMS</span>
+          </div>
+        </div>
+        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-600/30 text-rose-300 font-black border border-rose-500/40">
+          {activeTab.replace('_', ' ')}
+        </span>
+      </div>
+
       {/* Admin Sidebar Navigation */}
       <AdminSidebar
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         pendingOrdersCount={pendingOrders.length}
         onLogout={logout}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
       />
 
       {/* Main Content Area */}
@@ -434,9 +573,29 @@ export default function AdminPage() {
         {/* OVERVIEW & KPIS TAB */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-black text-white [html.light-theme_&]:text-slate-900">Dashboard Overview</h2>
-              <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Live store metrics, revenue tracking, and quick management links</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-white [html.light-theme_&]:text-slate-900">Dashboard Overview</h2>
+                <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Live store metrics, revenue tracking, and quick management links</p>
+              </div>
+
+              {/* Date Range Filter */}
+              <div className="flex items-center gap-1 bg-white/5 [html.light-theme_&]:bg-black/5 p-1 rounded-2xl border border-white/10">
+                {(['all', 'today', '7d', '30d'] as const).map(range => (
+                  <button
+                    key={range}
+                    type="button"
+                    onClick={() => setKpiDateRange(range)}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      kpiDateRange === range
+                        ? 'bg-rose-600 text-white shadow-md'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    {range === 'all' ? 'All Time' : range === 'today' ? 'Today' : range === '7d' ? '7 Days' : '30 Days'}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <KpiGrid
@@ -1276,6 +1435,15 @@ export default function AdminPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={exportOrdersCSV}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Export Orders to CSV"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export CSV</span>
+                </button>
                 <input
                   type="text"
                   placeholder="Search by Order ID, phone or digits..."
@@ -1291,7 +1459,10 @@ export default function AdminPage() {
                   <option value="all" className="bg-black text-white">All Orders</option>
                   <option value="Pending" className="bg-black text-white">Pending ⏳</option>
                   <option value="Processing" className="bg-black text-white">Processing ⚙️</option>
+                  <option value="Delivered" className="bg-black text-white">Delivered 🚀</option>
                   <option value="Completed" className="bg-black text-white">Completed ✅</option>
+                  <option value="Failed" className="bg-black text-white">Failed ⚠️</option>
+                  <option value="Refunded" className="bg-black text-white">Refunded 💳</option>
                   <option value="Cancelled" className="bg-black text-white">Cancelled ❌</option>
                 </select>
               </div>
@@ -1326,16 +1497,21 @@ export default function AdminPage() {
                           value={order.status}
                           onChange={e => handleUpdateOrderStatus(order.id, e.target.value as any)}
                           className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer ${
-                            order.status === 'Completed'
+                            order.status === 'Completed' || order.status === 'Delivered'
                               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                               : order.status === 'Pending'
                               ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                              : order.status === 'Processing'
+                              ? 'bg-blue-500/20 text-cyan-400 border border-cyan-500/30'
                               : 'bg-white/10 text-white'
                           }`}
                         >
                           <option value="Pending" className="bg-black text-white">Pending ⏳</option>
                           <option value="Processing" className="bg-black text-white">Processing ⚙️</option>
+                          <option value="Delivered" className="bg-black text-white">Delivered 🚀</option>
                           <option value="Completed" className="bg-black text-white">Completed ✅</option>
+                          <option value="Failed" className="bg-black text-white">Failed ⚠️</option>
+                          <option value="Refunded" className="bg-black text-white">Refunded 💳</option>
                           <option value="Cancelled" className="bg-black text-white">Cancelled ❌</option>
                         </select>
                       </div>
@@ -1564,13 +1740,24 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Immutable record of administrative actions, edits, status updates, and deletions</p>
               </div>
 
-              <input
-                type="text"
-                placeholder="Search audit history..."
-                value={historySearch}
-                onChange={e => setHistorySearch(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5"
-              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={exportAuditCSV}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Export Audit Trail to CSV"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export CSV</span>
+                </button>
+                <input
+                  type="text"
+                  placeholder="Search audit history..."
+                  value={historySearch}
+                  onChange={e => setHistorySearch(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5"
+                />
+              </div>
             </div>
 
             <div className="space-y-2.5">
@@ -1616,13 +1803,61 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* SETTINGS TAB */}
+        {/* SETTINGS / ADMIN SECURITY TAB */}
         {activeTab === 'settings' && (
           <div className="space-y-6 max-w-lg">
             <div>
               <h2 className="text-xl font-black text-white [html.light-theme_&]:text-slate-900">Admin Security & Infrastructure</h2>
-              <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Role-based privileges, authentication session, and database connectivity</p>
+              <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Role-based privileges, authentication session, password management, and database connectivity</p>
             </div>
+
+            {/* Change Password Card */}
+            <Card variant="glass" className="p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <Key className="w-5 h-5 text-rose-400" />
+                <h3 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">
+                  Change Administrator Password
+                </h3>
+              </div>
+              <p className="text-xs text-gray-400">
+                Update your account master password. Minimum 6 characters required.
+              </p>
+              <form onSubmit={handleChangePassword} className="space-y-3 pt-1">
+                <Input
+                  label="Current Password *"
+                  type="password"
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  required
+                />
+                <Input
+                  label="New Password (min 6 characters) *"
+                  type="password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Enter new strong password"
+                  required
+                />
+                <Input
+                  label="Confirm New Password *"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  required
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  loading={passwordLoading}
+                  className="w-full mt-2"
+                >
+                  Update Admin Password
+                </Button>
+              </form>
+            </Card>
 
             <Card variant="glass" className="p-5 space-y-4">
               <div className="flex items-center gap-2">
@@ -1632,7 +1867,7 @@ export default function AdminPage() {
                 </h3>
               </div>
               <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 leading-relaxed">
-                Manual PIN prompt has been eliminated. Administrative privileges are authenticated securely via verified Google or Email credentials.
+                Manual PIN prompt has been eliminated. Administrative privileges are authenticated securely via verified session cookies and bcrypt-hashed credentials.
               </p>
               <div className="p-3 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/10 [html.light-theme_&]:border-black/10 flex items-center justify-between text-xs">
                 <span className="text-gray-400 [html.light-theme_&]:text-slate-600">Authenticated As:</span>
@@ -1654,7 +1889,7 @@ export default function AdminPage() {
               </div>
               <div className="flex items-center justify-between text-xs py-1">
                 <span>Authentication Provider:</span>
-                <span className="font-bold text-cyan-400">Firebase Auth & Google OAuth</span>
+                <span className="font-bold text-cyan-400">Universal Jose JWT (HttpOnly Cookie) & Firebase</span>
               </div>
             </Card>
           </div>

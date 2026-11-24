@@ -14,17 +14,22 @@ interface SiteDataState {
   refresh: () => Promise<void>;
 }
 
-export function useSiteData(): SiteDataState {
-  const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
-  const [trustBadges, setTrustBadges] = useState<TrustBadge[]>([]);
-  const [games, setGames] = useState<GameItem[]>([]);
-  const [coupons, setCoupons] = useState<CouponItem[]>([]);
-  const [loading, setLoading] = useState(true);
+export function useSiteData(initialData?: {
+  settings?: SiteSettings;
+  trustBadges?: TrustBadge[];
+  games?: GameItem[];
+  coupons?: CouponItem[];
+}): SiteDataState {
+  const [settings, setSettings] = useState<SiteSettings>(initialData?.settings || DEFAULT_SETTINGS);
+  const [trustBadges, setTrustBadges] = useState<TrustBadge[]>(initialData?.trustBadges || []);
+  const [games, setGames] = useState<GameItem[]>(initialData?.games || []);
+  const [coupons, setCoupons] = useState<CouponItem[]>(initialData?.coupons || []);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSiteData = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!initialData) setLoading(true);
       setError(null);
       const res = await fetch('/api/site-data');
       const json = await res.json();
@@ -41,7 +46,7 @@ export function useSiteData(): SiteDataState {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [initialData]);
 
   useEffect(() => {
     fetchSiteData();

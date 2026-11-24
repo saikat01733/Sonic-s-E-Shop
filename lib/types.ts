@@ -21,6 +21,7 @@ export interface PackageItem {
   id: string;
   name: string;
   price: number | null;
+  originalPrice?: number | null;
   stock: boolean;
   icon?: string;
   badge?: string;
@@ -44,6 +45,9 @@ export interface GameItem {
   rules: string[];
   custom_fields: CustomField[];
   packages: PackageItem[];
+  active?: boolean;
+  isArchived?: boolean;
+  sortOrder?: number;
 }
 
 export interface CouponItem {
@@ -54,6 +58,10 @@ export interface CouponItem {
   description: string;
   colorClass: string;
   active: boolean;
+  discountType?: 'fixed' | 'percent';
+  maxDiscount?: number;
+  maxUsage?: number;
+  usageCount?: number;
   expiryDate?: string;
 }
 
@@ -74,6 +82,7 @@ export interface HeroSlide {
   deliveryTime: string;
   image: string;
   color?: string;
+  active?: boolean;
 }
 
 export interface BenefitItem {
@@ -101,13 +110,16 @@ export interface SiteSettings {
   facebookUrl: string;
   bkashNumber: string;
   nagadNumber: string;
-  adminPin: string;
+  adminPin?: string;
   slides?: HeroSlide[];
   whyChooseUs?: WhyChooseUsSection;
 }
 
+export type OrderStatus = 'Pending' | 'Processing' | 'Completed' | 'Delivered' | 'Failed' | 'Refunded' | 'Cancelled';
+
 export interface OrderItem {
   id: string;
+  userId?: string;
   gameId: string;
   gameName: string;
   packages: { id: string; name: string; price: number }[];
@@ -115,10 +127,15 @@ export interface OrderItem {
   paymentMethod: string;
   senderLastDigits: string;
   customData: Record<string, string>;
-  status: 'Pending' | 'Processing' | 'Completed' | 'Cancelled';
+  status: OrderStatus;
   date: string;
   timestamp: number;
+  adminNotes?: string;
+  couponCode?: string;
+  discountAmount?: number;
 }
+
+export type UserRole = 'user' | 'staff' | 'admin' | 'super_admin';
 
 export interface UserProfile {
   id: string;
@@ -126,9 +143,35 @@ export interface UserProfile {
   phone?: string;
   email?: string;
   avatar?: string;
-  role: 'user' | 'admin';
+  role: UserRole;
+  password?: string;
   walletBalance: number;
+  status?: 'active' | 'suspended' | 'banned';
+  ordersCount?: number;
   createdAt?: string | number;
+  lastLogin?: number;
+  lastLoginAt?: string;
+}
+
+export interface WalletTransaction {
+  id: string;
+  userId: string;
+  type: 'deposit' | 'payment' | 'refund' | 'adjustment';
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  referenceId?: string;
+  note?: string;
+  timestamp: number;
+}
+
+export interface SessionItem {
+  id: string;
+  userId: string;
+  token: string;
+  expiresAt: number;
+  ip?: string;
+  userAgent?: string;
 }
 
 export interface AuditLogItem {

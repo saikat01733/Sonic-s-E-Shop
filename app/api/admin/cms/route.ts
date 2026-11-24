@@ -9,19 +9,23 @@ import {
   saveCoupon,
   deleteCoupon,
   getUsers,
-  updateUser
+  updateUser,
+  recordAuditLog,
 } from '@/lib/db';
 import {
   SiteSettingsSchema,
   GameSchema,
   CouponSchema,
   UserUpdateSchema,
-  sanitizeString
+  sanitizeString,
 } from '@/lib/validations';
-import { z } from 'zod';
+import { requireAdmin } from '@/lib/auth-guard';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const guard = await requireAdmin(req);
+    if (!guard.authorized) return guard.errorResponse!;
+
     const data = await getStoreData();
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
@@ -31,9 +35,14 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const guard = await requireAdmin(req);
+    if (!guard.authorized) return guard.errorResponse!;
+
+    const adminUser = guard.user!;
+    const author = adminUser.name || adminUser.email || 'Admin';
+
     const body = await req.json();
     const action = sanitizeString(body.action || '');
-    const author = sanitizeString(body.author || 'admin');
     const payload = body.payload;
 
     if (!action) {
@@ -126,7 +135,18 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
-        const updated = await updateUser(parsedUser.data.id, parsedUser.data, author);
+
+        // Only super_admin can promote or demote to/from admin or super_admin
+        if (parsedUser.data.role && parsedUser.data.role !== 'user') {
+          if (adminUser.role !== 'super_admin') {
+            return NextResponse.json(
+              { success: false, error: 'Only Super Administrators can assign staff or admin roles.' },
+              { status: 403 }
+            );
+          }
+        }
+
+        const updated = await updateUser(parsedUser.data.id, parsedUser.data as any, author);
         return NextResponse.json({ success: true, user: updated });
       }
 

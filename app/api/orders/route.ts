@@ -1,32 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getStoreData, createOrder } from '@/lib/db';
+import { getStoreData, createOrder, getMongoDb } from '@/lib/db';
 import { OrderItem } from '@/lib/types';
 import { OrderSubmissionSchema, sanitizeString } from '@/lib/validations';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const orderId = sanitizeString(searchParams.get('id') || '');
     const phone = sanitizeString(searchParams.get('phone') || '');
-    const data = await getStoreData();
+    const currentUser = await getCurrentUser(req);
 
+    const db = await getMongoDb();
+    if (!db) {
+      return NextResponse.json({ success: false, error: 'Database service unavailable' }, { status: 503 });
+    }
+
+    // 1. Specific Order Search
     if (orderId) {
-      const match = data.orders.find(o => o.id.toLowerCase() === orderId.toLowerCase());
+      const match = await db.collection<OrderItem>('orders').findOne({
+        id: { $regex: new RegExp(`^${orderId}$`, 'i') },
+      });
       if (!match) {
         return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 });
       }
       return NextResponse.json({ success: true, order: match });
     }
 
+    // 2. Guest Phone Number Tracking
     if (phone) {
-      const matches = data.orders.filter(o => 
-        o.customData?.whatsapp?.includes(phone) || o.senderLastDigits?.includes(phone)
-      );
+      const cleanPhone = phone.trim();
+      const matches = await db
+        .collection<OrderItem>('orders')
+        .find({
+          $or: [
+            { 'customData.whatsapp': { $regex: cleanPhone } },
+            { 'customData.phone': { $regex: cleanPhone } },
+            { senderLastDigits: { $regex: cleanPhone } },
+          ],
+        })
+        .sort({ timestamp: -1 })
+        .limit(50)
+        .toArray();
       return NextResponse.json({ success: true, orders: matches });
     }
 
-    // Return latest customer orders
-    return NextResponse.json({ success: true, orders: data.orders.slice(0, 30) });
+    // 3. Authenticated User Orders
+    if (currentUser) {
+      if (currentUser.role === 'admin' || currentUser.role === 'super_admin') {
+        const allOrders = await db.collection<OrderItem>('orders').find({}).sort({ timestamp: -1 }).limit(100).toArray();
+        return NextResponse.json({ success: true, orders: allOrders });
+      }
+
+      const userOrders = await db
+        .collection<OrderItem>('orders')
+        .find({
+          $or: [
+            { userId: currentUser.id },
+            ...(currentUser.email ? [{ 'customData.email': currentUser.email }] : []),
+            ...(currentUser.phone ? [{ 'customData.whatsapp': currentUser.phone }, { senderLastDigits: currentUser.phone }] : []),
+          ],
+        })
+        .sort({ timestamp: -1 })
+        .limit(50)
+        .toArray();
+      return NextResponse.json({ success: true, orders: userOrders });
+    }
+
+    // Default: recent orders for guest exploration
+    const recent = await db.collection<OrderItem>('orders').find({}).sort({ timestamp: -1 }).limit(20).toArray();
+    return NextResponse.json({ success: true, orders: recent });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -35,6 +78,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.json();
+    const currentUser = await getCurrentUser(req);
 
     // Strict Zod schema validation
     const parsed = OrderSubmissionSchema.safeParse(rawBody);
@@ -48,14 +92,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { gameId, gameName, packages, totalAmount, paymentMethod, senderLastDigits, customData } = parsed.data;
+    const { gameId, packageIds, packages, paymentMethod, senderLastDigits, customData, couponCode } = parsed.data;
 
-    // Extra sanitization against script attacks
+    // Resolve packageIds: either provided or extracted from packages array
+    const resolvedPackageIds = packageIds && packageIds.length > 0
+      ? packageIds
+      : (packages || []).map(p => p.id);
+
+    if (resolvedPackageIds.length === 0) {
+      return NextResponse.json({ success: false, error: 'At least one package must be selected' }, { status: 400 });
+    }
+
+    // If payment method is Wallet, ensure user is authenticated
+    if (paymentMethod === 'Wallet' && !currentUser) {
+      return NextResponse.json(
+        { success: false, error: 'Please sign in to complete payment using your Gamer Wallet.' },
+        { status: 401 }
+      );
+    }
+
+    // Extra sanitization
     const sanitizedGameId = sanitizeString(gameId);
-    const sanitizedGameName = sanitizeString(gameName);
-    const sanitizedDigits = sanitizeString(senderLastDigits);
+    const sanitizedDigits = sanitizeString(senderLastDigits || 'WALLET');
+    const sanitizedCoupon = couponCode ? sanitizeString(couponCode).toUpperCase() : undefined;
 
-    // Sanitize customData keys and string values
     const sanitizedCustomData: Record<string, any> = {};
     if (customData && typeof customData === 'object') {
       for (const [key, val] of Object.entries(customData)) {
@@ -63,32 +123,28 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const orderId = 'SONIC-' + Math.floor(100000 + Math.random() * 900000);
-    const orderDate = new Date().toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-    const newOrder: OrderItem = {
-      id: orderId,
+    // Call atomic createOrder with SERVER-SIDE price recalculation
+    const savedOrder = await createOrder({
       gameId: sanitizedGameId,
-      gameName: sanitizedGameName,
-      packages,
-      totalAmount,
+      packageIds: resolvedPackageIds,
       paymentMethod,
       senderLastDigits: sanitizedDigits,
       customData: sanitizedCustomData,
-      status: 'Pending',
-      date: orderDate,
-      timestamp: Date.now(),
-    };
+      couponCode: sanitizedCoupon,
+      userId: currentUser?.id,
+      userEmail: currentUser?.email,
+    });
 
-    const saved = await createOrder(newOrder);
-    return NextResponse.json({ success: true, order: saved });
+    return NextResponse.json({
+      success: true,
+      order: savedOrder,
+      message: `Order #${savedOrder.id} placed successfully! Delivery in 1-10 mins.`,
+    });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('[API] /api/orders POST error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Failed to place order' },
+      { status: 400 }
+    );
   }
 }

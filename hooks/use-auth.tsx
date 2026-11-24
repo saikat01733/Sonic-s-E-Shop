@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signOut as fbSignOut } from 'firebase/auth';
+import { UserRole } from '@/lib/types';
 
 export interface AuthUser {
   id: string;
@@ -10,267 +11,185 @@ export interface AuthUser {
   phone?: string;
   email?: string;
   avatar?: string;
-  role: 'user' | 'admin';
+  role: UserRole;
   walletBalance: number;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
+  loading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string; role?: 'user' | 'admin' }>;
+  isSuperAdmin: boolean;
+  refreshUser: () => Promise<void>;
+  login: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string; role?: UserRole }>;
   signup: (name: string, identifier: string, pass: string) => Promise<{ success: boolean; error?: string }>;
-  loginWithGoogle: () => Promise<{ success: boolean; error?: string; role?: 'user' | 'admin' }>;
-  logout: () => void;
+  loginWithGoogle: () => Promise<{ success: boolean; error?: string; role?: UserRole }>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  loading: true,
   isAuthenticated: false,
   isAdmin: false,
+  isSuperAdmin: false,
+  refreshUser: async () => {},
   login: async () => ({ success: false }),
   signup: async () => ({ success: false }),
   loginWithGoogle: async () => ({ success: false }),
-  logout: () => {},
+  logout: async () => {},
 });
-
-const ADMIN_IDENTIFIERS = [
-  'admin',
-  'admin@sonic.com',
-  'admin@sonicseshop.com',
-  '01733185830',
-  'saikatahmmad77@gmail.com',
-  'saikat01733@gmail.com',
-  'md.asifiqbal2008@gmail.com',
-];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // Synchronize user from server-side session cookie on mount
+  const refreshUser = async () => {
     try {
-      const saved = localStorage.getItem('sonic_auth_user');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setUser(parsed);
-        // Background sync to ensure role changes made by admin in DB are reflected
-        fetch('/api/auth/sync-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(parsed),
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success && data.user) {
-              const updated: AuthUser = {
-                ...parsed,
-                role: data.user.role || parsed.role,
-                walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : parsed.walletBalance,
-                name: data.user.name || parsed.name,
-              };
-              saveUserSession(updated);
-            }
-          })
-          .catch(() => {});
-      }
-    } catch (e) {
-      console.error('Failed to parse auth user', e);
-    }
-
-    // Listen to Firebase Auth state for automatic Google user session restoration & MongoDB sync
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser) {
-        const email = fbUser.email || '';
-        const isAdmin = isRoleAdmin(email);
-        const assignedRole: 'user' | 'admin' = isAdmin ? 'admin' : 'user';
-
-        const authUser: AuthUser = {
-          id: fbUser.uid,
-          name: fbUser.displayName || email.split('@')[0] || 'Google Gamer',
-          email,
-          avatar: fbUser.photoURL || undefined,
-          role: assignedRole,
-          walletBalance: isAdmin ? 25000 : 500,
-        };
-
-        try {
-          const res = await fetch('/api/auth/sync-user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(authUser),
+      const res = await fetch('/api/auth/me', { method: 'GET', credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          setUser({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            phone: data.user.phone,
+            avatar: data.user.avatar,
+            role: data.user.role || 'user',
+            walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : 0,
           });
-          const data = await res.json();
-          if (data.success && data.user) {
-            saveUserSession({
-              ...authUser,
-              role: data.user.role || authUser.role,
-              walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : authUser.walletBalance,
-              name: data.user.name || authUser.name,
-            });
-          } else {
-            saveUserSession(authUser);
-          }
-        } catch {
-          saveUserSession(authUser);
+          return;
         }
       }
-    });
+      setUser(null);
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return () => unsubscribe();
+  useEffect(() => {
+    refreshUser();
   }, []);
 
-  const saveUserSession = (newUser: AuthUser | null) => {
-    setUser(newUser);
-    if (newUser) {
-      localStorage.setItem('sonic_auth_user', JSON.stringify(newUser));
-      if (newUser.role === 'admin') {
-        localStorage.setItem('sonic_admin_token', 'sonic_admin_session_token_' + Date.now());
-      } else {
-        localStorage.removeItem('sonic_admin_token');
-      }
-    } else {
-      localStorage.removeItem('sonic_auth_user');
-      localStorage.removeItem('sonic_admin_token');
-    }
-  };
-
-  const isRoleAdmin = (identifier: string, pass?: string): boolean => {
-    const clean = identifier.trim().toLowerCase();
-    if (ADMIN_IDENTIFIERS.includes(clean)) return true;
-    if (pass === 'sonic2026') return true;
-    return false;
-  };
-
   const login = async (identifier: string, pass: string) => {
-    const clean = identifier.trim().toLowerCase();
-    if (!clean) {
-      return { success: false, error: 'Please enter your email or phone number' };
-    }
-
-    const isAdmin = isRoleAdmin(clean, pass);
-    let authUser: AuthUser = {
-      id: isAdmin ? 'usr-admin-1' : 'usr-' + Math.floor(1000 + Math.random() * 9000),
-      name: isAdmin ? 'Sonic Admin' : (clean.includes('@') ? clean.split('@')[0] : 'Gamer User'),
-      email: clean.includes('@') ? clean : undefined,
-      phone: clean.includes('@') ? '01733185830' : clean,
-      role: isAdmin ? 'admin' : 'user',
-      walletBalance: isAdmin ? 25000 : 1250,
-    };
-
     try {
-      const res = await fetch('/api/auth/sync-user', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authUser),
+        credentials: 'include',
+        body: JSON.stringify({ identifier, password: pass }),
       });
       const data = await res.json();
-      if (data.success && data.user) {
-        authUser = {
-          ...authUser,
-          role: data.user.role || authUser.role,
-          walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : authUser.walletBalance,
-          name: data.user.name || authUser.name,
-        };
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || 'Login failed. Please check credentials.' };
       }
-    } catch (e) {
-      console.warn('[Auth] syncUser error:', e);
-    }
 
-    saveUserSession(authUser);
-    return { success: true, role: authUser.role };
+      setUser({
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        phone: data.user.phone,
+        avatar: data.user.avatar,
+        role: data.user.role || 'user',
+        walletBalance: data.user.walletBalance || 0,
+      });
+
+      return { success: true, role: data.user.role };
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Network error during login' };
+    }
   };
 
   const signup = async (name: string, identifier: string, pass: string) => {
-    const clean = identifier.trim().toLowerCase();
-    if (!clean) {
-      return { success: false, error: 'Please provide valid credentials' };
-    }
-
-    const isAdmin = isRoleAdmin(clean, pass);
-    let authUser: AuthUser = {
-      id: 'usr-' + Math.floor(1000 + Math.random() * 9000),
-      name: name.trim() || 'Gamer User',
-      email: clean.includes('@') ? clean : undefined,
-      phone: clean.includes('@') ? undefined : clean,
-      role: isAdmin ? 'admin' : 'user',
-      walletBalance: 100, // ৳100 Welcome Bonus
-    };
-
     try {
-      const res = await fetch('/api/auth/sync-user', {
+      const clean = identifier.trim();
+      const isEmail = clean.includes('@');
+      const payload = {
+        name: name.trim(),
+        email: isEmail ? clean.toLowerCase() : `${clean.replace(/\D/g, '')}@sonicuser.local`,
+        phone: isEmail ? '01733185830' : clean,
+        password: pass,
+      };
+
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authUser),
+        credentials: 'include',
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (data.success && data.user) {
-        authUser = {
-          ...authUser,
-          role: data.user.role || authUser.role,
-          walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : authUser.walletBalance,
-          name: data.user.name || authUser.name,
-        };
-      }
-    } catch (e) {
-      console.warn('[Auth] syncUser signup error:', e);
-    }
 
-    saveUserSession(authUser);
-    return { success: true };
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || 'Registration failed' };
+      }
+
+      setUser({
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        phone: data.user.phone,
+        avatar: data.user.avatar,
+        role: data.user.role || 'user',
+        walletBalance: data.user.walletBalance || 100,
+      });
+
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Network error during registration' };
+    }
   };
 
-  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string; role?: 'user' | 'admin' }> => {
+  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string; role?: UserRole }> => {
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);
       const googleUser = result.user;
 
-      const email = googleUser.email || '';
-      const isAdmin = isRoleAdmin(email);
-      const assignedRole: 'user' | 'admin' = isAdmin ? 'admin' : 'user';
-
-      let authUser: AuthUser = {
-        id: googleUser.uid || 'usr-' + Date.now(),
-        name: googleUser.displayName || email.split('@')[0] || 'Google Gamer',
+      const email = (googleUser.email || '').toLowerCase().trim();
+      const authUserPayload = {
+        id: googleUser.uid,
+        name: googleUser.displayName || email.split('@')[0] || 'Gamer',
         email,
         avatar: googleUser.photoURL || undefined,
-        role: assignedRole,
-        walletBalance: isAdmin ? 25000 : 500,
       };
 
-      try {
-        const res = await fetch('/api/auth/sync-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(authUser),
-        });
-        const data = await res.json();
-        if (data.success && data.user) {
-          authUser = {
-            ...authUser,
-            role: data.user.role || authUser.role,
-            walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : authUser.walletBalance,
-            name: data.user.name || authUser.name,
-          };
-        }
-      } catch (e) {
-        console.warn('[Auth] syncUser Google error:', e);
+      const res = await fetch('/api/auth/sync-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(authUserPayload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || 'Failed to authenticate Google account' };
       }
 
-      saveUserSession(authUser);
-      return { success: true, role: authUser.role };
+      const syncedUser: AuthUser = {
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        phone: data.user.phone,
+        avatar: data.user.avatar,
+        role: data.user.role || 'user',
+        walletBalance: typeof data.user.walletBalance === 'number' ? data.user.walletBalance : 0,
+      };
+
+      setUser(syncedUser);
+      return { success: true, role: syncedUser.role };
     } catch (err: any) {
       console.error('[Google Auth Error]:', err);
       let message = 'Google sign-in failed. Please try again.';
       if (err.code === 'auth/popup-closed-by-user') {
         message = 'Google sign-in popup was closed.';
       } else if (err.code === 'auth/popup-blocked') {
-        message = 'Browser blocked the Google popup. Please allow popups for this site.';
-      } else if (err.code === 'auth/unauthorized-domain') {
-        message = 'This domain is not authorized in Firebase Console (Authentication > Settings > Authorized domains).';
-      } else if (err.code === 'auth/operation-not-allowed') {
-        message = 'Google provider is not enabled in Firebase Console (Authentication > Sign-in method).';
+        message = 'Browser blocked popup. Please allow popups for this site.';
       } else if (err.message) {
         message = err.message;
       }
@@ -278,16 +197,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
-    saveUserSession(null);
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      await fbSignOut(auth).catch(() => {});
+    } catch (e) {
+      console.warn('Logout network error:', e);
+    } finally {
+      setUser(null);
+    }
   };
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const isSuperAdmin = user?.role === 'super_admin';
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        loading,
         isAuthenticated: Boolean(user),
-        isAdmin: user?.role === 'admin',
+        isAdmin,
+        isSuperAdmin,
+        refreshUser,
         login,
         signup,
         loginWithGoogle,

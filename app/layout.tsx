@@ -4,16 +4,21 @@ import { LanguageProvider } from '@/hooks/use-language';
 import { AuthProvider } from '@/hooks/use-auth';
 import BottomDock from '@/components/common/BottomDock';
 
+const siteUrl = process.env.SITE_URL || 'https://sonic-s-E-shop.vercel.app';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sonicseshop.com'),
-  title: "Sonic's E-Shop - Bangladesh's #1 Game Top-Up Store",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Sonic's E-Shop - Bangladesh's #1 Game Top-Up Store",
+    template: "%s | Sonic's E-Shop",
+  },
   description: "Official Konami eFootball Coins, PUBG Mobile UC, and Roblox Robux instant top-up in Bangladesh via bKash & Nagad.",
   keywords: ["eFootball coins Bangladesh", "PUBG UC top up bd", "Roblox Robux bd", "bKash game top up", "Nagad game shop"],
   authors: [{ name: "md-asif-iqbal" }],
   openGraph: {
     title: "Sonic's E-Shop - Instant Game Top-Up in Bangladesh",
     description: "Instant delivery for eFootball, PUBG UC, and Roblox Robux with 100% account guarantee via bKash & Nagad.",
-    url: "https://sonicseshop.com",
+    url: siteUrl,
     siteName: "Sonic's E-Shop",
     locale: "en_US",
     type: "website",
@@ -33,8 +38,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

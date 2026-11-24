@@ -1,27 +1,41 @@
 import { MetadataRoute } from 'next';
+import { getStoreData } from '@/lib/db';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://sonicseshop.com';
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const siteUrl = process.env.SITE_URL || 'https://sonic-s-e-shop.vercel.app';
   const currentDate = new Date().toISOString();
 
-  const routes = [
+  let games: { slug: string }[] = [];
+  try {
+    const data = await getStoreData();
+    games = (data.games || []).filter(g => !g.isArchived && g.active !== false);
+  } catch (e) {
+    console.error('Error fetching games for sitemap:', e);
+  }
+
+  const staticRoutes = [
     '',
     '/games',
-    '/games/efootball-coin',
-    '/games/pubg-mobile-uc',
-    '/games/roblox-robux',
     '/coupons',
     '/orders',
     '/wallet',
-    '/account',
     '/login',
     '/signup',
   ];
 
-  return routes.map(route => ({
-    url: `${baseUrl}${route}`,
+  const staticEntries: MetadataRoute.Sitemap = staticRoutes.map(route => ({
+    url: `${siteUrl}${route}`,
     lastModified: currentDate,
     changeFrequency: route === '' ? 'daily' : 'weekly',
-    priority: route === '' ? 1.0 : route.startsWith('/games') ? 0.9 : 0.7,
+    priority: route === '' ? 1.0 : 0.8,
   }));
+
+  const gameEntries: MetadataRoute.Sitemap = games.map(game => ({
+    url: `${siteUrl}/games/${game.slug}`,
+    lastModified: currentDate,
+    changeFrequency: 'daily',
+    priority: 0.9,
+  }));
+
+  return [...staticEntries, ...gameEntries];
 }

@@ -1,137 +1,127 @@
-import fs from 'fs';
-import path from 'path';
-import { StoreData, SiteSettings, GameItem, PackageItem, CouponItem, OrderItem, AuditLogItem, UserProfile } from './types';
 import { getMongoClient } from './mongodb';
+import {
+  StoreData,
+  SiteSettings,
+  GameItem,
+  PackageItem,
+  CouponItem,
+  OrderItem,
+  AuditLogItem,
+  UserProfile,
+  WalletTransaction,
+  OrderStatus
+} from './types';
 
-const STORE_PATH = path.join(process.cwd(), 'data', 'store.json');
-
-// Read file store safely
-export function readFileStore(): StoreData {
-  try {
-    if (!fs.existsSync(STORE_PATH)) {
-      const defaultStore: StoreData = {
-        settings: {
-          siteName: "Sonic's E-Shop",
-          logo: "/logo.png",
-          tickerText: "⚡ ডেলিভারি সময় ১-১০ মিনিট • ১০০% নিরাপদ টপ-আপ গ্যারান্টি",
-          heroBanner: "/banner.webp",
-          heroTitle: "SONIC'S E-SHOP",
-          heroSubtitle: "Game Top-Up & Digital Goods BD",
-          supportPhone: "01733185830",
-          whatsappUrl: "https://wa.me/8801733185830",
-          facebookUrl: "https://facebook.com",
-          bkashNumber: "01733185830",
-          nagadNumber: "01733185830",
-          adminPin: "sonic2026"
-        },
-        trustBadges: [],
-        games: [],
-        coupons: [],
-        orders: [],
-        auditLogs: []
-      };
-      fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
-      fs.writeFileSync(STORE_PATH, JSON.stringify(defaultStore, null, 2), 'utf-8');
-      return defaultStore;
-    }
-    const raw = fs.readFileSync(STORE_PATH, 'utf-8');
-    return JSON.parse(raw);
-  } catch (err) {
-    console.error('[DB] Error reading store file:', err);
-    throw err;
-  }
+/**
+ * Convenience helper to obtain the active MongoDB database instance
+ */
+export async function getMongoDb() {
+  const client = await getMongoClient();
+  return client ? client.db() : null;
 }
 
-// Write to file store atomically
-export function writeFileStore(data: StoreData) {
-  try {
-    fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
-    const tempPath = `${STORE_PATH}.tmp.${Date.now()}`;
-    fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf-8');
-    fs.renameSync(tempPath, STORE_PATH);
-  } catch (err) {
-    console.error('[DB] Error writing store file:', err);
-    throw err;
-  }
+/**
+ * Record an audit log entry
+ */
+export async function recordAuditLog(log: {
+  action: string;
+  entity: string;
+  entityId?: string;
+  author: string;
+  details: string;
+}) {
+  const upper = log.action.toUpperCase();
+  const validAction: 'CREATED' | 'UPDATED' | 'DELETED' | 'STATUS_CHANGE' =
+    upper === 'CREATED' || upper === 'DELETED' || upper === 'STATUS_CHANGE'
+      ? (upper as any)
+      : 'UPDATED';
+  return addAuditLog(validAction, log.entity, log.details, log.author);
 }
 
-// Helper to format date in Bengali style
+// In-memory fallback if database is cold-starting
+const DEFAULT_SETTINGS: SiteSettings = {
+  siteName: "Sonic's E-Shop",
+  logo: "/logo.png",
+  tickerText: "⚡ Delivery Time 1-10 Minutes • 100% Safe Top-Up Guarantee",
+  heroBanner: "/banner.webp",
+  heroTitle: "SONIC'S E-SHOP",
+  heroSubtitle: "Game Top-Up & Digital Goods BD",
+  supportPhone: "01733185830",
+  whatsappUrl: "https://wa.me/8801733185830",
+  facebookUrl: "https://facebook.com",
+  bkashNumber: "01733185830",
+  nagadNumber: "01733185830",
+  slides: []
+};
+
 function getFormattedDate(): string {
-  return new Date().toLocaleDateString('bn-BD', {
+  return new Date().toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
   });
 }
 
-// Unified Get Store Data (Checks MongoDB first, falls back to file store)
+/**
+ * Returns comprehensive store data from MongoDB Atlas
+ */
 export async function getStoreData(): Promise<StoreData> {
   const mongo = await getMongoClient();
-  if (mongo) {
-    try {
-      const db = mongo.db();
-      const settingsDoc = await db.collection('settings').findOne({ _id: 'main' as any });
-      const games = await db.collection<GameItem>('games').find({}).toArray();
-      const coupons = await db.collection<CouponItem>('coupons').find({}).toArray();
-      const orders = await db.collection<OrderItem>('orders').find({}).sort({ timestamp: -1 }).toArray();
-      const auditLogs = await db.collection<AuditLogItem>('auditLogs').find({}).sort({ timestamp: -1 }).limit(100).toArray();
-      const users = await db.collection<UserProfile>('users').find({}).sort({ createdAt: -1 }).toArray();
-
-      if (settingsDoc && games.length > 0) {
-        const local = readFileStore();
-        const mergedSettings: SiteSettings = {
-          ...local.settings,
-          ...settingsDoc.settings,
-          slides: settingsDoc.settings?.slides?.length ? settingsDoc.settings.slides : local.settings.slides,
-        };
-        return {
-          settings: mergedSettings,
-          trustBadges: settingsDoc.trustBadges?.length ? settingsDoc.trustBadges : local.trustBadges || [],
-          games,
-          coupons,
-          orders,
-          auditLogs,
-          users: users?.length ? users : (local.users || [])
-        };
-      } else if (games.length === 0) {
-        // Auto-seed initial store data into MongoDB Atlas
-        const local = readFileStore();
-        await db.collection('settings').updateOne(
-          { _id: 'main' as any },
-          { $set: { settings: local.settings, trustBadges: local.trustBadges } },
-          { upsert: true }
-        );
-        if (local.games && local.games.length > 0) {
-          await db.collection('games').insertMany(local.games as any);
-        }
-        if (local.coupons && local.coupons.length > 0) {
-          await db.collection('coupons').insertMany(local.coupons as any);
-        }
-        if (local.orders && local.orders.length > 0) {
-          await db.collection('orders').insertMany(local.orders as any);
-        }
-        if (local.auditLogs && local.auditLogs.length > 0) {
-          await db.collection('auditLogs').insertMany(local.auditLogs as any);
-        }
-        console.log('[MongoDB] Successfully seeded initial store data to Atlas collections!');
-        return local;
-      }
-    } catch (e) {
-      console.warn('[MongoDB] Query failed, using file store:', e);
-    }
+  if (!mongo) {
+    return {
+      settings: DEFAULT_SETTINGS,
+      trustBadges: [],
+      games: [],
+      coupons: [],
+      orders: [],
+      auditLogs: [],
+      users: []
+    };
   }
 
-  return readFileStore();
+  const db = mongo.db();
+  const [settingsDoc, games, coupons, orders, auditLogs, users] = await Promise.all([
+    db.collection('settings').findOne({ _id: 'main' as any }),
+    db.collection<GameItem>('games').find({ isArchived: { $ne: true } }).toArray(),
+    db.collection<CouponItem>('coupons').find({}).toArray(),
+    db.collection<OrderItem>('orders').find({}).sort({ timestamp: -1 }).limit(100).toArray(),
+    db.collection<AuditLogItem>('auditLogs').find({}).sort({ timestamp: -1 }).limit(100).toArray(),
+    db.collection<UserProfile>('users').find({}).sort({ createdAt: -1 }).toArray()
+  ]);
+
+  const sanitizedUsers = users.map(u => {
+    const copy = { ...u };
+    delete copy.password;
+    return copy;
+  });
+
+  const mergedSettings: SiteSettings = {
+    ...DEFAULT_SETTINGS,
+    ...(settingsDoc?.settings || {}),
+    slides: settingsDoc?.settings?.slides || []
+  };
+
+  return {
+    settings: mergedSettings,
+    trustBadges: settingsDoc?.trustBadges || [],
+    games: games || [],
+    coupons: coupons || [],
+    orders: orders || [],
+    auditLogs: auditLogs || [],
+    users: sanitizedUsers
+  };
 }
 
-// Add Audit Log
+/**
+ * Add an audit log entry
+ */
 export async function addAuditLog(
   action: AuditLogItem['action'],
   entity: string,
   details: string,
-  author: string = 'admin'
+  author: string = 'System'
 ): Promise<AuditLogItem> {
   const entry: AuditLogItem = {
     id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -148,118 +138,100 @@ export async function addAuditLog(
     try {
       await mongo.db().collection('auditLogs').insertOne(entry as any);
     } catch (e) {
-      console.warn('[MongoDB] Failed to log audit, fallback to file:', e);
+      console.warn('[MongoDB] Failed to log audit:', e);
     }
   }
-
-  const store = readFileStore();
-  store.auditLogs = store.auditLogs || [];
-  store.auditLogs.unshift(entry);
-  if (store.auditLogs.length > 300) {
-    store.auditLogs = store.auditLogs.slice(0, 300);
-  }
-  writeFileStore(store);
 
   return entry;
 }
 
-// Update Site Settings & Trust Badges
-export async function updateSiteSettings(settings: Partial<SiteSettings>, trustBadges?: any[], author: string = 'admin') {
+/**
+ * Update Site Settings & Trust Badges
+ */
+export async function updateSiteSettings(
+  settings: Partial<SiteSettings>,
+  trustBadges?: any[],
+  author: string = 'admin'
+) {
   const mongo = await getMongoClient();
-  if (mongo) {
-    try {
-      await mongo.db().collection('settings').updateOne(
-        { _id: 'main' as any },
-        { $set: { settings, ...(trustBadges ? { trustBadges } : {}) } },
-        { upsert: true }
-      );
-    } catch (e) {
-      console.warn('[MongoDB] Update settings failed, using file:', e);
-    }
-  }
+  if (!mongo) throw new Error('Database connection unavailable');
 
-  const store = readFileStore();
-  store.settings = { ...store.settings, ...settings };
-  if (trustBadges) {
-    store.trustBadges = trustBadges;
-  }
-  writeFileStore(store);
+  const updateDoc: any = {};
+  if (settings) updateDoc['settings'] = settings;
+  if (trustBadges) updateDoc['trustBadges'] = trustBadges;
 
-  await addAuditLog('UPDATED', 'Site Settings & CMS', 'Updated site branding, ticker or payment numbers', author);
-  return store;
+  await mongo.db().collection('settings').updateOne(
+    { _id: 'main' as any },
+    { $set: updateDoc },
+    { upsert: true }
+  );
+
+  await addAuditLog('UPDATED', 'Site Settings & CMS', 'Updated branding, ticker, or payment details', author);
+  return getStoreData();
 }
 
-// Save or Update Game
+/**
+ * Save or update a game catalog item
+ */
 export async function saveGame(game: GameItem, author: string = 'admin'): Promise<GameItem> {
   const mongo = await getMongoClient();
-  if (mongo) {
-    try {
-      const docToSave = { ...game };
-      delete (docToSave as any)._id;
-      await mongo.db().collection('games').updateOne(
-        { id: game.id } as any,
-        { $set: docToSave },
-        { upsert: true }
-      );
-    } catch (e) {
-      console.warn('[MongoDB] saveGame failed:', e);
-    }
-  }
+  if (!mongo) throw new Error('Database connection unavailable');
 
-  const store = readFileStore();
-  const index = store.games.findIndex(g => g.id === game.id);
-  const isNew = index === -1;
-  if (isNew) {
-    store.games.push(game);
-  } else {
-    store.games[index] = game;
-  }
-  writeFileStore(store);
+  const docToSave = { ...game, isArchived: false };
+  delete (docToSave as any)._id;
+
+  const existing = await mongo.db().collection<GameItem>('games').findOne({ id: game.id } as any);
+  const isNew = !existing;
+
+  await mongo.db().collection('games').updateOne(
+    { id: game.id } as any,
+    { $set: docToSave },
+    { upsert: true }
+  );
 
   await addAuditLog(
     isNew ? 'CREATED' : 'UPDATED',
     `Game: ${game.name}`,
-    `${isNew ? 'Created new game entry' : 'Updated game configuration and packages'}`,
+    isNew ? 'Created new game catalog entry' : 'Updated game configuration and packages',
     author
   );
+
   return game;
 }
 
-// Delete Game
+/**
+ * Delete or soft-delete (archive) a game
+ */
 export async function deleteGame(gameId: string, author: string = 'admin'): Promise<boolean> {
-  const store = readFileStore();
-  const game = store.games.find(g => g.id === gameId);
+  const mongo = await getMongoClient();
+  if (!mongo) throw new Error('Database connection unavailable');
+
+  const db = mongo.db();
+  const game = await db.collection<GameItem>('games').findOne({ id: gameId } as any);
   const gameName = game ? game.name : gameId;
 
-  const mongo = await getMongoClient();
-  if (mongo) {
-    try {
-      await mongo.db().collection('games').deleteOne({ id: gameId } as any);
-    } catch (e) {
-      console.warn('[MongoDB] deleteGame failed:', e);
-    }
+  // Check if orders exist for this game -> soft delete/archive to protect data integrity
+  const orderCount = await db.collection('orders').countDocuments({ gameId });
+  if (orderCount > 0) {
+    await db.collection('games').updateOne({ id: gameId } as any, { $set: { isArchived: true, active: false } });
+    await addAuditLog('DELETED', `Game: ${gameName}`, `Soft-deleted/archived game with ${orderCount} historical orders`, author);
+  } else {
+    await db.collection('games').deleteOne({ id: gameId } as any);
+    await addAuditLog('DELETED', `Game: ${gameName}`, `Hard deleted game with zero orders`, author);
   }
 
-  store.games = store.games.filter(g => g.id !== gameId);
-  writeFileStore(store);
-
-  await addAuditLog('DELETED', `Game: ${gameName}`, `Deleted game with ID ${gameId}`, author);
   return true;
 }
 
-// Save or Update Package
+/**
+ * Save or update a package in a game
+ */
 export async function savePackage(gameId: string, pkg: PackageItem, author: string = 'admin'): Promise<PackageItem> {
   const mongo = await getMongoClient();
-  let game: GameItem | null = null;
-  if (mongo) {
-    try {
-      game = await mongo.db().collection<GameItem>('games').findOne({ id: gameId } as any);
-    } catch (e) {}
-  }
-  if (!game) {
-    const store = readFileStore();
-    game = store.games.find(g => g.id === gameId) || null;
-  }
+  if (!mongo) throw new Error('Database connection unavailable');
+
+  const db = mongo.db();
+  const game = await db.collection<GameItem>('games').findOne({ id: gameId } as any);
   if (!game) throw new Error('Game not found');
 
   if (!game.packages) game.packages = [];
@@ -275,285 +247,392 @@ export async function savePackage(gameId: string, pkg: PackageItem, author: stri
   await addAuditLog(
     isNew ? 'CREATED' : 'UPDATED',
     `Package: ${pkg.name} (${game.name})`,
-    `${isNew ? 'Added package' : 'Updated package price or stock status'}: ৳${pkg.price} (${pkg.stock ? 'In Stock' : 'Out of Stock'})`,
+    `${isNew ? 'Added package' : 'Updated package'}: ৳${pkg.price} (${pkg.stock ? 'In Stock' : 'Out of Stock'})`,
     author
   );
+
   return pkg;
 }
 
-// Delete Package
+/**
+ * Delete a package from a game
+ */
 export async function deletePackage(gameId: string, pkgId: string, author: string = 'admin'): Promise<boolean> {
   const mongo = await getMongoClient();
-  let game: GameItem | null = null;
-  if (mongo) {
-    try {
-      game = await mongo.db().collection<GameItem>('games').findOne({ id: gameId } as any);
-    } catch (e) {}
-  }
-  if (!game) {
-    const store = readFileStore();
-    game = store.games.find(g => g.id === gameId) || null;
-  }
+  if (!mongo) throw new Error('Database connection unavailable');
+
+  const db = mongo.db();
+  const game = await db.collection<GameItem>('games').findOne({ id: gameId } as any);
   if (!game) throw new Error('Game not found');
 
-  if (!game.packages) game.packages = [];
-  const pkg = game.packages.find(p => p.id === pkgId);
+  const pkg = game.packages?.find(p => p.id === pkgId);
   const pkgName = pkg ? pkg.name : pkgId;
 
-  game.packages = game.packages.filter(p => p.id !== pkgId);
+  game.packages = (game.packages || []).filter(p => p.id !== pkgId);
   await saveGame(game, author);
 
   await addAuditLog('DELETED', `Package: ${pkgName} (${game.name})`, `Deleted package ${pkgId}`, author);
   return true;
 }
 
-// Save or Update Coupon
+/**
+ * Save or update a coupon
+ */
 export async function saveCoupon(coupon: CouponItem, author: string = 'admin'): Promise<CouponItem> {
   const mongo = await getMongoClient();
-  if (mongo) {
-    try {
-      const docToSave = { ...coupon };
-      delete (docToSave as any)._id;
-      await mongo.db().collection('coupons').updateOne(
-        { id: coupon.id } as any,
-        { $set: docToSave },
-        { upsert: true }
-      );
-    } catch (e) {
-      console.warn('[MongoDB] saveCoupon failed:', e);
-    }
-  }
+  if (!mongo) throw new Error('Database connection unavailable');
 
-  const store = readFileStore();
-  const index = store.coupons.findIndex(c => c.id === coupon.id);
-  const isNew = index === -1;
-  if (isNew) {
-    store.coupons.push(coupon);
-  } else {
-    store.coupons[index] = coupon;
-  }
-  writeFileStore(store);
+  const docToSave = { ...coupon };
+  delete (docToSave as any)._id;
+
+  await mongo.db().collection('coupons').updateOne(
+    { id: coupon.id } as any,
+    { $set: docToSave },
+    { upsert: true }
+  );
 
   await addAuditLog(
-    isNew ? 'CREATED' : 'UPDATED',
+    'UPDATED',
     `Coupon: ${coupon.code}`,
-    `${isNew ? 'Created promo voucher' : 'Updated coupon details'}: ৳${coupon.discount} discount, min spend ৳${coupon.minSpend}`,
+    `Updated coupon discount: ৳${coupon.discount}, min spend ৳${coupon.minSpend}, active: ${coupon.active}`,
     author
   );
+
   return coupon;
 }
 
-// Delete Coupon
+/**
+ * Delete a coupon
+ */
 export async function deleteCoupon(couponId: string, author: string = 'admin'): Promise<boolean> {
-  const store = readFileStore();
-  const coupon = store.coupons.find(c => c.id === couponId);
+  const mongo = await getMongoClient();
+  if (!mongo) throw new Error('Database connection unavailable');
+
+  const db = mongo.db();
+  const coupon = await db.collection<CouponItem>('coupons').findOne({ id: couponId } as any);
   const code = coupon ? coupon.code : couponId;
 
-  const mongo = await getMongoClient();
-  if (mongo) {
-    try {
-      await mongo.db().collection('coupons').deleteOne({ id: couponId } as any);
-    } catch (e) {
-      console.warn('[MongoDB] deleteCoupon failed:', e);
-    }
-  }
-
-  store.coupons = store.coupons.filter(c => c.id !== couponId);
-  writeFileStore(store);
-
+  await db.collection('coupons').deleteOne({ id: couponId } as any);
   await addAuditLog('DELETED', `Coupon: ${code}`, `Deleted coupon with ID ${couponId}`, author);
   return true;
 }
 
-// Create Customer Order
-export async function createOrder(order: OrderItem): Promise<OrderItem> {
+/**
+ * Atomic Order Creation with Server Price Recalculation & Fraud Prevention
+ */
+export async function createOrder(orderPayload: {
+  gameId: string;
+  packageIds: string[];
+  paymentMethod: 'bKash' | 'Nagad' | 'Wallet';
+  senderLastDigits: string;
+  customData: Record<string, any>;
+  couponCode?: string;
+  userId?: string;
+  userEmail?: string;
+}): Promise<OrderItem> {
   const mongo = await getMongoClient();
-  if (mongo) {
-    try {
-      await mongo.db().collection('orders').insertOne(order as any);
-    } catch (e) {
-      console.warn('[MongoDB] createOrder failed:', e);
+  if (!mongo) throw new Error('Database connection unavailable');
+
+  const db = mongo.db();
+
+  // 1. Fetch real game and package details from database
+  const game = await db.collection<GameItem>('games').findOne({ id: orderPayload.gameId } as any);
+  if (!game || game.isArchived || game.active === false) {
+    throw new Error('Selected game is currently unavailable');
+  }
+
+  const verifiedPackages: { id: string; name: string; price: number }[] = [];
+  let calculatedSubtotal = 0;
+
+  for (const pkgId of orderPayload.packageIds) {
+    const pkg = game.packages?.find(p => p.id === pkgId);
+    if (!pkg) {
+      throw new Error(`Package ${pkgId} not found in game catalog`);
+    }
+    if (!pkg.stock) {
+      throw new Error(`Package ${pkg.name} is currently out of stock`);
+    }
+    const price = Number(pkg.price);
+    if (isNaN(price) || price <= 0) {
+      throw new Error(`Invalid price configured for package ${pkg.name}`);
+    }
+    verifiedPackages.push({ id: pkg.id, name: pkg.name, price });
+    calculatedSubtotal += price;
+  }
+
+  // 2. Server-side coupon verification
+  let discount = 0;
+  let appliedCouponCode: string | undefined = undefined;
+
+  if (orderPayload.couponCode) {
+    const cleanCode = orderPayload.couponCode.trim().toUpperCase();
+    const coupon = await db.collection<CouponItem>('coupons').findOne({ code: cleanCode, active: true } as any);
+
+    if (coupon) {
+      if (calculatedSubtotal >= (coupon.minSpend || 0)) {
+        if (!coupon.maxUsage || (coupon.usageCount || 0) < coupon.maxUsage) {
+          discount = Math.min(coupon.discount, calculatedSubtotal);
+          appliedCouponCode = coupon.code;
+          // Increment coupon usage count
+          await db.collection('coupons').updateOne({ code: cleanCode }, { $inc: { usageCount: 1 } });
+        }
+      }
     }
   }
 
-  const store = readFileStore();
-  store.orders = store.orders || [];
-  store.orders.unshift(order);
-  writeFileStore(store);
+  const finalTotal = Math.max(0, calculatedSubtotal - discount);
+
+  // 3. For bKash / Nagad: Duplicate TrxID Prevention
+  if (orderPayload.paymentMethod !== 'Wallet') {
+    const trimmedDigits = orderPayload.senderLastDigits.trim();
+    if (trimmedDigits.length < 4) {
+      throw new Error('Please enter a valid TrxID or sender last digits');
+    }
+
+    // Check if this exact TrxID was already used for an approved or completed order
+    const duplicate = await db.collection<OrderItem>('orders').findOne({
+      senderLastDigits: trimmedDigits,
+      paymentMethod: orderPayload.paymentMethod,
+      status: { $in: ['Completed', 'Delivered'] }
+    } as any);
+
+    if (duplicate) {
+      throw new Error(`Transaction ID '${trimmedDigits}' has already been processed for order ${duplicate.id}`);
+    }
+  }
+
+  // 4. For Wallet Payment: Atomic balance check & deduction
+  if (orderPayload.paymentMethod === 'Wallet') {
+    if (!orderPayload.userId) {
+      throw new Error('Login required for wallet payment');
+    }
+
+    const user = await db.collection<UserProfile>('users').findOne({ id: orderPayload.userId } as any);
+    if (!user || (user.walletBalance || 0) < finalTotal) {
+      throw new Error(`Insufficient wallet balance (Available: ৳${user?.walletBalance || 0}, Required: ৳${finalTotal})`);
+    }
+
+    // Atomic deduction
+    const res = await db.collection('users').updateOne(
+      { id: orderPayload.userId, walletBalance: { $gte: finalTotal } },
+      { $inc: { walletBalance: -finalTotal } }
+    );
+
+    if (res.modifiedCount === 0) {
+      throw new Error('Wallet payment failed due to concurrent balance change');
+    }
+
+    // Record wallet transaction
+    await db.collection('walletTransactions').insertOne({
+      id: `wtx-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      userId: orderPayload.userId,
+      type: 'payment',
+      amount: finalTotal,
+      balanceBefore: user.walletBalance,
+      balanceAfter: user.walletBalance - finalTotal,
+      note: `Payment for order of ${game.name}`,
+      timestamp: Date.now()
+    });
+  }
+
+  // 5. Generate unique Order ID
+  const orderId = 'SONIC-' + Math.floor(100000 + Math.random() * 900000);
+  const newOrder: OrderItem = {
+    id: orderId,
+    userId: orderPayload.userId,
+    gameId: game.id,
+    gameName: game.name,
+    packages: verifiedPackages,
+    totalAmount: finalTotal,
+    paymentMethod: orderPayload.paymentMethod,
+    senderLastDigits: orderPayload.senderLastDigits,
+    customData: orderPayload.customData,
+    status: 'Pending',
+    date: getFormattedDate(),
+    timestamp: Date.now(),
+    couponCode: appliedCouponCode,
+    discountAmount: discount
+  };
+
+  await db.collection('orders').insertOne(newOrder as any);
 
   await addAuditLog(
     'CREATED',
-    `Order: ${order.id}`,
-    `New order submitted for ${order.gameName} (৳${order.totalAmount}) via ${order.paymentMethod}`,
-    'Customer'
+    `Order: ${orderId}`,
+    `New order submitted for ${game.name} (৳${finalTotal}) via ${orderPayload.paymentMethod}`,
+    orderPayload.userEmail || orderPayload.userId || 'Customer'
   );
-  return order;
+
+  return newOrder;
 }
 
-// Update Order Status
+/**
+ * Update order status with optional wallet refund
+ */
 export async function updateOrderStatus(
   orderId: string,
-  newStatus: OrderItem['status'],
-  author: string = 'admin'
+  newStatus: OrderStatus,
+  author: string = 'admin',
+  adminNotes?: string,
+  refundToWallet?: boolean
 ): Promise<OrderItem> {
-  const store = readFileStore();
-  const order = store.orders.find(o => o.id === orderId);
+  const mongo = await getMongoClient();
+  if (!mongo) throw new Error('Database connection unavailable');
+
+  const db = mongo.db();
+  const order = await db.collection<OrderItem>('orders').findOne({ id: orderId } as any);
   if (!order) throw new Error('Order not found');
 
   const oldStatus = order.status;
-  order.status = newStatus;
+  const updateFields: any = { status: newStatus };
+  if (adminNotes !== undefined) updateFields.adminNotes = adminNotes;
 
-  const mongo = await getMongoClient();
-  if (mongo) {
-    try {
-      await mongo.db().collection('orders').updateOne(
-        { id: orderId } as any,
-        { $set: { status: newStatus } }
-      );
-    } catch (e) {
-      console.warn('[MongoDB] updateOrderStatus failed:', e);
+  // Handle wallet refund
+  if (refundToWallet && (newStatus === 'Cancelled' || newStatus === 'Refunded' || newStatus === 'Failed')) {
+    if (order.userId && order.totalAmount > 0) {
+      const user = await db.collection<UserProfile>('users').findOne({ id: order.userId } as any);
+      if (user) {
+        await db.collection('users').updateOne(
+          { id: order.userId },
+          { $inc: { walletBalance: order.totalAmount } }
+        );
+        await db.collection('walletTransactions').insertOne({
+          id: `wtx-ref-${Date.now()}`,
+          userId: order.userId,
+          type: 'refund',
+          amount: order.totalAmount,
+          balanceBefore: user.walletBalance || 0,
+          balanceAfter: (user.walletBalance || 0) + order.totalAmount,
+          referenceId: order.id,
+          note: `Refund for cancelled order ${order.id}`,
+          timestamp: Date.now()
+        });
+      }
     }
   }
 
-  writeFileStore(store);
+  await db.collection('orders').updateOne({ id: orderId } as any, { $set: updateFields });
 
   await addAuditLog(
     'STATUS_CHANGE',
-    `Order: ${order.id}`,
-    `Status updated from ${oldStatus} to ${newStatus}`,
+    `Order: ${orderId}`,
+    `Status updated from ${oldStatus} to ${newStatus}${refundToWallet ? ' (Refunded to Wallet)' : ''}`,
     author
   );
-  return order;
+
+  return { ...order, ...updateFields };
 }
 
-// ==========================================
-// USER DATABASE & RBAC PERSISTENCE
-// ==========================================
-
+/**
+ * Retrieve user profiles
+ */
 export async function getUsers(): Promise<UserProfile[]> {
   const mongo = await getMongoClient();
-  if (mongo) {
-    try {
-      const users = await mongo.db().collection<UserProfile>('users').find({}).sort({ createdAt: -1 }).toArray();
-      if (users && users.length > 0) return users;
-    } catch (e) {
-      console.warn('[MongoDB] getUsers failed:', e);
-    }
-  }
-  const store = readFileStore();
-  return store.users || [];
+  if (!mongo) return [];
+
+  const users = await mongo.db().collection<UserProfile>('users').find({}).sort({ createdAt: -1 }).toArray();
+  return users.map(u => {
+    const copy = { ...u };
+    delete copy.password;
+    return copy;
+  });
 }
 
-export async function syncUser(user: Partial<UserProfile> & { id: string }): Promise<UserProfile> {
+/**
+ * Find user by ID or Email
+ */
+export async function getUserById(id: string): Promise<UserProfile | null> {
   const mongo = await getMongoClient();
-  const store = readFileStore();
-  if (!store.users) store.users = [];
-
-  const existingLocal = store.users.find(
-    u => u.id === user.id || (user.email && u.email === user.email) || (user.phone && u.phone === user.phone)
-  );
-
-  let finalUser: UserProfile = {
-    id: user.id,
-    name: user.name || existingLocal?.name || 'Gamer User',
-    email: user.email || existingLocal?.email,
-    phone: user.phone || existingLocal?.phone,
-    avatar: user.avatar || existingLocal?.avatar,
-    role: existingLocal?.role === 'admin' ? 'admin' : (user.role || 'user'),
-    walletBalance: existingLocal ? existingLocal.walletBalance : (user.walletBalance ?? 100),
-    createdAt: existingLocal?.createdAt || Date.now(),
-  };
-
-  if (mongo) {
-    try {
-      const collection = mongo.db().collection<UserProfile>('users');
-      const orClauses: any[] = [{ id: user.id }];
-      if (user.email) orClauses.push({ email: user.email });
-      if (user.phone) orClauses.push({ phone: user.phone });
-
-      const existingMongo = await collection.findOne({ $or: orClauses } as any);
-
-      if (existingMongo) {
-        finalUser.id = existingMongo.id || finalUser.id;
-        finalUser.role = existingMongo.role || finalUser.role;
-        finalUser.walletBalance = typeof existingMongo.walletBalance === 'number' ? existingMongo.walletBalance : finalUser.walletBalance;
-        finalUser.name = user.name || existingMongo.name || finalUser.name;
-        finalUser.avatar = user.avatar || existingMongo.avatar || finalUser.avatar;
-      }
-
-      const docToSave = { ...finalUser };
-      delete (docToSave as any)._id;
-
-      const filter = existingMongo ? { _id: existingMongo._id } : { id: finalUser.id };
-      await collection.updateOne(
-        filter as any,
-        { $set: docToSave },
-        { upsert: true }
-      );
-    } catch (e) {
-      console.warn('[MongoDB] syncUser failed:', e);
-    }
-  }
-
-  const localIdx = store.users.findIndex(u => u.id === finalUser.id || (finalUser.email && u.email === finalUser.email));
-  if (localIdx >= 0) {
-    store.users[localIdx] = finalUser;
-  } else {
-    store.users.push(finalUser);
-  }
-  writeFileStore(store);
-
-  return finalUser;
+  if (!mongo) return null;
+  return mongo.db().collection<UserProfile>('users').findOne({ id } as any);
 }
 
+export async function getUserByEmail(email: string): Promise<UserProfile | null> {
+  const mongo = await getMongoClient();
+  if (!mongo) return null;
+  return mongo.db().collection<UserProfile>('users').findOne({ email: email.toLowerCase() } as any);
+}
+
+/**
+ * Update user profile or privileges
+ */
 export async function updateUser(
   userId: string,
   updates: Partial<UserProfile>,
   author: string = 'Admin'
 ): Promise<UserProfile | null> {
   const mongo = await getMongoClient();
-  const store = readFileStore();
-  if (!store.users) store.users = [];
+  if (!mongo) throw new Error('Database connection unavailable');
 
-  const localIdx = store.users.findIndex(u => u.id === userId);
-  let user: UserProfile | null = localIdx >= 0 ? { ...store.users[localIdx], ...updates } : null;
+  const db = mongo.db();
+  const docToSave = { ...updates };
+  delete (docToSave as any)._id;
 
-  if (mongo) {
-    try {
-      const collection = mongo.db().collection<UserProfile>('users');
-      if (!user) {
-        const found = await collection.findOne({ id: userId } as any);
-        if (found) user = { ...found, ...updates };
-      }
-      if (user) {
-        const docToSave = { ...updates };
-        delete (docToSave as any)._id;
-        await collection.updateOne(
-          { id: userId } as any,
-          { $set: docToSave },
-          { upsert: true }
-        );
-      }
-    } catch (e) {
-      console.warn('[MongoDB] updateUser failed:', e);
-    }
+  await db.collection('users').updateOne(
+    { id: userId } as any,
+    { $set: docToSave },
+    { upsert: true }
+  );
+
+  const updated = await db.collection<UserProfile>('users').findOne({ id: userId } as any);
+
+  await addAuditLog(
+    'UPDATED',
+    `User: ${userId}`,
+    `Updated fields: ${Object.keys(updates).join(', ')}`,
+    author
+  );
+
+  return updated;
+}
+
+/**
+ * Adjust wallet balance with audit logging
+ */
+export async function adjustWalletBalance(
+  userId: string,
+  amount: number,
+  type: 'deposit' | 'payment' | 'refund' | 'adjustment',
+  referenceId?: string,
+  note?: string,
+  author: string = 'System'
+): Promise<number> {
+  const mongo = await getMongoClient();
+  if (!mongo) throw new Error('Database connection unavailable');
+
+  const db = mongo.db();
+  const user = await db.collection<UserProfile>('users').findOne({ id: userId } as any);
+  if (!user) throw new Error('User not found');
+
+  const balanceBefore = user.walletBalance || 0;
+  const balanceAfter = balanceBefore + amount;
+  if (balanceAfter < 0) {
+    throw new Error('Resulting wallet balance cannot be negative');
   }
 
-  if (user) {
-    if (localIdx >= 0) {
-      store.users[localIdx] = user;
-    } else {
-      store.users.push(user);
-    }
-    writeFileStore(store);
+  await db.collection('users').updateOne(
+    { id: userId },
+    { $set: { walletBalance: balanceAfter } }
+  );
 
-    await addAuditLog(
-      'UPDATED',
-      `User: ${user.name} (${user.role.toUpperCase()})`,
-      `Updated user profile: Role=${user.role}, Wallet=৳${user.walletBalance}`,
-      author
-    );
-  }
+  await db.collection('walletTransactions').insertOne({
+    id: `wtx-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    userId,
+    type,
+    amount,
+    balanceBefore,
+    balanceAfter,
+    referenceId,
+    note: note || `Wallet ${type}`,
+    timestamp: Date.now()
+  });
 
-  return user;
+  await addAuditLog(
+    'UPDATED',
+    `Wallet: ${userId}`,
+    `Adjusted balance by ৳${amount} (New balance: ৳${balanceAfter})`,
+    author
+  );
+
+  return balanceAfter;
 }

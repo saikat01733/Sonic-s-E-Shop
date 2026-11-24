@@ -12,10 +12,12 @@
     "@heroui/react": "^3.2.8",
     "@heroui/theme": "^2.4.9",
     "@tailwindcss/postcss": "^4.3.5",
+    "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "firebase": "^13.4.0",
     "framer-motion": "^14.14.0",
+    "jose": "^6.2.18",
     "lucide-react": "^1.79.0",
     "mongodb": "^7.9.1",
     "mongoose": "^9.13.0",
@@ -26,6 +28,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
