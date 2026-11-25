@@ -43,6 +43,7 @@ import {
 import { StoreData, GameItem, PackageItem, CouponItem, OrderItem, HeroSlide, TrustBadge, UserProfile } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { ImageUploader } from '@/components/common/ImageUploader';
+import { Pagination, paginateItems } from '@/components/ui/pagination';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function AdminPage() {
@@ -91,6 +92,14 @@ export default function AdminPage() {
   const [orderSearch, setOrderSearch] = useState('');
   const [orderFilter, setOrderFilter] = useState<string>('all');
   const [historySearch, setHistorySearch] = useState('');
+
+  // Pagination States (10 items per page)
+  const [gamesPage, setGamesPage] = useState(1);
+  const [packagesPage, setPackagesPage] = useState(1);
+  const [couponsPage, setCouponsPage] = useState(1);
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [usersPage, setUsersPage] = useState(1);
+  const [historyPage, setHistoryPage] = useState(1);
 
   const handleSelectTab = (tab: AdminTab) => {
     setActiveTab(tab);
@@ -1352,7 +1361,7 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {storeData.games.map(game => (
+              {paginateItems(storeData.games, gamesPage, 10).map(game => (
                 <Card
                   key={game.id}
                   variant="glass"
@@ -1388,6 +1397,14 @@ export default function AdminPage() {
                 </Card>
               ))}
             </div>
+
+            <Pagination
+              currentPage={gamesPage}
+              totalItems={storeData.games.length}
+              pageSize={10}
+              onPageChange={setGamesPage}
+              itemLabel="games"
+            />
 
             {/* Game Edit Modal */}
             <Modal isOpen={Boolean(editingGame)} onClose={() => setEditingGame(null)} title="Edit Game Catalog">
@@ -1491,7 +1508,7 @@ export default function AdminPage() {
 
               <select
                 value={selectedGameId}
-                onChange={e => setSelectedGameId(e.target.value)}
+                onChange={e => { setSelectedGameId(e.target.value); setPackagesPage(1); }}
                 className="px-3 py-2 rounded-xl bg-white/10 [html.light-theme_&]:bg-black/5 border border-white/15 [html.light-theme_&]:border-black/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold"
               >
                 {storeData.games.map(g => (
@@ -1534,7 +1551,7 @@ export default function AdminPage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {game.packages.map(pkg => (
+                    {paginateItems(game.packages, packagesPage, 10).map(pkg => (
                       <Card
                         key={pkg.id}
                         variant="glass"
@@ -1567,6 +1584,14 @@ export default function AdminPage() {
                       </Card>
                     ))}
                   </div>
+
+                  <Pagination
+                    currentPage={packagesPage}
+                    totalItems={game.packages.length}
+                    pageSize={10}
+                    onPageChange={setPackagesPage}
+                    itemLabel="packages"
+                  />
                 </div>
               );
             })()}
@@ -1691,7 +1716,7 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {storeData.coupons.map(coupon => (
+              {paginateItems(storeData.coupons, couponsPage, 10).map(coupon => (
                 <Card
                   key={coupon.id}
                   variant="glass"
@@ -1727,6 +1752,14 @@ export default function AdminPage() {
                 </Card>
               ))}
             </div>
+
+            <Pagination
+              currentPage={couponsPage}
+              totalItems={storeData.coupons.length}
+              pageSize={10}
+              onPageChange={setCouponsPage}
+              itemLabel="coupons"
+            />
 
             {/* Coupon Edit Modal with Fixed Number Inputs */}
             <Modal isOpen={Boolean(editingCoupon)} onClose={() => setEditingCoupon(null)} title="Edit Coupon">
@@ -1829,12 +1862,12 @@ export default function AdminPage() {
                   type="text"
                   placeholder="Search Order ID, UID, phone, digits..."
                   value={orderSearch}
-                  onChange={e => setOrderSearch(e.target.value)}
+                  onChange={e => { setOrderSearch(e.target.value); setOrdersPage(1); }}
                   className="w-full sm:w-52 px-3 py-1.5 rounded-xl bg-white/[0.06] [html.light-theme_&]:bg-slate-100 border border-white/15 [html.light-theme_&]:border-slate-300 text-xs text-white [html.light-theme_&]:text-slate-900 placeholder:text-gray-500 focus:outline-none focus:border-rose-500"
                 />
                 <select
                   value={orderFilter}
-                  onChange={e => setOrderFilter(e.target.value)}
+                  onChange={e => { setOrderFilter(e.target.value); setOrdersPage(1); }}
                   className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-white/[0.08] [html.light-theme_&]:bg-slate-100 border border-white/15 [html.light-theme_&]:border-slate-300 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold"
                 >
                   <option value="all" className="bg-black text-white">All Orders</option>
@@ -1849,21 +1882,25 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              {storeData.orders
-                .filter(o => {
-                  const q = orderSearch.toLowerCase();
-                  const customVals = Object.values(o.customData || {}).map(v => String(v).toLowerCase());
-                  const matchSearch =
-                    !q ||
-                    o.id.toLowerCase().includes(q) ||
-                    (o.gameName || '').toLowerCase().includes(q) ||
-                    (o.senderLastDigits || '').toLowerCase().includes(q) ||
-                    customVals.some(val => val.includes(q));
-                  const matchFilter = orderFilter === 'all' || o.status === orderFilter;
-                  return matchSearch && matchFilter;
-                })
-                .map(order => (
+            {(() => {
+              const filteredOrders = storeData.orders.filter(o => {
+                const q = orderSearch.toLowerCase();
+                const customVals = Object.values(o.customData || {}).map(v => String(v).toLowerCase());
+                const matchSearch =
+                  !q ||
+                  o.id.toLowerCase().includes(q) ||
+                  (o.gameName || '').toLowerCase().includes(q) ||
+                  (o.senderLastDigits || '').toLowerCase().includes(q) ||
+                  customVals.some(val => val.includes(q));
+                const matchFilter = orderFilter === 'all' || o.status === orderFilter;
+                return matchSearch && matchFilter;
+              });
+              const paginatedOrders = paginateItems(filteredOrders, ordersPage, 10);
+
+              return (
+                <>
+                  <div className="space-y-3">
+                    {paginatedOrders.map(order => (
                   <Card key={order.id} variant="glass" className="p-4 space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -1945,8 +1982,18 @@ export default function AdminPage() {
                       </div>
                     )}
                   </Card>
-                ))}
-            </div>
+                    ))}
+                  </div>
+                  <Pagination
+                    currentPage={ordersPage}
+                    totalItems={filteredOrders.length}
+                    pageSize={10}
+                    onPageChange={setOrdersPage}
+                    itemLabel="orders"
+                  />
+                </>
+              );
+            })()}
 
             {/* Order Note Modal */}
             <Modal isOpen={Boolean(editingOrderNote)} onClose={() => setEditingOrderNote(null)} title="Update Order Admin Note">
@@ -1990,8 +2037,8 @@ export default function AdminPage() {
                     type="text"
                     placeholder="Search users or roles..."
                     value={userSearch}
-                    onChange={e => setUserSearch(e.target.value)}
-                    className="pl-8 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5"
+                    onChange={e => { setUserSearch(e.target.value); setUsersPage(1); }}
+                    className="pl-8 pr-3 py-1.5 rounded-xl bg-white/[0.06] [html.light-theme_&]:bg-slate-100 border border-white/15 [html.light-theme_&]:border-slate-300 text-xs text-white [html.light-theme_&]:text-slate-900 placeholder:text-gray-500 focus:outline-none focus:border-rose-500"
                   />
                 </div>
                 <Button
@@ -2050,16 +2097,20 @@ export default function AdminPage() {
             </div>
 
             {/* Users Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(storeData.users || [])
-                .filter(u =>
-                  !userSearch ||
-                  u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-                  (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase())) ||
-                  (u.phone && u.phone.includes(userSearch)) ||
-                  u.role.toLowerCase().includes(userSearch.toLowerCase())
-                )
-                .map(targetUser => {
+            {(() => {
+              const filteredUsers = (storeData.users || []).filter(u =>
+                !userSearch ||
+                u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+                (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase())) ||
+                (u.phone && u.phone.includes(userSearch)) ||
+                u.role.toLowerCase().includes(userSearch.toLowerCase())
+              );
+              const paginatedUsers = paginateItems(filteredUsers, usersPage, 10);
+
+              return (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {paginatedUsers.map(targetUser => {
                   const isTargetAdmin = targetUser.role === 'admin' || targetUser.role === 'super_admin';
                   const isStaff = targetUser.role === 'staff';
                   return (
@@ -2129,8 +2180,18 @@ export default function AdminPage() {
                       </div>
                     </Card>
                   );
-                })}
-            </div>
+                    })}
+                  </div>
+                  <Pagination
+                    currentPage={usersPage}
+                    totalItems={filteredUsers.length}
+                    pageSize={10}
+                    onPageChange={setUsersPage}
+                    itemLabel="users"
+                  />
+                </>
+              );
+            })()}
 
             {/* Create User Modal */}
             <Modal isOpen={Boolean(creatingUser)} onClose={() => setCreatingUser(null)} title="Add New User / Staff / Admin">
@@ -2307,20 +2368,24 @@ export default function AdminPage() {
                   type="text"
                   placeholder="Search audit history..."
                   value={historySearch}
-                  onChange={e => setHistorySearch(e.target.value)}
+                  onChange={e => { setHistorySearch(e.target.value); setHistoryPage(1); }}
                   className="w-full sm:w-52 px-3 py-1.5 rounded-xl bg-white/[0.06] [html.light-theme_&]:bg-slate-100 border border-white/15 [html.light-theme_&]:border-slate-300 text-xs text-white [html.light-theme_&]:text-slate-900 placeholder:text-gray-500 focus:outline-none focus:border-rose-500"
                 />
               </div>
             </div>
 
-            <div className="space-y-2.5">
-              {(storeData.auditLogs || [])
-                .filter(log =>
-                  !historySearch ||
-                  log.entity.toLowerCase().includes(historySearch.toLowerCase()) ||
-                  log.details.toLowerCase().includes(historySearch.toLowerCase())
-                )
-                .map(log => (
+            {(() => {
+              const filteredLogs = (storeData.auditLogs || []).filter(log =>
+                !historySearch ||
+                log.entity.toLowerCase().includes(historySearch.toLowerCase()) ||
+                log.details.toLowerCase().includes(historySearch.toLowerCase())
+              );
+              const paginatedLogs = paginateItems(filteredLogs, historyPage, 10);
+
+              return (
+                <>
+                  <div className="space-y-2.5">
+                    {paginatedLogs.map(log => (
                   <Card
                     key={log.id}
                     variant="glass"
@@ -2351,8 +2416,18 @@ export default function AdminPage() {
                       {log.dateStr}
                     </div>
                   </Card>
-                ))}
-            </div>
+                    ))}
+                  </div>
+                  <Pagination
+                    currentPage={historyPage}
+                    totalItems={filteredLogs.length}
+                    pageSize={10}
+                    onPageChange={setHistoryPage}
+                    itemLabel="audit logs"
+                  />
+                </>
+              );
+            })()}
           </div>
         )}
 

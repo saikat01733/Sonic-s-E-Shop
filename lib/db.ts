@@ -91,8 +91,8 @@ export async function getStoreData(): Promise<StoreData> {
     db.collection('settings').findOne({ _id: 'main' as any }, noId),
     db.collection<GameItem>('games').find({ isArchived: { $ne: true } }, noId).toArray(),
     db.collection<CouponItem>('coupons').find({}, noId).toArray(),
-    db.collection<OrderItem>('orders').find({}, noId).sort({ timestamp: -1 }).limit(100).toArray(),
-    db.collection<AuditLogItem>('auditLogs').find({}, noId).sort({ timestamp: -1 }).limit(100).toArray(),
+    db.collection<OrderItem>('orders').find({}, noId).sort({ timestamp: -1 }).limit(500).toArray(),
+    db.collection<AuditLogItem>('auditLogs').find({}, noId).sort({ timestamp: -1 }).limit(500).toArray(),
     db.collection<UserProfile>('users').find({}, noId).sort({ createdAt: -1 }).toArray()
   ]);
 

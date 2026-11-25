@@ -6,6 +6,7 @@ import Footer from '@/components/common/Footer';
 import InvoiceModal from '@/components/common/InvoiceModal';
 import { OrderCard } from '@/components/features/orders/order-card';
 import { Card } from '@/components/ui/card';
+import { Pagination, paginateItems } from '@/components/ui/pagination';
 import { useSiteData } from '@/hooks/use-site-data';
 import { useLanguage } from '@/hooks/use-language';
 import { OrderItem } from '@/lib/types';
@@ -18,6 +19,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [ordersPage, setOrdersPage] = useState(1);
   const [viewingOrder, setViewingOrder] = useState<OrderItem | null>(null);
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function OrdersPage() {
               {['all', 'pending', 'processing', 'completed'].map(st => (
                 <button
                   key={st}
-                  onClick={() => setStatusFilter(st)}
+                  onClick={() => { setStatusFilter(st); setOrdersPage(1); }}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-bold capitalize transition-all whitespace-nowrap cursor-pointer backdrop-blur-xl ${
                     statusFilter === st
                       ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/35'
@@ -82,7 +84,7 @@ export default function OrdersPage() {
               <input
                 type="text"
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={e => { setSearch(e.target.value); setOrdersPage(1); }}
                 placeholder={t('searchOrderPlaceholder')}
                 className="w-full pl-9 pr-3.5 py-2 rounded-2xl bg-white/[0.08] border border-white/20 text-xs text-white placeholder:text-gray-400 focus:outline-none focus:border-cyan-500/70 backdrop-blur-xl"
               />
@@ -100,14 +102,23 @@ export default function OrdersPage() {
             {t('noResults')}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredOrders.map(order => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onViewInvoice={ord => setViewingOrder(ord)}
-              />
-            ))}
+          <div className="space-y-6 pb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginateItems(filteredOrders, ordersPage, 10).map(order => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onViewInvoice={ord => setViewingOrder(ord)}
+                />
+              ))}
+            </div>
+            <Pagination
+              currentPage={ordersPage}
+              totalItems={filteredOrders.length}
+              pageSize={10}
+              onPageChange={setOrdersPage}
+              itemLabel="orders"
+            />
           </div>
         )}
       </main>

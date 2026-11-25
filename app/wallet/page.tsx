@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
+import { Pagination, paginateItems } from '@/components/ui/pagination';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/use-language';
 import { useAuth } from '@/hooks/use-auth';
@@ -51,6 +52,7 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<WalletTx[]>([]);
   const [loadingTx, setLoadingTx] = useState(false);
+  const [txPage, setTxPage] = useState(1);
 
   // Deposit Form State
   const [addAmount, setAddAmount] = useState<string>('500');
@@ -261,8 +263,9 @@ export default function WalletPage() {
               </p>
             </Card>
           ) : (
-            <div className="space-y-2.5">
-              {transactions.map(tx => {
+            <div className="space-y-4">
+              <div className="space-y-2.5">
+                {paginateItems(transactions, txPage, 10).map(tx => {
                 const isCredit = tx.type === 'deposit' || tx.type === 'welcome_bonus' || tx.type === 'admin_adjustment' && tx.amount > 0;
                 const isPending = tx.status === 'pending';
 
@@ -325,6 +328,14 @@ export default function WalletPage() {
                   </Card>
                 );
               })}
+              </div>
+              <Pagination
+                currentPage={txPage}
+                totalItems={transactions.length}
+                pageSize={10}
+                onPageChange={setTxPage}
+                itemLabel="transactions"
+              />
             </div>
           )}
         </div>
