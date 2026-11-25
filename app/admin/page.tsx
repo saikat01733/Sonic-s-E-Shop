@@ -44,7 +44,7 @@ import { ImageUploader } from '@/components/common/ImageUploader';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function AdminPage() {
-  const { user, isAuthenticated: isUserAuth, isAdmin, logout } = useAuth();
+  const { user, loading: authLoading, isAuthenticated: isUserAuth, isAdmin, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [storeData, setStoreData] = useState<StoreData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,19 +74,36 @@ export default function AdminPage() {
   const [orderFilter, setOrderFilter] = useState<string>('all');
   const [historySearch, setHistorySearch] = useState('');
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tabParam = params.get('tab') as AdminTab;
-    if (tabParam) {
-      setActiveTab(tabParam);
+  const handleSelectTab = (tab: AdminTab) => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const targetUrl = tab === 'dashboard' ? '/admin' : `/admin?tab=${tab}`;
+      window.history.replaceState(null, '', targetUrl);
     }
+  };
+
+  useEffect(() => {
+    const syncTabFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab') as AdminTab;
+      if (tabParam) {
+        setActiveTab(tabParam);
+      }
+    };
+    syncTabFromUrl();
+    window.addEventListener('popstate', syncTabFromUrl);
+    return () => window.removeEventListener('popstate', syncTabFromUrl);
+  }, []);
+
+  useEffect(() => {
+    if (authLoading) return;
     if (isAdmin || user?.role === 'super_admin' || user?.role === 'admin' || user?.role === 'staff') {
       fetchStoreData();
       checkSystemHealth();
     } else {
       setLoading(false);
     }
-  }, [isAdmin, user]);
+  }, [authLoading, isAdmin, user]);
 
   const checkSystemHealth = async () => {
     try {
@@ -584,6 +601,16 @@ export default function AdminPage() {
     }
   };
 
+  // Show spinner while auth session is hydrating on reload
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-white text-xs">
+        <RefreshCw className="w-6 h-6 animate-spin text-rose-500 mb-2" />
+        <span className="font-bold text-gray-300">Verifying Session...</span>
+      </div>
+    );
+  }
+
   // Admin Access Gate: Direct role verification (No PIN required)
   const hasAdminAccess = isAdmin || user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'staff';
   if (!hasAdminAccess) {
@@ -680,7 +707,7 @@ export default function AdminPage() {
       {/* Admin Sidebar Navigation */}
       <AdminSidebar
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={handleSelectTab}
         pendingOrdersCount={pendingOrders.length}
         onLogout={logout}
         isMobileOpen={isMobileSidebarOpen}
@@ -741,7 +768,7 @@ export default function AdminPage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-extrabold text-white [html.light-theme_&]:text-slate-900">Recent Order Activity</h3>
                 <button
-                  onClick={() => setActiveTab('orders')}
+                  onClick={() => handleSelectTab('orders')}
                   className="text-xs font-bold text-rose-500 hover:text-rose-400 cursor-pointer"
                 >
                   View All Orders →

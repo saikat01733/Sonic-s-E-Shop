@@ -21,6 +21,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const getRedirectDestination = (role?: string) => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const redirectParam = params.get('redirect');
+      if (redirectParam && redirectParam.startsWith('/')) {
+        return redirectParam;
+      }
+    }
+    return role === 'admin' || role === 'super_admin' || role === 'staff' ? '/admin' : '/';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!identifier.trim()) {
@@ -32,7 +43,7 @@ export default function LoginPage() {
     try {
       const res = await login(identifier, password);
       if (res.success) {
-        router.push(res.role === 'admin' ? '/admin' : '/');
+        router.push(getRedirectDestination(res.role));
       } else {
         setError(res.error || 'Login failed. Please check credentials.');
       }
@@ -49,7 +60,7 @@ export default function LoginPage() {
     try {
       const res = await loginWithGoogle();
       if (res.success) {
-        router.push(res.role === 'admin' ? '/admin' : '/');
+        router.push(getRedirectDestination(res.role));
       } else {
         setError(res.error || 'Google sign-in failed');
       }
