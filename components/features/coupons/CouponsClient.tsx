@@ -50,7 +50,7 @@ export default function CouponsClient({ initialData }: CouponsClientProps) {
             {t('noResults')}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-12">
             {coupons.map(coupon => (
               <CouponTicket
                 key={coupon.id}
