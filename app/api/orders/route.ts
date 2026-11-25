@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
 
     // 3. Authenticated User Orders
     if (currentUser) {
-      if (currentUser.role === 'admin' || currentUser.role === 'super_admin') {
+      if (currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'staff') {
         const allOrders = await db.collection<OrderItem>('orders').find({}).sort({ timestamp: -1 }).limit(100).toArray();
         return NextResponse.json({ success: true, orders: allOrders });
       }
@@ -58,8 +58,8 @@ export async function GET(req: NextRequest) {
         .find({
           $or: [
             { userId: currentUser.id },
-            ...(currentUser.email ? [{ 'customData.email': currentUser.email }] : []),
-            ...(currentUser.phone ? [{ 'customData.whatsapp': currentUser.phone }, { senderLastDigits: currentUser.phone }] : []),
+            ...(currentUser.email ? [{ 'customData.email': currentUser.email }, { 'customData.gmail': currentUser.email }] : []),
+            ...(currentUser.phone ? [{ 'customData.whatsapp': currentUser.phone }, { 'customData.phone': currentUser.phone }, { senderLastDigits: currentUser.phone }] : []),
           ],
         })
         .sort({ timestamp: -1 })

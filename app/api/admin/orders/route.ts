@@ -22,7 +22,8 @@ export async function PUT(req: NextRequest) {
     }
 
     const { orderId, status, adminNote, refundToWallet } = parsed.data;
-    const updated = await updateOrderStatus(orderId, status as any, author, adminNote, refundToWallet);
+    const noteText = adminNote ?? (body.adminNotes as string | undefined);
+    const updated = await updateOrderStatus(orderId, status as any, author, noteText, refundToWallet);
     return NextResponse.json({ success: true, order: updated });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

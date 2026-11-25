@@ -245,8 +245,17 @@ async function seed() {
   // 4. Seed Settings & Trust Badges
   console.log('[Seed] Seeding site settings & trust badges...');
   const currentSettings = await db.collection('settings').findOne({ _id: 'main' });
-  const settingsToSave = currentSettings?.settings || fileData.settings || DEFAULT_SETTINGS;
-  const badgesToSave = currentSettings?.trustBadges || fileData.trustBadges || DEFAULT_BADGES;
+  const baseSettings = currentSettings?.settings || fileData.settings || DEFAULT_SETTINGS;
+  const settingsToSave = {
+    ...DEFAULT_SETTINGS,
+    ...baseSettings,
+    slides: (baseSettings.slides && baseSettings.slides.length > 0)
+      ? baseSettings.slides
+      : (fileData.settings?.slides?.length > 0 ? fileData.settings.slides : DEFAULT_SLIDES),
+  };
+  const badgesToSave = (currentSettings?.trustBadges && currentSettings.trustBadges.length > 0)
+    ? currentSettings.trustBadges
+    : (fileData.trustBadges?.length > 0 ? fileData.trustBadges : DEFAULT_BADGES);
 
   await db.collection('settings').updateOne(
     { _id: 'main' },

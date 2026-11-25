@@ -24,7 +24,7 @@ export default function BottomDock() {
   ];
 
   return (
-    <nav className="fixed bottom-2.5 inset-x-0 mx-auto z-40 max-w-lg px-1 sm:px-3 pointer-events-none">
+    <nav className="fixed bottom-2.5 inset-x-0 mx-auto z-40 max-w-lg px-1 sm:px-3 pointer-events-none md:hidden">
       <div className="liquid-glass-dock pointer-events-auto py-1 sm:py-1.5 px-1 sm:px-4 flex items-center justify-around gap-0 sm:gap-1 shadow-2xl border-white/10 [html.light-theme_&]:border-black/10">
         {navItems.map((item) => {
           const isActive = item.isAccount

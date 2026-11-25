@@ -91,10 +91,19 @@ async function runLiveTests() {
     failed++;
   }
 
-  // Test 4: Order Creation (PUBG Mobile UC)
+  // Test 4: Order Creation (Dynamic Game & Package lookup)
   console.log(`\n[TEST 4] POST /api/orders (Placing atomic order)...`);
   let createdOrderId = '';
   try {
+    const siteRes = await fetch(`${BASE_URL}/api/site-data`);
+    const siteJson = await siteRes.json();
+    const games = siteJson.data?.games || [];
+    const targetGame = games.find(g => g.id === 'pubg') || games[0];
+    const targetPkg = targetGame?.packages?.find(p => p.stock !== false && Number(p.price) > 0);
+    if (!targetGame || !targetPkg) {
+      throw new Error('No active game/package found in /api/site-data');
+    }
+
     const res = await fetch(`${BASE_URL}/api/orders`, {
       method: 'POST',
       headers: {
@@ -102,14 +111,15 @@ async function runLiveTests() {
         ...(sessionCookie ? { 'Cookie': sessionCookie } : {})
       },
       body: JSON.stringify({
-        gameId: 'pubg',
-        packageIds: ['pubg-1'],
+        gameId: targetGame.id,
+        gameName: targetGame.name,
+        packageIds: [targetPkg.id],
         paymentMethod: 'bKash',
         senderLastDigits: '8583',
         customData: {
-          player_id: '5123456789',
+          uid: '5123456789',
           character_name: 'Tester_BD',
-          phone: testPhone
+          whatsapp: testPhone
         }
       })
     });

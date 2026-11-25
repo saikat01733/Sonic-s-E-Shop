@@ -66,6 +66,9 @@ export default function AdminPage() {
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
   const [editingTrustBadge, setEditingTrustBadge] = useState<TrustBadge | null>(null);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [creatingUser, setCreatingUser] = useState<{ name: string; email: string; phone: string; password: string; role: UserProfile['role']; walletBalance: number } | null>(null);
+  const [editingOrderNote, setEditingOrderNote] = useState<{ orderId: string; status: OrderItem['status']; note: string } | null>(null);
+  const [healthCheck, setHealthCheck] = useState<{ status: string; category?: string; message?: string } | null>(null);
   const [userSearch, setUserSearch] = useState('');
   const [orderSearch, setOrderSearch] = useState('');
   const [orderFilter, setOrderFilter] = useState<string>('all');
@@ -77,8 +80,23 @@ export default function AdminPage() {
     if (tabParam) {
       setActiveTab(tabParam);
     }
-    fetchStoreData();
+    if (isAdmin || user?.role === 'super_admin' || user?.role === 'admin' || user?.role === 'staff') {
+      fetchStoreData();
+      checkSystemHealth();
+    } else {
+      setLoading(false);
+    }
   }, [isAdmin, user]);
+
+  const checkSystemHealth = async () => {
+    try {
+      const res = await fetch('/api/health');
+      const json = await res.json();
+      setHealthCheck(json);
+    } catch {
+      setHealthCheck({ status: 'error', message: 'Network unreachable' });
+    }
+  };
 
   const fetchStoreData = async () => {
     try {
@@ -87,9 +105,15 @@ export default function AdminPage() {
       const json = await res.json();
       if (json.success) {
         setStoreData(json.data);
+        if (json.data.games?.length > 0 && !json.data.games.some((g: GameItem) => g.id === selectedGameId)) {
+          setSelectedGameId(json.data.games[0].id);
+        }
+      } else {
+        showNotice(json.error || 'Failed to sync store data', 'error');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('[Admin] Fetch error:', e);
+      showNotice(e.message || 'Failed to fetch CMS data', 'error');
     } finally {
       setLoading(false);
     }
@@ -391,7 +415,11 @@ export default function AdminPage() {
 
   const handleSaveTrustBadge = async (badge: TrustBadge) => {
     if (!storeData) return;
-    const updatedBadges = (storeData.trustBadges || []).map(b => (b.id === badge.id ? badge : b));
+    const currentBadges = storeData.trustBadges || [];
+    const exists = currentBadges.some(b => b.id === badge.id);
+    const updatedBadges = exists
+      ? currentBadges.map(b => (b.id === badge.id ? badge : b))
+      : [...currentBadges, badge];
     setStoreData({ ...storeData, trustBadges: updatedBadges });
 
     try {
@@ -417,7 +445,35 @@ export default function AdminPage() {
     }
   };
 
-  const handleUpdateOrderStatus = async (orderId: string, status: OrderItem['status']) => {
+  const handleDeleteTrustBadge = async (badgeId: string) => {
+    if (!storeData) return;
+    if (!confirm('Are you sure you want to delete this trust badge?')) return;
+    const updatedBadges = (storeData.trustBadges || []).filter(b => b.id !== badgeId);
+    setStoreData({ ...storeData, trustBadges: updatedBadges });
+
+    try {
+      const res = await fetch('/api/admin/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_settings',
+          payload: { settings: storeData.settings, trustBadges: updatedBadges },
+          author: user?.name || 'Admin'
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showNotice('Trust badge deleted successfully!');
+        fetchStoreData();
+      } else {
+        showNotice(json.error || 'Failed to delete trust badge', 'error');
+      }
+    } catch (e: any) {
+      showNotice(e.message || 'Error deleting trust badge', 'error');
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId: string, status: OrderItem['status'], adminNote?: string) => {
     let refundToWallet = false;
     if (status === 'Cancelled' || status === 'Failed' || status === 'Refunded') {
       refundToWallet = window.confirm(`Refund order amount to customer's Gamer Wallet balance?`);
@@ -430,19 +486,41 @@ export default function AdminPage() {
         body: JSON.stringify({
           orderId,
           status,
+          ...(adminNote !== undefined ? { adminNote } : {}),
           refundToWallet,
           author: user?.name || 'Admin',
         }),
       });
       const json = await res.json();
       if (json.success) {
-        showNotice(`Order ${orderId} status updated to '${status}'${refundToWallet ? ' (Refunded to Wallet)' : ''}!`);
+        showNotice(`Order ${orderId} updated to '${status}'${refundToWallet ? ' (Refunded to Wallet)' : ''}!`);
+        setEditingOrderNote(null);
         fetchStoreData();
       } else {
         showNotice(json.error || 'Failed to update order status', 'error');
       }
     } catch (e: any) {
       showNotice(e.message || 'Error updating order', 'error');
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm(`Are you sure you want to permanently delete order ${orderId}?`)) return;
+    try {
+      const res = await fetch('/api/admin/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete_order', payload: { id: orderId }, author: user?.name || 'Admin' })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showNotice(`Order ${orderId} deleted successfully!`);
+        fetchStoreData();
+      } else {
+        showNotice(json.error || 'Failed to delete order', 'error');
+      }
+    } catch (e: any) {
+      showNotice(e.message || 'Error deleting order', 'error');
     }
   };
 
@@ -455,7 +533,7 @@ export default function AdminPage() {
       });
       const json = await res.json();
       if (json.success) {
-        showNotice(`User '${targetUser.name}' updated successfully!`);
+        showNotice(`User '${targetUser.name}' (${targetUser.role}) updated successfully!`);
         setEditingUser(null);
         fetchStoreData();
       } else {
@@ -466,8 +544,49 @@ export default function AdminPage() {
     }
   };
 
+  const handleCreateUser = async (newUserPayload: { name: string; email: string; phone: string; password: string; role: UserProfile['role']; walletBalance: number }) => {
+    try {
+      const res = await fetch('/api/admin/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create_user', payload: newUserPayload, author: user?.name || 'Admin' })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showNotice(`Account '${newUserPayload.email}' created with role '${newUserPayload.role}'!`);
+        setCreatingUser(null);
+        fetchStoreData();
+      } else {
+        showNotice(json.error || 'Failed to create user', 'error');
+      }
+    } catch (e: any) {
+      showNotice(e.message || 'Error creating user', 'error');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, label: string) => {
+    if (!confirm(`Are you sure you want to permanently delete user '${label}'?`)) return;
+    try {
+      const res = await fetch('/api/admin/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete_user', payload: { id: userId }, author: user?.name || 'Admin' })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showNotice(`User '${label}' deleted successfully!`);
+        fetchStoreData();
+      } else {
+        showNotice(json.error || 'Failed to delete user', 'error');
+      }
+    } catch (e: any) {
+      showNotice(e.message || 'Error deleting user', 'error');
+    }
+  };
+
   // Admin Access Gate: Direct role verification (No PIN required)
-  if (!isAdmin && user?.role !== 'admin') {
+  const hasAdminAccess = isAdmin || user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'staff';
+  if (!hasAdminAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card variant="glass" className="w-full max-w-sm p-6 text-center space-y-4 border-white/20 [html.light-theme_&]:border-black/10 shadow-2xl backdrop-blur-3xl">
@@ -579,22 +698,32 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Live store metrics, revenue tracking, and quick management links</p>
               </div>
 
-              {/* Date Range Filter */}
-              <div className="flex items-center gap-1 bg-white/5 [html.light-theme_&]:bg-black/5 p-1 rounded-2xl border border-white/10">
-                {(['all', 'today', '7d', '30d'] as const).map(range => (
-                  <button
-                    key={range}
-                    type="button"
-                    onClick={() => setKpiDateRange(range)}
-                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      kpiDateRange === range
-                        ? 'bg-rose-600 text-white shadow-md'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    {range === 'all' ? 'All Time' : range === 'today' ? 'Today' : range === '7d' ? '7 Days' : '30 Days'}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={fetchStoreData}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white [html.light-theme_&]:text-slate-800 [html.light-theme_&]:bg-black/5 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Refresh</span>
+                </button>
+                {/* Date Range Filter */}
+                <div className="flex items-center gap-1 bg-white/5 [html.light-theme_&]:bg-black/5 p-1 rounded-2xl border border-white/10">
+                  {(['all', 'today', '7d', '30d'] as const).map(range => (
+                    <button
+                      key={range}
+                      type="button"
+                      onClick={() => setKpiDateRange(range)}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        kpiDateRange === range
+                          ? 'bg-rose-600 text-white shadow-md'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {range === 'all' ? 'All Time' : range === 'today' ? 'Today' : range === '7d' ? '7 Days' : '30 Days'}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -634,8 +763,10 @@ export default function AdminPage() {
 
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                        order.status === 'Completed'
+                        order.status === 'Completed' || order.status === 'Delivered'
                           ? 'bg-emerald-500/20 text-emerald-400'
+                          : order.status === 'Processing'
+                          ? 'bg-cyan-500/20 text-cyan-400'
                           : order.status === 'Pending'
                           ? 'bg-rose-500/20 text-rose-400'
                           : 'bg-white/10 text-white'
@@ -978,38 +1109,63 @@ export default function AdminPage() {
         {/* TRUST BADGES TAB */}
         {activeTab === 'trust_badges' && (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-black text-white [html.light-theme_&]:text-slate-900">Trust Badges & Perks CMS</h2>
-              <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Customize feature highlights in the homepage 'Why Choose Sonic’s E-Shop' section</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-white [html.light-theme_&]:text-slate-900">Trust Badges & Perks CMS</h2>
+                <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Add, edit, or delete feature highlights in the homepage 'Why Choose Sonic’s E-Shop' section</p>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={<Plus className="w-4 h-4" />}
+                onClick={() =>
+                  setEditingTrustBadge({
+                    id: `b-${Date.now()}`,
+                    title: 'New Perk Title',
+                    sub: 'Short subtitle description',
+                    icon: 'shield'
+                  })
+                }
+              >
+                Add Trust Badge
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {(storeData.trustBadges || []).map((badge, idx) => (
-                <Card key={badge.id || idx} variant="glass" className="p-5 flex flex-col justify-between space-y-4 border-white/15">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-black">
-                      {badge.icon === 'shield' ? '🛡️' : badge.icon === 'zap' ? '⚡' : badge.icon === 'headset' ? '🎧' : '👥'}
-                    </span>
-                    <span className="text-[10px] font-mono text-gray-400">#{badge.id}</span>
-                  </div>
+              {(storeData.trustBadges || []).map((badge, idx) => {
+                const iconKey = (badge.icon || '').toLowerCase();
+                const emoji = iconKey.includes('shield') ? '🛡️' : iconKey.includes('zap') ? '⚡' : iconKey.includes('head') ? '🎧' : '👥';
+                return (
+                  <Card key={badge.id || idx} variant="glass" className="p-5 flex flex-col justify-between space-y-4 border-white/15">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-black">{emoji}</span>
+                      <span className="text-[10px] font-mono text-gray-400">#{badge.id}</span>
+                    </div>
 
-                  <div>
-                    <h4 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">{badge.title}</h4>
-                    <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 mt-1">{badge.sub}</p>
-                  </div>
+                    <div>
+                      <h4 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">{badge.title}</h4>
+                      <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 mt-1">{badge.sub || (badge as any).subtitle}</p>
+                    </div>
 
-                  <div className="pt-2 border-t border-white/10 flex justify-end">
-                    <Button
-                      variant="glass"
-                      size="sm"
-                      icon={<Edit2 className="w-3.5 h-3.5" />}
-                      onClick={() => setEditingTrustBadge({ ...badge })}
-                    >
-                      Edit
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                    <div className="pt-2 border-t border-white/10 flex justify-end gap-1.5">
+                      <Button
+                        variant="glass"
+                        size="sm"
+                        icon={<Edit2 className="w-3.5 h-3.5" />}
+                        onClick={() => setEditingTrustBadge({ ...badge, sub: badge.sub || (badge as any).subtitle || '' })}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        icon={<Trash2 className="w-3.5 h-3.5" />}
+                        onClick={() => handleDeleteTrustBadge(badge.id)}
+                      />
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
 
             {/* Trust Badge Edit Modal */}
@@ -1082,12 +1238,13 @@ export default function AdminPage() {
                     category_name: 'Custom',
                     badge: 'HOT',
                     badge_color: '#e11d48',
-                    poster: '/banner.jpg',
+                    poster: '/banner.webp',
                     icon: '🎮',
                     product_type: 'in_game_id',
                     delivery_time: '1-10 Mins',
                     trust_tag: '100% Secure',
                     description: 'Instant game top-up with zero password required.',
+                    active: true,
                     rules: ['Provide correct Player ID/UID'],
                     custom_fields: [
                       { id: 'player_id', type: 'text', label: 'Player ID', label_bn: 'Player ID', required: true },
@@ -1113,15 +1270,18 @@ export default function AdminPage() {
                       src={game.poster}
                       alt={game.name}
                       className="w-16 h-12 rounded-xl object-cover border border-white/10"
-                      onError={(e: any) => (e.target.src = '/banner.jpg')}
+                      onError={(e: any) => (e.target.src = '/banner.webp')}
                     />
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-black text-white [html.light-theme_&]:text-slate-900">{game.name}</span>
                         <Badge color={game.badge_color}>{game.badge}</Badge>
+                        {game.active === false && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-bold">Inactive</span>
+                        )}
                       </div>
                       <div className="text-[11px] text-gray-400 [html.light-theme_&]:text-slate-600 mt-0.5">
-                        Packages: {game.packages.length} | Delivery: {game.delivery_time} | Type: {game.product_type}
+                        Category: {game.category_name} | Packages: {game.packages.length} | Delivery: {game.delivery_time} | Type: {game.product_type}
                       </div>
                     </div>
                   </div>
@@ -1139,36 +1299,80 @@ export default function AdminPage() {
             {/* Game Edit Modal */}
             <Modal isOpen={Boolean(editingGame)} onClose={() => setEditingGame(null)} title="Edit Game Catalog">
               {editingGame && (
-                <div className="space-y-3">
-                  <Input
-                    label="Game Title"
-                    value={editingGame.name}
-                    onChange={e => setEditingGame({ ...editingGame, name: e.target.value })}
-                  />
-                  <Input
-                    label="URL Slug (lowercase-hyphenated)"
-                    value={editingGame.slug}
-                    onChange={e => setEditingGame({ ...editingGame, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
-                  />
+                <div className="space-y-3 max-h-[75vh] overflow-y-auto pr-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="Game Title *"
+                      value={editingGame.name}
+                      onChange={e => setEditingGame({ ...editingGame, name: e.target.value })}
+                    />
+                    <Input
+                      label="Bengali Title (Optional)"
+                      value={editingGame.name_bn || ''}
+                      onChange={e => setEditingGame({ ...editingGame, name_bn: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="URL Slug (lowercase-hyphenated) *"
+                      value={editingGame.slug}
+                      onChange={e => setEditingGame({ ...editingGame, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
+                    />
+                    <Input
+                      label="Category / Brand Name *"
+                      value={editingGame.category_name || ''}
+                      onChange={e => setEditingGame({ ...editingGame, category_name: e.target.value })}
+                      placeholder="e.g. eFootball, PUBG Mobile, Roblox"
+                    />
+                  </div>
                   <ImageUploader
                     label="Game Poster Graphic (ImgBB Upload)"
                     value={editingGame.poster}
                     onChange={url => setEditingGame({ ...editingGame, poster: url })}
-                    aspect="aspect-[3/4]"
+                    aspect="aspect-[16/9]"
                     hint="Upload high-res game poster directly to ImgBB CDN"
                   />
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <Input
                       label="Badge Label"
                       value={editingGame.badge}
                       onChange={e => setEditingGame({ ...editingGame, badge: e.target.value })}
                     />
                     <Input
-                      label="Delivery Time Window"
+                      label="Delivery Window"
                       value={editingGame.delivery_time}
                       onChange={e => setEditingGame({ ...editingGame, delivery_time: e.target.value })}
                     />
+                    <div>
+                      <label className="block text-xs font-bold text-gray-300 [html.light-theme_&]:text-slate-800 mb-1.5">Order Type</label>
+                      <select
+                        value={editingGame.product_type}
+                        onChange={e => setEditingGame({ ...editingGame, product_type: e.target.value as 'in_game_id' | 'login_purchase' })}
+                        className="w-full px-3 py-2 rounded-xl bg-white/10 [html.light-theme_&]:bg-black/5 border border-white/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold"
+                      >
+                        <option value="in_game_id" className="bg-black text-white">Player ID / Username</option>
+                        <option value="login_purchase" className="bg-black text-white">Account Login</option>
+                      </select>
+                    </div>
                   </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-300 [html.light-theme_&]:text-slate-800 mb-1">Description</label>
+                    <textarea
+                      rows={2}
+                      value={editingGame.description || ''}
+                      onChange={e => setEditingGame({ ...editingGame, description: e.target.value })}
+                      className="w-full p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5 focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-xs font-bold text-white [html.light-theme_&]:text-slate-900 cursor-pointer pt-1">
+                    <input
+                      type="checkbox"
+                      checked={editingGame.active !== false}
+                      onChange={e => setEditingGame({ ...editingGame, active: e.target.checked })}
+                      className="rounded accent-rose-600"
+                    />
+                    <span>Active & Visible in Storefront</span>
+                  </label>
                   <div className="flex justify-end gap-2 pt-3 border-t border-white/10">
                     <Button variant="ghost" size="sm" onClick={() => setEditingGame(null)}>
                       Cancel
@@ -1274,12 +1478,12 @@ export default function AdminPage() {
               );
             })()}
 
-            {/* Package Edit Modal with Fixed Number Input (0 Can Be Deleted) */}
+            {/* Package Edit Modal with Full Fields */}
             <Modal isOpen={Boolean(editingPackage)} onClose={() => setEditingPackage(null)} title="Edit Package">
               {editingPackage && (
                 <div className="space-y-3">
                   <Input
-                    label="Package Title"
+                    label="Package Title *"
                     value={editingPackage.pkg.name}
                     onChange={e =>
                       setEditingPackage({
@@ -1288,18 +1492,69 @@ export default function AdminPage() {
                       })
                     }
                   />
-                  <Input
-                    label="Price (BDT)"
-                    type="number"
-                    value={editingPackage.pkg.price === 0 ? '' : editingPackage.pkg.price}
-                    placeholder="0"
-                    onChange={e =>
-                      setEditingPackage({
-                        ...editingPackage,
-                        pkg: { ...editingPackage.pkg, price: e.target.value === '' ? 0 : Number(e.target.value) }
-                      })
-                    }
-                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label="Price (BDT) *"
+                      type="number"
+                      value={editingPackage.pkg.price === 0 || editingPackage.pkg.price === null ? '' : editingPackage.pkg.price}
+                      placeholder="0"
+                      onChange={e =>
+                        setEditingPackage({
+                          ...editingPackage,
+                          pkg: { ...editingPackage.pkg, price: e.target.value === '' ? 0 : Number(e.target.value) }
+                        })
+                      }
+                    />
+                    <Input
+                      label="Original Price / MRP (Optional)"
+                      type="number"
+                      value={!editingPackage.pkg.originalPrice ? '' : editingPackage.pkg.originalPrice}
+                      placeholder="Optional"
+                      onChange={e =>
+                        setEditingPackage({
+                          ...editingPackage,
+                          pkg: { ...editingPackage.pkg, originalPrice: e.target.value === '' ? undefined : Number(e.target.value) }
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label="Icon Emoji"
+                      value={editingPackage.pkg.icon || '🪙'}
+                      onChange={e =>
+                        setEditingPackage({
+                          ...editingPackage,
+                          pkg: { ...editingPackage.pkg, icon: e.target.value }
+                        })
+                      }
+                    />
+                    <Input
+                      label="Badge (Optional)"
+                      value={editingPackage.pkg.badge || ''}
+                      placeholder="e.g. BEST VALUE"
+                      onChange={e =>
+                        setEditingPackage({
+                          ...editingPackage,
+                          pkg: { ...editingPackage.pkg, badge: e.target.value }
+                        })
+                      }
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-xs font-bold text-white [html.light-theme_&]:text-slate-900 cursor-pointer pt-1">
+                    <input
+                      type="checkbox"
+                      checked={editingPackage.pkg.stock !== false}
+                      onChange={e =>
+                        setEditingPackage({
+                          ...editingPackage,
+                          pkg: { ...editingPackage.pkg, stock: e.target.checked }
+                        })
+                      }
+                      className="rounded accent-emerald-600"
+                    />
+                    <span>In Stock (Available for Purchase)</span>
+                  </label>
                   <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
                     <Button variant="ghost" size="sm" onClick={() => setEditingPackage(null)}>
                       Cancel
@@ -1385,14 +1640,14 @@ export default function AdminPage() {
               {editingCoupon && (
                 <div className="space-y-3">
                   <Input
-                    label="Coupon Code (UPPERCASE)"
+                    label="Coupon Code (UPPERCASE) *"
                     value={editingCoupon.code}
                     onChange={e => setEditingCoupon({ ...editingCoupon, code: e.target.value.toUpperCase() })}
                     className="uppercase font-mono"
                   />
                   <div className="grid grid-cols-2 gap-3">
                     <Input
-                      label="Discount Amount (BDT)"
+                      label="Discount Amount (BDT) *"
                       type="number"
                       value={editingCoupon.discount === 0 ? '' : editingCoupon.discount}
                       placeholder="0"
@@ -1406,11 +1661,35 @@ export default function AdminPage() {
                       onChange={e => setEditingCoupon({ ...editingCoupon, minSpend: e.target.value === '' ? 0 : Number(e.target.value) })}
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label="Max Usage Limit"
+                      type="number"
+                      value={!editingCoupon.maxUsage ? '' : editingCoupon.maxUsage}
+                      placeholder="1000"
+                      onChange={e => setEditingCoupon({ ...editingCoupon, maxUsage: e.target.value === '' ? undefined : Number(e.target.value) })}
+                    />
+                    <Input
+                      label="Expiry Date (Optional)"
+                      type="date"
+                      value={editingCoupon.expiryDate || ''}
+                      onChange={e => setEditingCoupon({ ...editingCoupon, expiryDate: e.target.value })}
+                    />
+                  </div>
                   <Input
                     label="Description / Voucher Terms"
                     value={editingCoupon.description}
                     onChange={e => setEditingCoupon({ ...editingCoupon, description: e.target.value })}
                   />
+                  <label className="flex items-center gap-2 text-xs font-bold text-white [html.light-theme_&]:text-slate-900 cursor-pointer pt-1">
+                    <input
+                      type="checkbox"
+                      checked={editingCoupon.active !== false}
+                      onChange={e => setEditingCoupon({ ...editingCoupon, active: e.target.checked })}
+                      className="rounded accent-emerald-600"
+                    />
+                    <span>Active & Redeemable by Customers</span>
+                  </label>
                   <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
                     <Button variant="ghost" size="sm" onClick={() => setEditingCoupon(null)}>
                       Cancel
@@ -1437,8 +1716,17 @@ export default function AdminPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
+                  onClick={fetchStoreData}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white [html.light-theme_&]:text-slate-800 [html.light-theme_&]:bg-black/5 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Refresh Live Orders"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Refresh</span>
+                </button>
+                <button
+                  type="button"
                   onClick={exportOrdersCSV}
-                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white [html.light-theme_&]:text-slate-800 [html.light-theme_&]:bg-black/5 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   title="Export Orders to CSV"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -1446,7 +1734,7 @@ export default function AdminPage() {
                 </button>
                 <input
                   type="text"
-                  placeholder="Search by Order ID, phone or digits..."
+                  placeholder="Search Order ID, UID, phone, digits..."
                   value={orderSearch}
                   onChange={e => setOrderSearch(e.target.value)}
                   className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5"
@@ -1471,19 +1759,21 @@ export default function AdminPage() {
             <div className="space-y-3">
               {storeData.orders
                 .filter(o => {
+                  const q = orderSearch.toLowerCase();
+                  const customVals = Object.values(o.customData || {}).map(v => String(v).toLowerCase());
                   const matchSearch =
-                    !orderSearch ||
-                    o.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
-                    o.senderLastDigits?.includes(orderSearch) ||
-                    o.customData?.whatsapp?.includes(orderSearch) ||
-                    o.customData?.player_id?.includes(orderSearch);
+                    !q ||
+                    o.id.toLowerCase().includes(q) ||
+                    (o.gameName || '').toLowerCase().includes(q) ||
+                    (o.senderLastDigits || '').toLowerCase().includes(q) ||
+                    customVals.some(val => val.includes(q));
                   const matchFilter = orderFilter === 'all' || o.status === orderFilter;
                   return matchSearch && matchFilter;
                 })
                 .map(order => (
                   <Card key={order.id} variant="glass" className="p-4 space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-mono font-black text-white [html.light-theme_&]:text-slate-900 bg-white/10 [html.light-theme_&]:bg-black/10 px-2 py-0.5 rounded-md">
                           {order.id}
                         </span>
@@ -1491,7 +1781,7 @@ export default function AdminPage() {
                         <span className="text-xs font-extrabold text-emerald-400">{formatCurrency(order.totalAmount)}</span>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] text-gray-400 [html.light-theme_&]:text-slate-600 font-bold">Status:</span>
                         <select
                           value={order.status}
@@ -1514,6 +1804,22 @@ export default function AdminPage() {
                           <option value="Refunded" className="bg-black text-white">Refunded 💳</option>
                           <option value="Cancelled" className="bg-black text-white">Cancelled ❌</option>
                         </select>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={<Edit2 className="w-3.5 h-3.5" />}
+                          onClick={() => setEditingOrderNote({ orderId: order.id, status: order.status, note: order.adminNotes || '' })}
+                          title="Add/Edit Admin Note"
+                        >
+                          Note
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          icon={<Trash2 className="w-3.5 h-3.5" />}
+                          onClick={() => handleDeleteOrder(order.id)}
+                          title="Delete Order"
+                        />
                       </div>
                     </div>
 
@@ -1532,16 +1838,46 @@ export default function AdminPage() {
                     </div>
 
                     <div className="p-2.5 rounded-xl bg-black/40 [html.light-theme_&]:bg-slate-100 border border-white/5 [html.light-theme_&]:border-black/10 text-xs flex flex-wrap gap-4 text-gray-300 [html.light-theme_&]:text-slate-800">
-                      {Object.entries(order.customData).map(([k, v]) => (
+                      {Object.entries(order.customData || {}).map(([k, v]) => (
                         <div key={k}>
                           <span className="text-gray-400 [html.light-theme_&]:text-slate-500 capitalize">{k.replace('_', ' ')}:</span>{' '}
                           <span className="font-mono text-white [html.light-theme_&]:text-slate-900 font-bold">{v}</span>
                         </div>
                       ))}
                     </div>
+
+                    {order.adminNotes && (
+                      <div className="text-[11px] text-amber-300 [html.light-theme_&]:text-amber-700 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl">
+                        <strong>Admin Note:</strong> {order.adminNotes}
+                      </div>
+                    )}
                   </Card>
                 ))}
             </div>
+
+            {/* Order Note Modal */}
+            <Modal isOpen={Boolean(editingOrderNote)} onClose={() => setEditingOrderNote(null)} title="Update Order Admin Note">
+              {editingOrderNote && (
+                <div className="space-y-3">
+                  <div className="text-xs text-gray-400">
+                    Order ID: <strong className="text-white font-mono">{editingOrderNote.orderId}</strong>
+                  </div>
+                  <textarea
+                    rows={3}
+                    value={editingOrderNote.note}
+                    onChange={e => setEditingOrderNote({ ...editingOrderNote, note: e.target.value })}
+                    placeholder="Enter internal admin note or customer delivery info..."
+                    className="w-full p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5 focus:outline-none focus:border-rose-500"
+                  />
+                  <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
+                    <Button variant="ghost" size="sm" onClick={() => setEditingOrderNote(null)}>Cancel</Button>
+                    <Button variant="primary" size="sm" onClick={() => handleUpdateOrderStatus(editingOrderNote.orderId, editingOrderNote.status, editingOrderNote.note)}>
+                      Save Note
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Modal>
           </div>
         )}
 
@@ -1551,10 +1887,10 @@ export default function AdminPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-black text-white [html.light-theme_&]:text-slate-900">User & Access Management (RBAC)</h2>
-                <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Control gamer accounts, assign Super Admin privileges, and adjust wallet balances</p>
+                <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Create accounts, assign Admin/Staff/User roles, suspend users, and adjust wallet balances</p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
                   <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
@@ -1565,6 +1901,23 @@ export default function AdminPage() {
                     className="pl-8 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5"
                   />
                 </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={<Plus className="w-3.5 h-3.5" />}
+                  onClick={() =>
+                    setCreatingUser({
+                      name: '',
+                      email: '',
+                      phone: '',
+                      password: '',
+                      role: 'user',
+                      walletBalance: 0,
+                    })
+                  }
+                >
+                  Add User / Staff
+                </Button>
               </div>
             </div>
 
@@ -1581,9 +1934,9 @@ export default function AdminPage() {
               </Card>
               <Card variant="glass" className="p-4 flex items-center justify-between">
                 <div>
-                  <div className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600 font-bold">Super Admins</div>
+                  <div className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600 font-bold">Admins & Staff</div>
                   <div className="text-2xl font-black text-white [html.light-theme_&]:text-slate-900 mt-1">
-                    {(storeData.users || []).filter(u => u.role === 'admin').length}
+                    {(storeData.users || []).filter(u => ['super_admin', 'admin', 'staff'].includes(u.role)).length}
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-2xl bg-rose-600/20 border border-rose-500/40 flex items-center justify-center text-rose-400">
@@ -1594,7 +1947,7 @@ export default function AdminPage() {
                 <div>
                   <div className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600 font-bold">Standard Gamers</div>
                   <div className="text-2xl font-black text-white [html.light-theme_&]:text-slate-900 mt-1">
-                    {(storeData.users || []).filter(u => u.role !== 'admin').length}
+                    {(storeData.users || []).filter(u => u.role === 'user').length}
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
@@ -1614,7 +1967,8 @@ export default function AdminPage() {
                   u.role.toLowerCase().includes(userSearch.toLowerCase())
                 )
                 .map(targetUser => {
-                  const isTargetAdmin = targetUser.role === 'admin';
+                  const isTargetAdmin = targetUser.role === 'admin' || targetUser.role === 'super_admin';
+                  const isStaff = targetUser.role === 'staff';
                   return (
                     <Card
                       key={targetUser.id}
@@ -1622,10 +1976,12 @@ export default function AdminPage() {
                       className="p-4 flex flex-col justify-between space-y-3 relative overflow-hidden"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0 ${
                             isTargetAdmin
                               ? 'bg-rose-600 shadow-md shadow-rose-950/40'
+                              : isStaff
+                              ? 'bg-cyan-600 shadow-md shadow-cyan-950/40'
                               : 'bg-white/10 [html.light-theme_&]:bg-black/10 text-white [html.light-theme_&]:text-slate-800'
                           }`}>
                             {isTargetAdmin ? <Crown className="w-5 h-5 text-white" /> : targetUser.name.charAt(0).toUpperCase()}
@@ -1640,9 +1996,11 @@ export default function AdminPage() {
                           </div>
                         </div>
 
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 flex-shrink-0 ${
                           isTargetAdmin
                             ? 'bg-rose-600/20 text-rose-400 [html.light-theme_&]:text-rose-600 border border-rose-500/40'
+                            : isStaff
+                            ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
                             : 'bg-white/10 [html.light-theme_&]:bg-black/5 text-gray-300 [html.light-theme_&]:text-slate-700'
                         }`}>
                           {isTargetAdmin ? <Crown className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
@@ -1650,26 +2008,103 @@ export default function AdminPage() {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10 [html.light-theme_&]:border-black/10">
+                      <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10 [html.light-theme_&]:border-black/10 gap-2">
                         <div className="text-gray-400 [html.light-theme_&]:text-slate-600">
-                          Wallet Balance: <span className="font-extrabold text-emerald-400">BDT {targetUser.walletBalance || 0}</span>
+                          Wallet: <span className="font-extrabold text-emerald-400">BDT {targetUser.walletBalance || 0}</span>
+                          {targetUser.status && targetUser.status !== 'active' && (
+                            <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 uppercase font-bold">{targetUser.status}</span>
+                          )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          icon={<Edit2 className="w-3.5 h-3.5" />}
-                          onClick={() => setEditingUser({ ...targetUser })}
-                        >
-                          Edit Role
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={<Edit2 className="w-3.5 h-3.5" />}
+                            onClick={() => setEditingUser({ ...targetUser })}
+                          >
+                            Edit
+                          </Button>
+                          {targetUser.id !== user?.id && (
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              icon={<Trash2 className="w-3.5 h-3.5" />}
+                              onClick={() => handleDeleteUser(targetUser.id, targetUser.email || targetUser.name)}
+                            />
+                          )}
+                        </div>
                       </div>
                     </Card>
                   );
                 })}
             </div>
 
-            {/* Edit User Modal with Fixed Number Input */}
-            <Modal isOpen={Boolean(editingUser)} onClose={() => setEditingUser(null)} title="Edit User Role & Wallet Balance">
+            {/* Create User Modal */}
+            <Modal isOpen={Boolean(creatingUser)} onClose={() => setCreatingUser(null)} title="Add New User / Staff / Admin">
+              {creatingUser && (
+                <div className="space-y-3">
+                  <Input
+                    label="Full Name *"
+                    value={creatingUser.name}
+                    onChange={e => setCreatingUser({ ...creatingUser, name: e.target.value })}
+                    placeholder="e.g. Support Staff"
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="Email Address *"
+                      type="email"
+                      value={creatingUser.email}
+                      onChange={e => setCreatingUser({ ...creatingUser, email: e.target.value })}
+                      placeholder="staff@example.com"
+                    />
+                    <Input
+                      label="Phone Number"
+                      value={creatingUser.phone}
+                      onChange={e => setCreatingUser({ ...creatingUser, phone: e.target.value })}
+                      placeholder="017XXXXXXXX"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="Password (min 6 chars) *"
+                      type="password"
+                      value={creatingUser.password}
+                      onChange={e => setCreatingUser({ ...creatingUser, password: e.target.value })}
+                      placeholder="••••••"
+                    />
+                    <Input
+                      label="Initial Wallet Balance"
+                      type="number"
+                      value={creatingUser.walletBalance === 0 ? '' : creatingUser.walletBalance}
+                      placeholder="0"
+                      onChange={e => setCreatingUser({ ...creatingUser, walletBalance: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-300 [html.light-theme_&]:text-slate-800">Assign Role *</label>
+                    <select
+                      value={creatingUser.role}
+                      onChange={e => setCreatingUser({ ...creatingUser, role: e.target.value as UserProfile['role'] })}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold"
+                    >
+                      <option value="user" className="bg-[#0b172a] text-white">Regular Gamer (user)</option>
+                      <option value="staff" className="bg-[#0b172a] text-white">Support Staff (staff)</option>
+                      <option value="admin" className="bg-[#0b172a] text-white">Administrator (admin)</option>
+                      {user?.role === 'super_admin' && (
+                        <option value="super_admin" className="bg-[#0b172a] text-white">👑 Super Admin (super_admin)</option>
+                      )}
+                    </select>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-3 border-t border-white/10">
+                    <Button variant="ghost" size="sm" onClick={() => setCreatingUser(null)}>Cancel</Button>
+                    <Button variant="primary" size="sm" onClick={() => handleCreateUser(creatingUser)}>Create Account</Button>
+                  </div>
+                </div>
+              )}
+            </Modal>
+
+            {/* Edit User Modal with All 4 RBAC Roles + Status */}
+            <Modal isOpen={Boolean(editingUser)} onClose={() => setEditingUser(null)} title="Edit User Role, Status & Wallet">
               {editingUser && (
                 <div className="space-y-4">
                   <Input
@@ -1692,21 +2127,37 @@ export default function AdminPage() {
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-300 [html.light-theme_&]:text-slate-800">
-                      System Role / Privileges *
-                    </label>
-                    <select
-                      value={editingUser.role}
-                      onChange={e => setEditingUser({ ...editingUser, role: e.target.value as 'user' | 'admin' })}
-                      className="w-full px-3 py-2 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/15 [html.light-theme_&]:border-black/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold focus:outline-none focus:border-rose-500"
-                    >
-                      <option value="user" className="bg-[#0b172a] text-white">Regular Gamer (User)</option>
-                      <option value="admin" className="bg-[#0b172a] text-white">👑 Super Admin (Full Control Center Access)</option>
-                    </select>
-                    <p className="text-[10px] text-gray-400">
-                      Granting Admin privilege authorizes this account to manage all database records and CMS content.
-                    </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-gray-300 [html.light-theme_&]:text-slate-800">
+                        System Role / Privileges *
+                      </label>
+                      <select
+                        value={editingUser.role}
+                        onChange={e => setEditingUser({ ...editingUser, role: e.target.value as UserProfile['role'] })}
+                        className="w-full px-3 py-2 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/15 [html.light-theme_&]:border-black/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold focus:outline-none focus:border-rose-500"
+                      >
+                        <option value="user" className="bg-[#0b172a] text-white">Regular Gamer (user)</option>
+                        <option value="staff" className="bg-[#0b172a] text-white">Support Staff (staff)</option>
+                        <option value="admin" className="bg-[#0b172a] text-white">Administrator (admin)</option>
+                        <option value="super_admin" className="bg-[#0b172a] text-white">👑 Super Admin (super_admin)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-gray-300 [html.light-theme_&]:text-slate-800">
+                        Account Status
+                      </label>
+                      <select
+                        value={editingUser.status || 'active'}
+                        onChange={e => setEditingUser({ ...editingUser, status: e.target.value as 'active' | 'suspended' | 'banned' })}
+                        className="w-full px-3 py-2 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/15 [html.light-theme_&]:border-black/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold focus:outline-none focus:border-rose-500"
+                      >
+                        <option value="active" className="bg-[#0b172a] text-white">🟢 Active</option>
+                        <option value="suspended" className="bg-[#0b172a] text-white">🟡 Suspended</option>
+                        <option value="banned" className="bg-[#0b172a] text-white">🔴 Banned</option>
+                      </select>
+                    </div>
                   </div>
 
                   <Input
@@ -1743,8 +2194,17 @@ export default function AdminPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  onClick={fetchStoreData}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white [html.light-theme_&]:text-slate-800 [html.light-theme_&]:bg-black/5 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Refresh Logs"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Refresh</span>
+                </button>
+                <button
+                  type="button"
                   onClick={exportAuditCSV}
-                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white [html.light-theme_&]:text-slate-800 [html.light-theme_&]:bg-black/5 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   title="Export Audit Trail to CSV"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -1878,10 +2338,33 @@ export default function AdminPage() {
             </Card>
 
             <Card variant="glass" className="p-5 space-y-3">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">System Connectivity</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">System Connectivity</h3>
+                <button
+                  type="button"
+                  onClick={checkSystemHealth}
+                  className="text-[11px] font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Ping /api/health</span>
+                </button>
+              </div>
+              <div className="flex items-center justify-between text-xs py-1 border-b border-white/5">
+                <span>Live Database Health:</span>
+                {healthCheck?.status === 'ok' ? (
+                  <span className="font-bold text-emerald-400 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Connected (OK)
+                  </span>
+                ) : (
+                  <span className="font-bold text-red-400">
+                    {healthCheck?.category ? `Error (${healthCheck.category})` : 'Checking...'}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center justify-between text-xs py-1 border-b border-white/5">
                 <span>Database Engine:</span>
-                <span className="font-bold text-emerald-400">MongoDB Atlas Cloud (cluster0.edizqnd.mongodb.net)</span>
+                <span className="font-bold text-emerald-400">MongoDB Atlas Cloud</span>
               </div>
               <div className="flex items-center justify-between text-xs py-1 border-b border-white/5">
                 <span>Image Storage CDN:</span>
@@ -1889,7 +2372,7 @@ export default function AdminPage() {
               </div>
               <div className="flex items-center justify-between text-xs py-1">
                 <span>Authentication Provider:</span>
-                <span className="font-bold text-cyan-400">Universal Jose JWT (HttpOnly Cookie) & Firebase</span>
+                <span className="font-bold text-cyan-400">Jose JWT (HttpOnly Cookie) & Firebase</span>
               </div>
             </Card>
           </div>

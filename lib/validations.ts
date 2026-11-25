@@ -47,12 +47,12 @@ export const HeroSlideSchema = z.object({
   id: z.string(),
   gameId: z.string(),
   slug: z.string(),
-  title: z.string(),
-  subtitle: z.string(),
-  badge: z.string(),
-  deliveryTime: z.string(),
-  image: z.string(),
-  color: z.string().optional(),
+  title: z.string().min(1),
+  subtitle: z.string().nullish().default(''),
+  badge: z.string().nullish().default(''),
+  deliveryTime: z.string().nullish().default('1-10 Mins'),
+  image: z.string().min(1),
+  color: z.string().nullish(),
 }).passthrough();
 
 /**
@@ -60,17 +60,17 @@ export const HeroSlideSchema = z.object({
  */
 export const SiteSettingsSchema = z.object({
   siteName: z.string().min(1).max(100),
-  logo: z.string().max(500).optional(),
+  logo: z.string().max(500).nullish(),
   heroTitle: z.string().min(1).max(150),
   heroSubtitle: z.string().min(1).max(250),
   heroBanner: z.string().min(1).max(500),
   tickerText: z.string().min(1).max(500),
   bkashNumber: z.string().min(5).max(30),
   nagadNumber: z.string().min(5).max(30),
-  supportPhone: z.string().min(5).max(30),
-  whatsappUrl: z.string().min(5).max(250),
-  facebookUrl: z.string().max(250).optional(),
-  slides: z.array(HeroSlideSchema).optional(),
+  supportPhone: z.string().max(30).nullish(),
+  whatsappUrl: z.string().max(250).nullish(),
+  facebookUrl: z.string().max(250).nullish(),
+  slides: z.array(HeroSlideSchema).nullish(),
   whyChooseUs: z.any().optional(),
 }).passthrough();
 
@@ -80,9 +80,24 @@ export const SiteSettingsSchema = z.object({
 export const TrustBadgeSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1).max(100),
-  sub: z.string().min(1).max(200).optional(),
-  desc: z.string().min(1).max(200).optional(),
+  sub: z.string().max(200).nullish(),
+  subtitle: z.string().max(200).nullish(),
+  desc: z.string().max(200).nullish(),
   icon: z.string().min(1).max(50),
+}).passthrough();
+
+/**
+ * Schema for Package item
+ */
+export const PackageSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(100),
+  price: z.coerce.number().nonnegative().nullable().optional(),
+  originalPrice: z.coerce.number().nonnegative().nullable().optional(),
+  stock: z.boolean().optional(),
+  inStock: z.boolean().optional(),
+  icon: z.string().max(30).nullish(),
+  badge: z.string().max(50).nullish(),
 }).passthrough();
 
 /**
@@ -92,23 +107,16 @@ export const GameSchema = z.object({
   id: z.string().min(1),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
   name: z.string().min(1).max(100),
-  name_bn: z.string().max(100).optional(),
-  poster: z.string().min(1).max(500),
-  category_name: z.string().min(1).max(100),
-  badge: z.string().min(1).max(50),
-  badge_color: z.string().min(1).max(30),
-  delivery_time: z.string().min(1).max(50),
-  description: z.string().max(1000).optional(),
-  packages: z.array(
-    z.object({
-      id: z.string().min(1),
-      name: z.string().min(1).max(100),
-      price: z.number().int().positive(),
-      originalPrice: z.number().int().positive().optional(),
-      inStock: z.boolean().default(true),
-      badge: z.string().max(50).optional(),
-    }).passthrough()
-  ).default([]),
+  name_bn: z.string().max(100).nullish(),
+  poster: z.string().max(500).nullish(),
+  image: z.string().max(500).nullish(),
+  category_name: z.string().max(100).nullish(),
+  badge: z.string().max(50).nullish(),
+  badge_color: z.string().max(30).nullish(),
+  delivery_time: z.string().max(50).nullish(),
+  description: z.string().max(1000).nullish(),
+  active: z.boolean().optional(),
+  packages: z.array(PackageSchema).default([]),
 }).passthrough();
 
 /**
@@ -117,27 +125,40 @@ export const GameSchema = z.object({
 export const CouponSchema = z.object({
   id: z.string().min(1),
   code: z.string().min(1).max(30),
-  discount: z.number().nonnegative('Discount must be positive'),
-  minSpend: z.number().nonnegative().default(0),
-  description: z.string().max(250).optional().default(''),
-  colorClass: z.string().max(50).optional().default('coupon-red'),
+  discount: z.coerce.number().nonnegative('Discount must be positive'),
+  minSpend: z.coerce.number().nonnegative().default(0),
+  description: z.string().max(250).nullish().default(''),
+  colorClass: z.string().max(50).nullish().default('coupon-red'),
   active: z.boolean().default(true),
   isActive: z.boolean().optional(),
-  expiryDate: z.string().max(50).optional(),
+  maxUsage: z.coerce.number().int().positive().nullish(),
+  expiryDate: z.string().max(50).nullish(),
 }).passthrough();
 
 /**
- * Schema for User profile and role updates
+ * Schema for User profile and role updates (Handles nullish values from MongoDB/Firebase gracefully)
  */
 export const UserUpdateSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1).max(100).optional(),
-  email: z.string().email().optional().or(z.literal('')),
-  phone: z.string().max(30).optional(),
-  role: z.enum(['user', 'staff', 'admin', 'super_admin']),
-  walletBalance: z.number().nonnegative().optional(),
-  status: z.enum(['active', 'suspended', 'banned']).optional(),
+  name: z.string().min(1).max(100).nullish(),
+  email: z.string().email().or(z.literal('')).nullish(),
+  phone: z.string().max(30).nullish(),
+  role: z.enum(['user', 'staff', 'admin', 'super_admin']).optional(),
+  walletBalance: z.coerce.number().nonnegative().nullish(),
+  status: z.enum(['active', 'suspended', 'banned']).nullish(),
 }).passthrough();
+
+/**
+ * Schema for Admin creating a new user/staff/admin
+ */
+export const UserCreateSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+  email: z.string().email('Valid email address required').max(120),
+  phone: z.string().max(30).nullish(),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(100),
+  role: z.enum(['user', 'staff', 'admin', 'super_admin']).default('user'),
+  walletBalance: z.coerce.number().nonnegative().default(0),
+});
 
 /**
  * Schema for Order status updates

@@ -107,10 +107,28 @@ export async function getStoreData(): Promise<StoreData> {
     slides: settingsDoc?.settings?.slides || []
   };
 
+  const normalizedGames = (games || []).map(g => ({
+    ...g,
+    poster: g.poster || (g as any).image || '/banner.webp',
+    category_name: g.category_name || (g as any).publisher || g.category || 'Game Top-Up',
+    badge: g.badge || 'HOT',
+    badge_color: g.badge_color || '#e11d48',
+    delivery_time: g.delivery_time || (g as any).deliveryTime || '1-10 Mins',
+    packages: (g.packages || []).map(p => ({
+      ...p,
+      stock: p.stock ?? (p as any).inStock ?? true,
+    })),
+  }));
+
+  const normalizedBadges = (settingsDoc?.trustBadges || []).map((b: any) => ({
+    ...b,
+    sub: b.sub || b.subtitle || '',
+  }));
+
   return {
     settings: mergedSettings,
-    trustBadges: settingsDoc?.trustBadges || [],
-    games: games || [],
+    trustBadges: normalizedBadges,
+    games: normalizedGames,
     coupons: coupons || [],
     orders: orders || [],
     auditLogs: auditLogs || [],
@@ -161,7 +179,7 @@ export async function updateSiteSettings(
 
   const updateDoc: any = {};
   if (settings) updateDoc['settings'] = settings;
-  if (trustBadges) updateDoc['trustBadges'] = trustBadges;
+  if (Array.isArray(trustBadges)) updateDoc['trustBadges'] = trustBadges;
 
   await mongo.db().collection('settings').updateOne(
     { _id: 'main' as any },
@@ -169,7 +187,7 @@ export async function updateSiteSettings(
     { upsert: true }
   );
 
-  await addAuditLog('UPDATED', 'Site Settings & CMS', 'Updated branding, ticker, or payment details', author);
+  await addAuditLog('UPDATED', 'Site Settings & CMS', 'Updated branding, ticker, slides, or trust badges', author);
   return getStoreData();
 }
 
@@ -179,8 +197,21 @@ export async function updateSiteSettings(
 export async function saveGame(game: GameItem, author: string = 'admin'): Promise<GameItem> {
   const mongo = await getRequiredMongoClient('saveGame');
 
-  const docToSave = { ...game, isArchived: false };
-  delete (docToSave as any)._id;
+  const normalizedPackages = (game.packages || []).map((p: any) => ({
+    ...p,
+    stock: p.stock ?? p.inStock ?? true,
+    inStock: p.stock ?? p.inStock ?? true,
+  }));
+
+  const docToSave: any = {
+    ...game,
+    poster: game.poster || (game as any).image || '/banner.webp',
+    image: game.poster || (game as any).image || '/banner.webp',
+    packages: normalizedPackages,
+    active: game.active ?? true,
+    isArchived: false,
+  };
+  delete docToSave._id;
 
   const existing = await mongo.db().collection<GameItem>('games').findOne({ id: game.id } as any);
   const isNew = !existing;
@@ -198,7 +229,7 @@ export async function saveGame(game: GameItem, author: string = 'admin'): Promis
     author
   );
 
-  return game;
+  return docToSave;
 }
 
 /**
@@ -234,24 +265,34 @@ export async function savePackage(gameId: string, pkg: PackageItem, author: stri
   const game = await db.collection<GameItem>('games').findOne({ id: gameId } as any);
   if (!game) throw new Error('Game not found');
 
+  const normalizedPkg: PackageItem & { inStock?: boolean } = {
+    ...pkg,
+    stock: pkg.stock ?? (pkg as any).inStock ?? true,
+    inStock: pkg.stock ?? (pkg as any).inStock ?? true,
+  };
+
   if (!game.packages) game.packages = [];
-  const pIndex = game.packages.findIndex(p => p.id === pkg.id);
+  const pIndex = game.packages.findIndex(p => p.id === normalizedPkg.id);
   const isNew = pIndex === -1;
   if (isNew) {
-    game.packages.push(pkg);
+    game.packages.push(normalizedPkg);
   } else {
-    game.packages[pIndex] = pkg;
+    game.packages[pIndex] = normalizedPkg;
   }
 
-  await saveGame(game, author);
+  await db.collection('games').updateOne(
+    { id: gameId } as any,
+    { $set: { packages: game.packages } }
+  );
+
   await addAuditLog(
     isNew ? 'CREATED' : 'UPDATED',
-    `Package: ${pkg.name} (${game.name})`,
-    `${isNew ? 'Added package' : 'Updated package'}: ৳${pkg.price} (${pkg.stock ? 'In Stock' : 'Out of Stock'})`,
+    `Package: ${normalizedPkg.name} (${game.name})`,
+    `${isNew ? 'Added package' : 'Updated package'}: ৳${normalizedPkg.price} (${normalizedPkg.stock ? 'In Stock' : 'Out of Stock'})`,
     author
   );
 
-  return pkg;
+  return normalizedPkg;
 }
 
 /**
@@ -267,8 +308,11 @@ export async function deletePackage(gameId: string, pkgId: string, author: strin
   const pkg = game.packages?.find(p => p.id === pkgId);
   const pkgName = pkg ? pkg.name : pkgId;
 
-  game.packages = (game.packages || []).filter(p => p.id !== pkgId);
-  await saveGame(game, author);
+  const updatedPackages = (game.packages || []).filter(p => p.id !== pkgId);
+  await db.collection('games').updateOne(
+    { id: gameId } as any,
+    { $set: { packages: updatedPackages } }
+  );
 
   await addAuditLog('DELETED', `Package: ${pkgName} (${game.name})`, `Deleted package ${pkgId}`, author);
   return true;
@@ -549,6 +593,26 @@ export async function getUserByEmail(email: string): Promise<UserProfile | null>
 }
 
 /**
+ * Delete an order from MongoDB
+ */
+export async function deleteOrder(orderId: string, author: string = 'admin'): Promise<boolean> {
+  const mongo = await getRequiredMongoClient('deleteOrder');
+  const db = mongo.db();
+
+  const existing = await db.collection<OrderItem>('orders').findOne({ id: orderId } as any);
+  if (!existing) throw new Error('Order not found');
+
+  await db.collection('orders').deleteOne({ id: orderId } as any);
+  await addAuditLog(
+    'DELETED',
+    `Order: ${orderId}`,
+    `Deleted order (${existing.gameName} - ৳${existing.totalAmount})`,
+    author
+  );
+  return true;
+}
+
+/**
  * Update user profile or privileges
  */
 export async function updateUser(
@@ -559,8 +623,11 @@ export async function updateUser(
   const mongo = await getRequiredMongoClient('updateUser');
 
   const db = mongo.db();
-  const docToSave = { ...updates };
-  delete (docToSave as any)._id;
+  const docToSave: Record<string, any> = {};
+  for (const [key, val] of Object.entries(updates)) {
+    if (key === '_id' || key === 'password' || val === undefined || val === null) continue;
+    docToSave[key] = val;
+  }
 
   await db.collection('users').updateOne(
     { id: userId } as any,
@@ -569,15 +636,86 @@ export async function updateUser(
   );
 
   const updated = await db.collection<UserProfile>('users').findOne({ id: userId } as any);
+  if (updated) {
+    delete (updated as any).password;
+  }
 
   await addAuditLog(
     'UPDATED',
-    `User: ${userId}`,
-    `Updated fields: ${Object.keys(updates).join(', ')}`,
+    `User: ${updates.email || updates.name || userId}`,
+    `Updated fields: ${Object.keys(docToSave).join(', ')}${docToSave.role ? ` (Role -> ${docToSave.role})` : ''}`,
     author
   );
 
   return updated;
+}
+
+/**
+ * Create a new user/staff/admin directly from Admin Panel
+ */
+export async function createUserByAdmin(
+  userData: {
+    name: string;
+    email: string;
+    phone?: string | null;
+    passwordHash: string;
+    role: UserProfile['role'];
+    walletBalance: number;
+  },
+  author: string = 'Admin'
+): Promise<UserProfile> {
+  const mongo = await getRequiredMongoClient('createUserByAdmin');
+  const db = mongo.db();
+
+  const cleanEmail = userData.email.toLowerCase().trim();
+  const existing = await db.collection('users').findOne({ email: cleanEmail });
+  if (existing) {
+    throw new Error(`A user with email '${cleanEmail}' already exists.`);
+  }
+
+  const newUser: any = {
+    id: `usr-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+    name: userData.name.trim(),
+    email: cleanEmail,
+    ...(userData.phone ? { phone: userData.phone.trim() } : {}),
+    password: userData.passwordHash,
+    role: userData.role || 'user',
+    walletBalance: Number(userData.walletBalance) || 0,
+    status: 'active',
+    createdAt: Date.now(),
+  };
+
+  await db.collection('users').insertOne(newUser);
+  const { password: _, ...safeUser } = newUser;
+
+  await addAuditLog(
+    'CREATED',
+    `User: ${cleanEmail}`,
+    `Created user account with role '${newUser.role}' and wallet ৳${newUser.walletBalance}`,
+    author
+  );
+
+  return safeUser as UserProfile;
+}
+
+/**
+ * Delete a user account from MongoDB
+ */
+export async function deleteUser(userId: string, author: string = 'Admin'): Promise<boolean> {
+  const mongo = await getRequiredMongoClient('deleteUser');
+  const db = mongo.db();
+
+  const existing = await db.collection<UserProfile>('users').findOne({ id: userId } as any);
+  if (!existing) throw new Error('User not found');
+
+  await db.collection('users').deleteOne({ id: userId } as any);
+  await addAuditLog(
+    'DELETED',
+    `User: ${existing.email || existing.name || userId}`,
+    `Deleted user account (Role was: ${existing.role})`,
+    author
+  );
+  return true;
 }
 
 /**

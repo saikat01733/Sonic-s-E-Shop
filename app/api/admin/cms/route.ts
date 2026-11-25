@@ -8,27 +8,36 @@ import {
   deletePackage,
   saveCoupon,
   deleteCoupon,
+  deleteOrder,
   getUsers,
+  getUserById,
+  createUserByAdmin,
   updateUser,
-  recordAuditLog,
+  deleteUser,
+  logDbError,
 } from '@/lib/db';
 import {
   SiteSettingsSchema,
+  TrustBadgeSchema,
   GameSchema,
+  PackageSchema,
   CouponSchema,
   UserUpdateSchema,
+  UserCreateSchema,
   sanitizeString,
 } from '@/lib/validations';
 import { requireAdmin } from '@/lib/auth-guard';
+import { hashPassword } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
-    const guard = await requireAdmin(req);
+    const guard = await requireAdmin(req, 'orders.read');
     if (!guard.authorized) return guard.errorResponse!;
 
     const data = await getStoreData();
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
+    logDbError('GET /api/admin/cms', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
@@ -55,12 +64,30 @@ export async function POST(req: NextRequest) {
         const parsedSettings = SiteSettingsSchema.safeParse(settings);
         if (!parsedSettings.success) {
           return NextResponse.json(
-            { success: false, error: parsedSettings.error.issues.map(i => i.message).join(', ') },
+            { success: false, error: parsedSettings.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ') },
             { status: 400 }
           );
         }
 
-        const updated = await updateSiteSettings(parsedSettings.data, trustBadges || [], author);
+        let validatedBadges: any[] | undefined = undefined;
+        if (Array.isArray(trustBadges)) {
+          validatedBadges = [];
+          for (const b of trustBadges) {
+            const parsedBadge = TrustBadgeSchema.safeParse(b);
+            if (!parsedBadge.success) {
+              return NextResponse.json(
+                { success: false, error: parsedBadge.error.issues.map(i => i.message).join(', ') },
+                { status: 400 }
+              );
+            }
+            validatedBadges.push({
+              ...parsedBadge.data,
+              sub: parsedBadge.data.sub || parsedBadge.data.subtitle || parsedBadge.data.desc || '',
+            });
+          }
+        }
+
+        const updated = await updateSiteSettings(parsedSettings.data as any, validatedBadges, author);
         return NextResponse.json({ success: true, data: updated });
       }
 
@@ -68,7 +95,7 @@ export async function POST(req: NextRequest) {
         const parsedGame = GameSchema.safeParse(payload);
         if (!parsedGame.success) {
           return NextResponse.json(
-            { success: false, error: parsedGame.error.issues.map(i => i.message).join(', ') },
+            { success: false, error: parsedGame.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ') },
             { status: 400 }
           );
         }
@@ -89,7 +116,14 @@ export async function POST(req: NextRequest) {
         if (!gameId || !pkg) {
           return NextResponse.json({ success: false, error: 'Missing gameId or package data' }, { status: 400 });
         }
-        const saved = await savePackage(gameId, pkg, author);
+        const parsedPkg = PackageSchema.safeParse(pkg);
+        if (!parsedPkg.success) {
+          return NextResponse.json(
+            { success: false, error: parsedPkg.error.issues.map(i => i.message).join(', ') },
+            { status: 400 }
+          );
+        }
+        const saved = await savePackage(gameId, parsedPkg.data as any, author);
         return NextResponse.json({ success: true, pkg: saved });
       }
 
@@ -122,38 +156,114 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true });
       }
 
+      case 'delete_order': {
+        const id = sanitizeString(payload?.id || '');
+        if (!id) return NextResponse.json({ success: false, error: 'Order ID required' }, { status: 400 });
+        await deleteOrder(id, author);
+        return NextResponse.json({ success: true });
+      }
+
       case 'get_users': {
         const users = await getUsers();
         return NextResponse.json({ success: true, users });
+      }
+
+      case 'create_user': {
+        const parsedCreate = UserCreateSchema.safeParse(payload);
+        if (!parsedCreate.success) {
+          return NextResponse.json(
+            { success: false, error: parsedCreate.error.issues.map(i => i.message).join(', ') },
+            { status: 400 }
+          );
+        }
+
+        if (parsedCreate.data.role === 'super_admin' && adminUser.role !== 'super_admin') {
+          return NextResponse.json(
+            { success: false, error: 'Only Super Administrators can create another Super Admin.' },
+            { status: 403 }
+          );
+        }
+
+        const passwordHash = await hashPassword(parsedCreate.data.password);
+        const created = await createUserByAdmin(
+          {
+            name: parsedCreate.data.name,
+            email: parsedCreate.data.email,
+            phone: parsedCreate.data.phone,
+            passwordHash,
+            role: parsedCreate.data.role,
+            walletBalance: parsedCreate.data.walletBalance,
+          },
+          author
+        );
+        return NextResponse.json({ success: true, user: created }, { status: 201 });
       }
 
       case 'update_user': {
         const parsedUser = UserUpdateSchema.safeParse(payload);
         if (!parsedUser.success) {
           return NextResponse.json(
-            { success: false, error: parsedUser.error.issues.map(i => i.message).join(', ') },
+            { success: false, error: parsedUser.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ') },
             { status: 400 }
           );
         }
 
-        // Only super_admin can promote or demote to/from admin or super_admin
-        if (parsedUser.data.role && parsedUser.data.role !== 'user') {
-          if (adminUser.role !== 'super_admin') {
+        const existingTarget = await getUserById(parsedUser.data.id);
+        const requestedRole = parsedUser.data.role;
+
+        // Only super_admin can assign super_admin or modify an existing super_admin's role
+        if (requestedRole) {
+          if (requestedRole === 'super_admin' && adminUser.role !== 'super_admin') {
             return NextResponse.json(
-              { success: false, error: 'Only Super Administrators can assign staff or admin roles.' },
+              { success: false, error: 'Only Super Administrators can assign the super_admin role.' },
+              { status: 403 }
+            );
+          }
+          if (existingTarget?.role === 'super_admin' && requestedRole !== 'super_admin' && adminUser.role !== 'super_admin') {
+            return NextResponse.json(
+              { success: false, error: 'Only Super Administrators can demote a Super Admin.' },
               { status: 403 }
             );
           }
         }
 
-        const updated = await updateUser(parsedUser.data.id, parsedUser.data as any, author);
+        const cleanUpdates: Record<string, any> = {};
+        if (parsedUser.data.name) cleanUpdates.name = sanitizeString(parsedUser.data.name);
+        if (parsedUser.data.email !== undefined && parsedUser.data.email !== null && parsedUser.data.email !== '') {
+          cleanUpdates.email = parsedUser.data.email.toLowerCase().trim();
+        }
+        if (parsedUser.data.phone !== undefined && parsedUser.data.phone !== null) {
+          cleanUpdates.phone = sanitizeString(parsedUser.data.phone);
+        }
+        if (requestedRole) cleanUpdates.role = requestedRole;
+        if (typeof parsedUser.data.walletBalance === 'number') {
+          cleanUpdates.walletBalance = parsedUser.data.walletBalance;
+        }
+        if (parsedUser.data.status) cleanUpdates.status = parsedUser.data.status;
+
+        const updated = await updateUser(parsedUser.data.id, cleanUpdates, author);
         return NextResponse.json({ success: true, user: updated });
+      }
+
+      case 'delete_user': {
+        const id = sanitizeString(payload?.id || '');
+        if (!id) return NextResponse.json({ success: false, error: 'User ID required' }, { status: 400 });
+        if (id === adminUser.id) {
+          return NextResponse.json({ success: false, error: 'You cannot delete your own active account.' }, { status: 400 });
+        }
+        const target = await getUserById(id);
+        if (target?.role === 'super_admin' && adminUser.role !== 'super_admin') {
+          return NextResponse.json({ success: false, error: 'Only Super Administrators can delete a Super Admin.' }, { status: 403 });
+        }
+        await deleteUser(id, author);
+        return NextResponse.json({ success: true });
       }
 
       default:
         return NextResponse.json({ success: false, error: 'Unknown CMS action' }, { status: 400 });
     }
   } catch (error: any) {
+    logDbError('POST /api/admin/cms', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

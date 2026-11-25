@@ -73,7 +73,7 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full pt-2 pb-2 px-2 sm:px-4 md:px-6 backdrop-blur-xl bg-[#030712]/60 [html.light-theme_&]:bg-slate-50/70 border-b border-white/5 [html.light-theme_&]:border-black/5 transition-all">
+      <header className="sticky top-0 z-[100] w-full pt-2 pb-2 px-2 sm:px-4 md:px-6 backdrop-blur-xl bg-[#030712]/80 [html.light-theme_&]:bg-slate-50/85 border-b border-white/5 [html.light-theme_&]:border-black/5 transition-all">
         <div className="max-w-6xl mx-auto liquid-glass-pill py-1.5 sm:py-2 px-2.5 sm:px-5 flex items-center justify-between gap-1.5 sm:gap-4 shadow-2xl flex-nowrap min-h-[44px]">
           {/* Brand Logo - STRICT 1-LINE HORIZONTAL ALIGNMENT (320px-1440px) */}
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group flex-shrink-0">
@@ -184,24 +184,28 @@ export default function Navbar({ settings, games = [] }: NavbarProps) {
                   <ChevronDown className="w-3 h-3 opacity-70" />
                 </button>
 
-                {/* Dynamic RBAC Dropdown Menu - Explicit absolute overlay so capsule never deforms */}
+                {/* Dynamic RBAC Dropdown Menu - Solid frosted glass surface with elevated z-index */}
                 {isUserMenuOpen && (
                   <div
-                    className="!absolute top-full right-0 mt-2 w-56 rounded-2xl liquid-glass bg-[#08172e]/95 [html.light-theme_&]:bg-white/95 border border-rose-500/30 [html.light-theme_&]:border-black/10 p-2 shadow-2xl z-50 text-xs space-y-1 backdrop-blur-3xl animate-fadeIn"
+                    className="!absolute top-full right-0 mt-2.5 w-64 rounded-2xl bg-[#0a101f]/95 [html.light-theme_&]:bg-white/95 border border-white/20 [html.light-theme_&]:border-slate-200 p-2 shadow-[0_24px_60px_rgba(0,0,0,0.85)] [html.light-theme_&]:shadow-2xl z-[110] text-xs space-y-1 backdrop-blur-2xl animate-fadeIn"
                     style={{ position: 'absolute' }}
                   >
                     {/* User Profile Header */}
-                    <div className="p-2 border-b border-white/10 [html.light-theme_&]:border-black/10 mb-1">
-                      <div className="font-bold text-white [html.light-theme_&]:text-slate-900 truncate">{user?.name}</div>
-                      <div className="text-[10px] text-gray-400 [html.light-theme_&]:text-slate-500 flex items-center justify-between mt-0.5">
-                        <span>{user?.phone || user?.email}</span>
+                    <div className="p-2.5 border-b border-white/10 [html.light-theme_&]:border-slate-200 mb-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-bold text-white [html.light-theme_&]:text-slate-900 truncate min-w-0 flex-1">
+                          {user?.name}
+                        </div>
                         <span
-                          className={`px-1.5 py-0.2 rounded-full font-extrabold uppercase text-[9px] ${
-                            isAdmin ? 'bg-rose-600/20 text-rose-400 [html.light-theme_&]:text-rose-600' : 'bg-white/10 text-white [html.light-theme_&]:text-slate-800'
+                          className={`px-2 py-0.5 rounded-full font-extrabold uppercase text-[9px] flex-shrink-0 ${
+                            isAdmin ? 'bg-rose-600/20 text-rose-400 [html.light-theme_&]:text-rose-600 border border-rose-500/30' : 'bg-white/10 text-white [html.light-theme_&]:text-slate-800'
                           }`}
                         >
                           {user?.role}
                         </span>
+                      </div>
+                      <div className="text-[11px] text-gray-400 [html.light-theme_&]:text-slate-500 truncate mt-1">
+                        {user?.email || user?.phone}
                       </div>
                     </div>
 
