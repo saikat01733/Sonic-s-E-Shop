@@ -138,7 +138,7 @@ export default function GameDetailClient({
               src={game.poster}
               alt={game.name}
               className="w-full h-full object-cover"
-              onError={(e: any) => (e.target.src = '/banner.jpg')}
+              onError={(e: any) => (e.target.src = '/banner.webp')}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#06080d] via-black/40 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#06080d]/80 via-transparent to-[#06080d]/80" />

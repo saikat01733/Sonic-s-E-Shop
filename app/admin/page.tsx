@@ -36,7 +36,9 @@ import {
   Palette,
   Menu,
   Download,
-  Key
+  Key,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { StoreData, GameItem, PackageItem, CouponItem, OrderItem, HeroSlide, TrustBadge, UserProfile } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
@@ -52,6 +54,22 @@ export default function AdminPage() {
   const [selectedGameId, setSelectedGameId] = useState<string>('efootball');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [kpiDateRange, setKpiDateRange] = useState<'all' | 'today' | '7d' | '30d'>('all');
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('sonic_theme') as 'dark' | 'light';
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.className = `${savedTheme}-theme`;
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('sonic_theme', next);
+    document.documentElement.className = `${next}-theme`;
+  };
 
   // Password Change State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -668,41 +686,20 @@ export default function AdminPage() {
   const totalRevenue = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row p-3 sm:p-5 gap-4">
+    <div className="min-h-screen max-w-[1440px] mx-auto flex flex-col lg:flex-row p-3 sm:p-4 lg:p-6 gap-4 lg:gap-6">
       {/* Toast Notification */}
       {saveMessage && (
         <div
-          className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-2xl backdrop-blur-xl animate-bounce ${
+          className={`fixed top-4 right-4 z-[140] px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-2xl backdrop-blur-xl animate-bounce ${
             saveMessage.type === 'success'
-              ? 'bg-emerald-600/90 text-white border border-emerald-400/40'
-              : 'bg-red-600/90 text-white border border-red-400/40'
+              ? 'bg-emerald-600/95 text-white border border-emerald-400/40'
+              : 'bg-red-600/95 text-white border border-red-400/40'
           }`}
         >
           {saveMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-200" /> : <AlertTriangle className="w-4 h-4 text-red-200" />}
           <span>{saveMessage.text}</span>
         </div>
       )}
-
-      {/* Mobile Top App Bar */}
-      <div className="md:hidden flex items-center justify-between p-3 rounded-2xl liquid-glass bg-white/[0.08] border border-white/15">
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => setIsMobileSidebarOpen(true)}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white cursor-pointer"
-            aria-label="Open Admin Menu"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-extrabold text-sm text-white">Sonic CMS</span>
-          </div>
-        </div>
-        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-600/30 text-rose-300 font-black border border-rose-500/40">
-          {activeTab.replace('_', ' ')}
-        </span>
-      </div>
 
       {/* Admin Sidebar Navigation */}
       <AdminSidebar
@@ -715,7 +712,69 @@ export default function AdminPage() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 space-y-6 overflow-y-auto">
+      <main className="flex-1 min-w-0 space-y-5 sm:space-y-6">
+        {/* Executive Top Control Bar (Responsive 320px - 1440px) */}
+        <header className="flex items-center justify-between gap-2 p-2.5 sm:px-4 sm:py-3 rounded-2xl bg-white/[0.05] [html.light-theme_&]:bg-white/90 border border-white/15 [html.light-theme_&]:border-slate-200 backdrop-blur-xl shadow-lg">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-xl bg-white/10 [html.light-theme_&]:bg-slate-100 hover:bg-white/20 text-white [html.light-theme_&]:text-slate-800 cursor-pointer flex-shrink-0"
+              aria-label="Open Admin Menu"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-black text-white [html.light-theme_&]:text-slate-900 truncate">
+                  {{
+                    dashboard: 'Overview & KPIs',
+                    site_cms: 'Site Branding & Info',
+                    hero_slides: 'Hero Carousel Slides',
+                    trust_badges: 'Trust Badges & Perks',
+                    games: 'Game Catalog (CRUD)',
+                    packages: 'Packages & Prices',
+                    coupons: 'Discount Coupons',
+                    orders: 'Live Orders Hub',
+                    users: 'Users & Roles (RBAC)',
+                    history: 'Audit History Logs',
+                    settings: 'Admin Security',
+                  }[activeTab] || activeTab}
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 [html.light-theme_&]:text-emerald-700 border border-emerald-500/25">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Live DB
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.06] [html.light-theme_&]:bg-slate-100 border border-white/10 [html.light-theme_&]:border-slate-200 text-[11px]">
+              <Crown className="w-3.5 h-3.5 text-rose-400 [html.light-theme_&]:text-rose-600" />
+              <span className="font-bold text-white [html.light-theme_&]:text-slate-900 max-w-[120px] truncate">{user?.name || 'Admin'}</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-rose-600/20 text-rose-400 [html.light-theme_&]:text-rose-600 font-black uppercase text-[9px]">{user?.role}</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-white/[0.07] [html.light-theme_&]:bg-slate-100 hover:bg-white/15 [html.light-theme_&]:hover:bg-slate-200 border border-white/10 [html.light-theme_&]:border-slate-200 text-gray-300 [html.light-theme_&]:text-slate-700 transition-colors cursor-pointer"
+              title="Toggle Dark / Light Mode"
+              aria-label="Toggle Dark / Light Mode"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-rose-300" /> : <Moon className="w-4 h-4 text-rose-600" />}
+            </button>
+
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-600/15 hover:bg-rose-600/25 text-rose-400 [html.light-theme_&]:text-rose-600 border border-rose-500/30 text-[11px] font-extrabold transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="hidden xs:inline sm:inline">Store</span>
+            </Link>
+          </div>
+        </header>
         {/* OVERVIEW & KPIS TAB */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
@@ -810,13 +869,18 @@ export default function AdminPage() {
 
         {/* SITE CMS & BRANDING TAB */}
         {activeTab === 'site_cms' && (
-          <form onSubmit={handleSaveSettings} className="space-y-6">
-            <div>
-              <h2 className="text-xl font-black text-white [html.light-theme_&]:text-slate-900">Site Branding & CMS Settings</h2>
-              <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Update logo, hero fallback banner, header ticker text, and payment account numbers</p>
+          <form onSubmit={handleSaveSettings} className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg sm:text-xl font-black text-white [html.light-theme_&]:text-slate-900">Site Branding & CMS Settings</h2>
+                <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Update logo, hero fallback banner, header ticker text, and payment account numbers</p>
+              </div>
+              <Button variant="primary" size="md" type="submit" icon={<Save className="w-4 h-4" />} className="w-full sm:w-auto">
+                Save Changes
+              </Button>
             </div>
 
-            <Card variant="glass" className="p-5 space-y-4">
+            <Card variant="glass" className="p-4 sm:p-5 space-y-3 border-white/15 [html.light-theme_&]:border-slate-200/80">
               <h3 className="text-sm font-extrabold text-white [html.light-theme_&]:text-slate-900 flex items-center gap-2">
                 <Flame className="w-4 h-4 text-rose-500" />
                 Header Notice Marquee Ticker
@@ -830,14 +894,14 @@ export default function AdminPage() {
                     settings: { ...storeData.settings, tickerText: e.target.value }
                   })
                 }
-                className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5 focus:outline-none focus:border-rose-500 font-medium"
+                className="w-full p-3 rounded-xl bg-white/[0.06] [html.light-theme_&]:bg-slate-100 border border-white/15 [html.light-theme_&]:border-slate-300 text-xs text-white [html.light-theme_&]:text-slate-900 focus:outline-none focus:border-rose-500 font-medium"
                 placeholder="Enter live announcement text displayed in top ticker capsule..."
               />
             </Card>
 
-            <Card variant="glass" className="p-5 space-y-5">
+            <Card variant="glass" className="p-4 sm:p-5 space-y-5 border-white/15 [html.light-theme_&]:border-slate-200/80">
               <h3 className="text-sm font-extrabold text-white [html.light-theme_&]:text-slate-900">Branding & Direct Image Uploads (ImgBB CDN)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 <ImageUploader
                   label="Official Store Logo"
                   value={storeData.settings.logo || ''}
@@ -847,7 +911,8 @@ export default function AdminPage() {
                       settings: { ...storeData.settings, logo: url }
                     })
                   }
-                  aspect="aspect-square"
+                  aspect="h-44"
+                  fit="contain"
                   hint="Directly upload PNG/WEBP logo file to ImgBB CDN"
                 />
 
@@ -860,12 +925,13 @@ export default function AdminPage() {
                       settings: { ...storeData.settings, heroBanner: url }
                     })
                   }
-                  aspect="aspect-[24/8]"
+                  aspect="h-44"
+                  fit="cover"
                   hint="Upload wide graphic banner (e.g. 1920x640) to ImgBB CDN"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-white/10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-white/10 [html.light-theme_&]:border-slate-200">
                 <Input
                   label="Store Name (Site Title)"
                   value={storeData.settings.siteName}
@@ -1764,12 +1830,12 @@ export default function AdminPage() {
                   placeholder="Search Order ID, UID, phone, digits..."
                   value={orderSearch}
                   onChange={e => setOrderSearch(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5"
+                  className="w-full sm:w-52 px-3 py-1.5 rounded-xl bg-white/[0.06] [html.light-theme_&]:bg-slate-100 border border-white/15 [html.light-theme_&]:border-slate-300 text-xs text-white [html.light-theme_&]:text-slate-900 placeholder:text-gray-500 focus:outline-none focus:border-rose-500"
                 />
                 <select
                   value={orderFilter}
                   onChange={e => setOrderFilter(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl bg-white/10 [html.light-theme_&]:bg-black/5 border border-white/15 [html.light-theme_&]:border-black/15 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold"
+                  className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-white/[0.08] [html.light-theme_&]:bg-slate-100 border border-white/15 [html.light-theme_&]:border-slate-300 text-xs text-white [html.light-theme_&]:text-slate-900 font-bold"
                 >
                   <option value="all" className="bg-black text-white">All Orders</option>
                   <option value="Pending" className="bg-black text-white">Pending ⏳</option>
@@ -2218,11 +2284,11 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Immutable record of administrative actions, edits, status updates, and deletions</p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={fetchStoreData}
-                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white [html.light-theme_&]:text-slate-800 [html.light-theme_&]:bg-black/5 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white [html.light-theme_&]:text-slate-800 [html.light-theme_&]:bg-slate-100 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   title="Refresh Logs"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -2231,7 +2297,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={exportAuditCSV}
-                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white [html.light-theme_&]:text-slate-800 [html.light-theme_&]:bg-black/5 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white [html.light-theme_&]:text-slate-800 [html.light-theme_&]:bg-slate-100 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   title="Export Audit Trail to CSV"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -2242,7 +2308,7 @@ export default function AdminPage() {
                   placeholder="Search audit history..."
                   value={historySearch}
                   onChange={e => setHistorySearch(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white [html.light-theme_&]:text-slate-900 [html.light-theme_&]:bg-black/5"
+                  className="w-full sm:w-52 px-3 py-1.5 rounded-xl bg-white/[0.06] [html.light-theme_&]:bg-slate-100 border border-white/15 [html.light-theme_&]:border-slate-300 text-xs text-white [html.light-theme_&]:text-slate-900 placeholder:text-gray-500 focus:outline-none focus:border-rose-500"
                 />
               </div>
             </div>
@@ -2292,116 +2358,120 @@ export default function AdminPage() {
 
         {/* SETTINGS / ADMIN SECURITY TAB */}
         {activeTab === 'settings' && (
-          <div className="space-y-6 max-w-lg">
+          <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-black text-white [html.light-theme_&]:text-slate-900">Admin Security & Infrastructure</h2>
+              <h2 className="text-lg sm:text-xl font-black text-white [html.light-theme_&]:text-slate-900">Admin Security & Infrastructure</h2>
               <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">Role-based privileges, authentication session, password management, and database connectivity</p>
             </div>
 
-            {/* Change Password Card */}
-            <Card variant="glass" className="p-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <Key className="w-5 h-5 text-rose-400" />
-                <h3 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">
-                  Change Administrator Password
-                </h3>
-              </div>
-              <p className="text-xs text-gray-400">
-                Update your account master password. Minimum 6 characters required.
-              </p>
-              <form onSubmit={handleChangePassword} className="space-y-3 pt-1">
-                <Input
-                  label="Current Password *"
-                  type="password"
-                  value={currentPassword}
-                  onChange={e => setCurrentPassword(e.target.value)}
-                  placeholder="Enter current password"
-                  required
-                />
-                <Input
-                  label="New Password (min 6 characters) *"
-                  type="password"
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  placeholder="Enter new strong password"
-                  required
-                />
-                <Input
-                  label="Confirm New Password *"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
-                  required
-                />
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  loading={passwordLoading}
-                  className="w-full mt-2"
-                >
-                  Update Admin Password
-                </Button>
-              </form>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+              {/* Change Password Card */}
+              <Card variant="glass" className="p-4 sm:p-5 space-y-4 border-white/15 [html.light-theme_&]:border-slate-200/80">
+                <div className="flex items-center gap-2">
+                  <Key className="w-5 h-5 text-rose-400 [html.light-theme_&]:text-rose-600" />
+                  <h3 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">
+                    Change Administrator Password
+                  </h3>
+                </div>
+                <p className="text-xs text-gray-400 [html.light-theme_&]:text-slate-600">
+                  Update your account master password. Minimum 6 characters required.
+                </p>
+                <form onSubmit={handleChangePassword} className="space-y-3 pt-1">
+                  <Input
+                    label="Current Password *"
+                    type="password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    required
+                  />
+                  <Input
+                    label="New Password (min 6 characters) *"
+                    type="password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder="Enter new strong password"
+                    required
+                  />
+                  <Input
+                    label="Confirm New Password *"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    required
+                  />
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="md"
+                    loading={passwordLoading}
+                    className="w-full mt-2"
+                  >
+                    Update Admin Password
+                  </Button>
+                </form>
+              </Card>
 
-            <Card variant="glass" className="p-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">
-                  Role-Based Access Control (RBAC)
-                </h3>
-              </div>
-              <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 leading-relaxed">
-                Manual PIN prompt has been eliminated. Administrative privileges are authenticated securely via verified session cookies and bcrypt-hashed credentials.
-              </p>
-              <div className="p-3 rounded-xl bg-white/5 [html.light-theme_&]:bg-black/5 border border-white/10 [html.light-theme_&]:border-black/10 flex items-center justify-between text-xs">
-                <span className="text-gray-400 [html.light-theme_&]:text-slate-600">Authenticated As:</span>
-                <span className="font-extrabold text-emerald-400 [html.light-theme_&]:text-emerald-700">
-                  {user?.email || user?.name || 'Administrator'} (Role: {user?.role || 'admin'})
-                </span>
-              </div>
-            </Card>
+              <div className="space-y-5">
+                <Card variant="glass" className="p-4 sm:p-5 space-y-4 border-white/15 [html.light-theme_&]:border-slate-200/80">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400 [html.light-theme_&]:text-emerald-600" />
+                    <h3 className="text-sm font-black text-white [html.light-theme_&]:text-slate-900">
+                      Role-Based Access Control (RBAC)
+                    </h3>
+                  </div>
+                  <p className="text-xs text-gray-300 [html.light-theme_&]:text-slate-600 leading-relaxed">
+                    Administrative privileges are authenticated securely via verified session cookies and bcrypt-hashed credentials.
+                  </p>
+                  <div className="p-3 rounded-xl bg-white/5 [html.light-theme_&]:bg-slate-100 border border-white/10 [html.light-theme_&]:border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className="text-gray-400 [html.light-theme_&]:text-slate-600">Authenticated As:</span>
+                    <span className="font-extrabold text-emerald-400 [html.light-theme_&]:text-emerald-700 break-all">
+                      {user?.email || user?.name || 'Administrator'} ({user?.role || 'admin'})
+                    </span>
+                  </div>
+                </Card>
 
-            <Card variant="glass" className="p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">System Connectivity</h3>
-                <button
-                  type="button"
-                  onClick={checkSystemHealth}
-                  className="text-[11px] font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  <span>Ping /api/health</span>
-                </button>
+                <Card variant="glass" className="p-4 sm:p-5 space-y-3 border-white/15 [html.light-theme_&]:border-slate-200/80">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-gray-400 [html.light-theme_&]:text-slate-500 uppercase tracking-wider">System Connectivity</h3>
+                    <button
+                      type="button"
+                      onClick={checkSystemHealth}
+                      className="text-[11px] font-bold text-rose-400 [html.light-theme_&]:text-rose-600 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      <span>Ping /api/health</span>
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between text-xs py-1.5 border-b border-white/10 [html.light-theme_&]:border-slate-200 text-gray-300 [html.light-theme_&]:text-slate-700">
+                    <span>Live Database Health:</span>
+                    {healthCheck?.status === 'ok' ? (
+                      <span className="font-bold text-emerald-400 [html.light-theme_&]:text-emerald-700 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        Connected (OK)
+                      </span>
+                    ) : (
+                      <span className="font-bold text-red-400 [html.light-theme_&]:text-red-600">
+                        {healthCheck?.category ? `Error (${healthCheck.category})` : 'Checking...'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-xs py-1.5 border-b border-white/10 [html.light-theme_&]:border-slate-200 text-gray-300 [html.light-theme_&]:text-slate-700">
+                    <span>Database Engine:</span>
+                    <span className="font-bold text-emerald-400 [html.light-theme_&]:text-emerald-700">MongoDB Atlas Cloud</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs py-1.5 border-b border-white/10 [html.light-theme_&]:border-slate-200 text-gray-300 [html.light-theme_&]:text-slate-700">
+                    <span>Image Storage CDN:</span>
+                    <span className="font-bold text-rose-400 [html.light-theme_&]:text-rose-600">ImgBB Direct Multipart API</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs py-1.5 text-gray-300 [html.light-theme_&]:text-slate-700">
+                    <span>Authentication Provider:</span>
+                    <span className="font-bold text-cyan-400 [html.light-theme_&]:text-cyan-700">Jose JWT & Firebase Auth</span>
+                  </div>
+                </Card>
               </div>
-              <div className="flex items-center justify-between text-xs py-1 border-b border-white/5">
-                <span>Live Database Health:</span>
-                {healthCheck?.status === 'ok' ? (
-                  <span className="font-bold text-emerald-400 flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    Connected (OK)
-                  </span>
-                ) : (
-                  <span className="font-bold text-red-400">
-                    {healthCheck?.category ? `Error (${healthCheck.category})` : 'Checking...'}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center justify-between text-xs py-1 border-b border-white/5">
-                <span>Database Engine:</span>
-                <span className="font-bold text-emerald-400">MongoDB Atlas Cloud</span>
-              </div>
-              <div className="flex items-center justify-between text-xs py-1 border-b border-white/5">
-                <span>Image Storage CDN:</span>
-                <span className="font-bold text-rose-400">ImgBB Direct Multipart API</span>
-              </div>
-              <div className="flex items-center justify-between text-xs py-1">
-                <span>Authentication Provider:</span>
-                <span className="font-bold text-cyan-400">Jose JWT (HttpOnly Cookie) & Firebase</span>
-              </div>
-            </Card>
+            </div>
           </div>
         )}
       </main>

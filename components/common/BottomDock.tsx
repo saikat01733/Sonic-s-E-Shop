@@ -12,6 +12,10 @@ export default function BottomDock() {
   const { t } = useLanguage();
   const { isAuthenticated, isAdmin } = useAuth();
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   const accountHref = isAuthenticated ? (isAdmin ? '/admin' : '/orders') : '/login';
   const accountLabel = !isAuthenticated ? 'Login' : (isAdmin ? 'Admin' : t('navOrders'));
 

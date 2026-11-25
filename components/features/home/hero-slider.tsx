@@ -101,7 +101,7 @@ export function HeroSlider({ slides: propSlides }: HeroSliderProps = {}) {
                 src={activeSlide.image}
                 alt={activeSlide.title}
                 className="w-full h-full object-cover"
-                onError={(e: any) => (e.target.src = '/banner.jpg')}
+                onError={(e: any) => (e.target.src = '/banner.webp')}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#020914] via-[#020914]/50 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#020914]/90 via-[#020914]/40 to-[#020914]/90" />
