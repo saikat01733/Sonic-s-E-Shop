@@ -86,13 +86,14 @@ export async function getStoreData(): Promise<StoreData> {
   }
 
   const db = mongo.db();
+  const noId = { projection: { _id: 0 } };
   const [settingsDoc, games, coupons, orders, auditLogs, users] = await Promise.all([
-    db.collection('settings').findOne({ _id: 'main' as any }),
-    db.collection<GameItem>('games').find({ isArchived: { $ne: true } }).toArray(),
-    db.collection<CouponItem>('coupons').find({}).toArray(),
-    db.collection<OrderItem>('orders').find({}).sort({ timestamp: -1 }).limit(100).toArray(),
-    db.collection<AuditLogItem>('auditLogs').find({}).sort({ timestamp: -1 }).limit(100).toArray(),
-    db.collection<UserProfile>('users').find({}).sort({ createdAt: -1 }).toArray()
+    db.collection('settings').findOne({ _id: 'main' as any }, noId),
+    db.collection<GameItem>('games').find({ isArchived: { $ne: true } }, noId).toArray(),
+    db.collection<CouponItem>('coupons').find({}, noId).toArray(),
+    db.collection<OrderItem>('orders').find({}, noId).sort({ timestamp: -1 }).limit(100).toArray(),
+    db.collection<AuditLogItem>('auditLogs').find({}, noId).sort({ timestamp: -1 }).limit(100).toArray(),
+    db.collection<UserProfile>('users').find({}, noId).sort({ createdAt: -1 }).toArray()
   ]);
 
   const sanitizedUsers = users.map(u => {
@@ -125,7 +126,8 @@ export async function getStoreData(): Promise<StoreData> {
     sub: b.sub || b.subtitle || '',
   }));
 
-  return {
+  // Ensure strictly plain serializable JSON objects for Next.js Server -> Client Component props
+  return JSON.parse(JSON.stringify({
     settings: mergedSettings,
     trustBadges: normalizedBadges,
     games: normalizedGames,
@@ -133,7 +135,7 @@ export async function getStoreData(): Promise<StoreData> {
     orders: orders || [],
     auditLogs: auditLogs || [],
     users: sanitizedUsers
-  };
+  }));
 }
 
 /**
@@ -569,7 +571,7 @@ export async function getUsers(): Promise<UserProfile[]> {
   const mongo = await getMongoClient();
   if (!mongo) return [];
 
-  const users = await mongo.db().collection<UserProfile>('users').find({}).sort({ createdAt: -1 }).toArray();
+  const users = await mongo.db().collection<UserProfile>('users').find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
   return users.map(u => {
     const copy = { ...u };
     delete copy.password;
@@ -583,13 +585,13 @@ export async function getUsers(): Promise<UserProfile[]> {
 export async function getUserById(id: string): Promise<UserProfile | null> {
   const mongo = await getMongoClient();
   if (!mongo) return null;
-  return mongo.db().collection<UserProfile>('users').findOne({ id } as any);
+  return mongo.db().collection<UserProfile>('users').findOne({ id } as any, { projection: { _id: 0 } });
 }
 
 export async function getUserByEmail(email: string): Promise<UserProfile | null> {
   const mongo = await getMongoClient();
   if (!mongo) return null;
-  return mongo.db().collection<UserProfile>('users').findOne({ email: email.toLowerCase() } as any);
+  return mongo.db().collection<UserProfile>('users').findOne({ email: email.toLowerCase() } as any, { projection: { _id: 0 } });
 }
 
 /**
@@ -635,7 +637,7 @@ export async function updateUser(
     { upsert: true }
   );
 
-  const updated = await db.collection<UserProfile>('users').findOne({ id: userId } as any);
+  const updated = await db.collection<UserProfile>('users').findOne({ id: userId } as any, { projection: { _id: 0 } });
   if (updated) {
     delete (updated as any).password;
   }

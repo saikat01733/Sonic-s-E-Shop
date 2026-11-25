@@ -169,8 +169,8 @@ export function AdminSidebar({
 
   return (
     <>
-      {/* Desktop Sticky Sidebar (Never clips Sign Out) */}
-      <aside className="hidden lg:flex w-64 h-[calc(100vh-2rem)] sticky top-4 flex-col flex-shrink-0 rounded-3xl bg-[#0a101f]/90 [html.light-theme_&]:bg-white/95 border border-white/15 [html.light-theme_&]:border-slate-200 shadow-2xl backdrop-blur-2xl overflow-hidden">
+      {/* Desktop Sticky Sidebar (Never clips Sign Out or changes width) */}
+      <aside className="hidden lg:flex w-64 min-w-[16rem] max-w-[16rem] h-[calc(100vh-3rem)] sticky top-6 flex-col flex-shrink-0 rounded-3xl bg-[#0a101f]/90 [html.light-theme_&]:bg-white/95 border border-white/15 [html.light-theme_&]:border-slate-200 shadow-2xl backdrop-blur-2xl overflow-hidden">
         {sidebarContent}
       </aside>
 

@@ -686,7 +686,7 @@ export default function AdminPage() {
   const totalRevenue = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
 
   return (
-    <div className="min-h-screen max-w-[1440px] mx-auto flex flex-col lg:flex-row p-3 sm:p-4 lg:p-6 gap-4 lg:gap-6">
+    <div className="w-full min-h-screen max-w-[1440px] mx-auto flex flex-col lg:flex-row p-3 sm:p-4 lg:p-6 gap-4 lg:gap-6">
       {/* Toast Notification */}
       {saveMessage && (
         <div

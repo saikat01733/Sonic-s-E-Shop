@@ -121,7 +121,7 @@ export async function getCurrentUser(req?: NextRequest): Promise<UserProfile | n
       return null;
     }
 
-    const user = await db.collection<UserProfile>('users').findOne({ id: payload.userId });
+    const user = await db.collection<UserProfile>('users').findOne({ id: payload.userId }, { projection: { _id: 0 } });
     if (!user) return null;
 
     // Remove sensitive fields
